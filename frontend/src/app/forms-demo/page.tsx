@@ -8,7 +8,7 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
 import { 
   Label, 
   Input, 
@@ -20,7 +20,7 @@ import {
   Textarea, 
   Field,
   type SelectOption 
-} from '@/components/forms';
+} from '@/components/ui';
 import { useState } from 'react';
 
 const navigation: TopNavigationItem[] = [

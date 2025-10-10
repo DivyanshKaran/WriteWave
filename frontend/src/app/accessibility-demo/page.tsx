@@ -9,7 +9,7 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
 import {
   SkipLinks,
   FocusManager,
@@ -32,8 +32,8 @@ import {
   AvatarImage,
   HeroImage,
 } from '@/components/accessibility';
-import { useI18n } from '@/lib/i18n';
-import { A11Y_CONSTANTS } from '@/lib/accessibility/constants';
+import { useI18n } from '@/lib/hooks';
+import { A11Y_CONSTANTS } from '@/lib/constants';
 
 const navigation: TopNavigationItem[] = [
   { id: 'learn', label: 'Learn', href: '/learn' },

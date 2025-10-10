@@ -9,7 +9,7 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
 import {
   XPChart,
   SkillBreakdown,
@@ -18,7 +18,7 @@ import {
   PredictiveInsights,
   ComparativeAnalytics,
   ChartSkeleton,
-} from '@/components/visualizations';
+} from '@/components/progress';
 
 const navigation: TopNavigationItem[] = [
   { id: 'learn', label: 'Learn', href: '/learn' },

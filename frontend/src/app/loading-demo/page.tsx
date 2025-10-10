@@ -8,7 +8,7 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
 import { 
   Skeleton, 
   SkeletonText, 
@@ -23,7 +23,7 @@ import {
   NetworkError,
   NotFoundError,
   ServerError
-} from '@/components/loading';
+} from '@/components/ui';
 import { useState } from 'react';
 
 const navigation: TopNavigationItem[] = [

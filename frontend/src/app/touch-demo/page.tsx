@@ -9,7 +9,7 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
 import {
   SwipeCard,
   LongPress,

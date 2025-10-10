@@ -8,9 +8,9 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
-import { DataTable, Badge } from '@/components/table';
-import type { BadgeTone } from '@/components/table';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
+import { DataTable } from '@/components/ui';
+import { Badge, type BadgeTone } from '@/components/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Settings, User } from 'lucide-react';
 

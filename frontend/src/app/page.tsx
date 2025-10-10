@@ -1,266 +1,279 @@
-import {
-	AppShell,
-	Sidebar,
-	MainContentArea,
-	Grid,
-	GridItem,
-	Section,
-	SidebarIcons,
-	type SidebarSection,
-} from "@/components/layout";
-import {
-	Breadcrumb,
-	type TopNavigationItem,
-	type BreadcrumbItem,
-} from "@/components/navigation";
+"use client";
 
-const navigation: TopNavigationItem[] = [
-	{ id: "learn", label: "Learn", href: "/learn", active: true },
-	{ id: "progress", label: "Progress", href: "/progress" },
-	{ id: "community", label: "Community", href: "/community" },
-	{ id: "profile", label: "Profile", href: "/profile" },
-];
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/stores';
+import { Button } from '@/components/ui';
+import { ArrowRight, BookOpen, Target, Users, Zap } from 'lucide-react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-	{ label: "Home", href: "/" },
-	{ label: "Learn", href: "/learn" },
-	{ label: "Dashboard", current: true },
-];
+export default function LandingPage() {
+	const router = useRouter();
+	const { isAuthenticated, isLoading } = useUserStore();
 
-const sidebarSections: SidebarSection[] = [
-	{
-		id: "learning",
-		title: "Learning",
-		items: [
-			{
-				id: "lessons",
-				label: "Lessons",
-				href: "/lessons",
-				icon: SidebarIcons.learn,
-				active: true,
-			},
-			{
-				id: "exercises",
-				label: "Exercises",
-				href: "/exercises",
-				icon: SidebarIcons.learn,
-			},
-			{
-				id: "vocabulary",
-				label: "Vocabulary",
-				href: "/vocabulary",
-				icon: SidebarIcons.learn,
-			},
-		],
-	},
-	{
-		id: "progress",
-		title: "Progress",
-		items: [
-			{
-				id: "stats",
-				label: "Statistics",
-				href: "/stats",
-				icon: SidebarIcons.progress,
-			},
-			{
-				id: "achievements",
-				label: "Achievements",
-				href: "/achievements",
-				icon: SidebarIcons.progress,
-			},
-			{
-				id: "streaks",
-				label: "Streaks",
-				href: "/streaks",
-				icon: SidebarIcons.progress,
-			},
-		],
-	},
-	{
-		id: "settings",
-		title: "Settings",
-		items: [
-			{
-				id: "profile",
-				label: "Profile",
-				href: "/profile",
-				icon: SidebarIcons.settings,
-			},
-			{
-				id: "preferences",
-				label: "Preferences",
-				href: "/preferences",
-				icon: SidebarIcons.settings,
-			},
-		],
-	},
-];
+	// Redirect based on authentication status
+	useEffect(() => {
+		if (!isLoading) {
+			if (isAuthenticated) {
+				router.push('/learn');
+			}
+		}
+	}, [isAuthenticated, isLoading, router]);
 
-export default function Home() {
+	// Show loading state while checking authentication
+	if (isLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+					<p className="body text-gray-600">Loading...</p>
+				</div>
+			</div>
+		);
+	}
+
+	// Landing page for unauthenticated users
 	return (
-		<AppShell navigation={navigation} user={{ streak: 7, notifications: 3 }}>
-			<div className="flex">
-				<Sidebar sections={sidebarSections} />
+		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+			<main id="main-content">
+				{/* Navigation */}
+				<nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="flex justify-between items-center h-16">
+							<div className="flex items-center">
+								<div className="flex-shrink-0">
+									<h1 className="heading text-2xl font-bold text-primary">WriteWave</h1>
+								</div>
+							</div>
+							<div className="flex items-center space-x-4">
+								<Button
+									variant="secondary"
+									onClick={() => router.push('/login')}
+								>
+									Sign In
+								</Button>
+								<Button
+									onClick={() => router.push('/register')}
+								>
+									Get Started
+								</Button>
+							</div>
+						</div>
+					</div>
+				</nav>
 
-				<MainContentArea hasSidebar>
-					<Section>
-						<div className="space-y-8">
-							{/* Breadcrumb Navigation */}
-							<Breadcrumb items={breadcrumbs} />
-							{/* Hero Section */}
-							<div className="text-center">
-								<h1 className="heading text-4xl font-bold mb-4">
-									Welcome to WriteWave
-								</h1>
-								<p className="body text-lg text-gray-600 max-w-2xl mx-auto">
-									Master Japanese writing with our comprehensive learning
-									platform. Track your progress, build streaks, and achieve your
-									language goals.
+				{/* Hero Section */}
+				<section className="relative py-20 lg:py-32">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="text-center">
+							<h1 className="heading text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+								Master Japanese Writing
+								<span className="block text-primary">with AI-Powered Feedback</span>
+							</h1>
+							<p className="body text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+								Learn Hiragana, Katakana, and Kanji through interactive writing practice. 
+								Get instant OCR feedback, track your progress, and build lasting streaks.
+							</p>
+							<div className="flex flex-col sm:flex-row gap-4 justify-center">
+								<Button
+									size="lg"
+									onClick={() => router.push('/register')}
+									className="text-lg px-8 py-4"
+								>
+									Start Learning Free
+									<ArrowRight className="ml-2 h-5 w-5" />
+								</Button>
+								<Button
+									variant="secondary"
+									size="lg"
+									onClick={() => router.push('/login')}
+									className="text-lg px-8 py-4"
+								>
+									Sign In
+								</Button>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				{/* Features Section */}
+				<section className="py-20 bg-white">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="text-center mb-16">
+							<h2 className="heading text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+								Why Choose WriteWave?
+							</h2>
+							<p className="body text-lg text-gray-600 max-w-2xl mx-auto">
+								Our platform combines traditional learning methods with cutting-edge technology 
+								to provide the most effective Japanese writing experience.
+							</p>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+							{/* Feature 1 */}
+							<div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+								<div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+									<BookOpen className="h-8 w-8 text-primary" />
+								</div>
+								<h3 className="heading text-xl font-semibold text-gray-900 mb-2">
+									Interactive Learning
+								</h3>
+								<p className="body text-gray-600">
+									Practice writing Japanese characters with step-by-step stroke order guidance.
 								</p>
 							</div>
 
-							{/* Grid Demo */}
-							<div>
-								<h2 className="heading text-2xl font-semibold mb-6">
-									Grid System Demo
-								</h2>
-								<Grid cols={12} gap="md">
-									<GridItem span={6}>
-										<div className="border-base p-6 h-32 flex items-center justify-center">
-											<span className="body text-base">
-												Grid Item 1 (6 cols)
-											</span>
-										</div>
-									</GridItem>
-									<GridItem span={6}>
-										<div className="border-base p-6 h-32 flex items-center justify-center">
-											<span className="body text-base">
-												Grid Item 2 (6 cols)
-											</span>
-										</div>
-									</GridItem>
-									<GridItem span={4}>
-										<div className="border-base p-6 h-32 flex items-center justify-center">
-											<span className="body text-base">
-												Grid Item 3 (4 cols)
-											</span>
-										</div>
-									</GridItem>
-									<GridItem span={4}>
-										<div className="border-base p-6 h-32 flex items-center justify-center">
-											<span className="body text-base">
-												Grid Item 4 (4 cols)
-											</span>
-										</div>
-									</GridItem>
-									<GridItem span={4}>
-										<div className="border-base p-6 h-32 flex items-center justify-center">
-											<span className="body text-base">
-												Grid Item 5 (4 cols)
-											</span>
-										</div>
-									</GridItem>
-								</Grid>
+							{/* Feature 2 */}
+							<div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+								<div className="bg-success/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+									<Zap className="h-8 w-8 text-success" />
+								</div>
+								<h3 className="heading text-xl font-semibold text-gray-900 mb-2">
+									AI-Powered OCR
+								</h3>
+								<p className="body text-gray-600">
+									Get instant feedback on your handwriting with advanced character recognition.
+								</p>
 							</div>
 
-							{/* Typography Demo */}
-							<div>
-								<h2 className="heading text-2xl font-semibold mb-6">
-									Typography System
-								</h2>
-								<div className="space-y-4">
-									<div>
-										<h3 className="heading text-xl font-semibold mb-2">
-											Headings (Space Grotesk)
-										</h3>
-										<div className="space-y-2">
-											<h1 className="heading text-4xl font-bold">
-												Heading 1 - 64px
-											</h1>
-											<h2 className="heading text-3xl font-bold">
-												Heading 2 - 48px
-											</h2>
-											<h3 className="heading text-2xl font-semibold">
-												Heading 3 - 32px
-											</h3>
-											<h4 className="heading text-xl font-semibold">
-												Heading 4 - 24px
-											</h4>
-										</div>
-									</div>
+							{/* Feature 3 */}
+							<div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+								<div className="bg-warning/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+									<Target className="h-8 w-8 text-warning" />
+								</div>
+								<h3 className="heading text-xl font-semibold text-gray-900 mb-2">
+									Progress Tracking
+								</h3>
+								<p className="body text-gray-600">
+									Track your learning journey with detailed analytics and achievement system.
+								</p>
+							</div>
 
-									<div>
-										<h3 className="body text-lg font-medium mb-2">
-											Body Text (Inter)
-										</h3>
-										<div className="space-y-2">
-											<p className="body text-base">Body text - 16px regular</p>
-											<p className="body text-sm">Small text - 14px regular</p>
-											<p className="body text-xs">Extra small - 12px regular</p>
-										</div>
-									</div>
+							{/* Feature 4 */}
+							<div className="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
+								<div className="bg-error/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+									<Users className="h-8 w-8 text-error" />
+								</div>
+								<h3 className="heading text-xl font-semibold text-gray-900 mb-2">
+									Community Learning
+								</h3>
+								<p className="body text-gray-600">
+									Join study groups and connect with fellow Japanese learners worldwide.
+								</p>
+							</div>
+						</div>
+					</div>
+				</section>
 
-									<div>
-										<h3 className="jp text-lg font-medium mb-2">
-											Japanese Text (Noto Sans JP)
-										</h3>
-										<p className="jp text-base">
-											日本語のテキスト - 16px regular
-										</p>
-										<p className="jp text-sm">小さな日本語 - 14px regular</p>
+				{/* Japanese Characters Preview */}
+				<section className="py-20 bg-gray-50">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="text-center mb-16">
+							<h2 className="heading text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+								Learn All Japanese Writing Systems
+							</h2>
+							<p className="body text-lg text-gray-600 max-w-2xl mx-auto">
+								Master the three essential Japanese writing systems with our comprehensive curriculum.
+							</p>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+							{/* Hiragana */}
+							<div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+								<div className="text-center">
+									<div className="jp text-6xl font-bold text-primary mb-4">あ</div>
+									<h3 className="heading text-2xl font-semibold text-gray-900 mb-2">
+										Hiragana
+									</h3>
+									<p className="body text-gray-600 mb-4">
+										Learn the basic Japanese syllabary used for native words and grammar.
+									</p>
+									<div className="text-sm text-gray-500">
+										46 characters • Beginner level
 									</div>
 								</div>
 							</div>
 
-							{/* Color System Demo */}
-							<div>
-								<h2 className="heading text-2xl font-semibold mb-6">
-									Color System
-								</h2>
-								<Grid cols={6} gap="md">
-									<GridItem span={2}>
-										<div className="bg-primary text-white p-4 rounded-sm">
-											<span className="body text-sm font-medium">Primary</span>
-											<div className="body text-xs mt-1">#0066FF</div>
-										</div>
-									</GridItem>
-									<GridItem span={2}>
-										<div className="bg-success text-white p-4 rounded-sm">
-											<span className="body text-sm font-medium">Success</span>
-											<div className="body text-xs mt-1">#00A86B</div>
-										</div>
-									</GridItem>
-									<GridItem span={2}>
-										<div className="bg-warning text-white p-4 rounded-sm">
-											<span className="body text-sm font-medium">Warning</span>
-											<div className="body text-xs mt-1">#FF9500</div>
-										</div>
-									</GridItem>
-									<GridItem span={2}>
-										<div className="bg-error text-white p-4 rounded-sm">
-											<span className="body text-sm font-medium">Error</span>
-											<div className="body text-xs mt-1">#DC143C</div>
-										</div>
-									</GridItem>
-									<GridItem span={2}>
-										<div className="bg-gray-800 text-white p-4 rounded-sm">
-											<span className="body text-sm font-medium">Gray 800</span>
-											<div className="body text-xs mt-1">#333333</div>
-										</div>
-									</GridItem>
-									<GridItem span={2}>
-										<div className="bg-gray-600 text-white p-4 rounded-sm">
-											<span className="body text-sm font-medium">Gray 600</span>
-											<div className="body text-xs mt-1">#999999</div>
-										</div>
-									</GridItem>
-								</Grid>
+							{/* Katakana */}
+							<div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+								<div className="text-center">
+									<div className="jp text-6xl font-bold text-success mb-4">ア</div>
+									<h3 className="heading text-2xl font-semibold text-gray-900 mb-2">
+										Katakana
+									</h3>
+									<p className="body text-gray-600 mb-4">
+										Master the syllabary used for foreign words and emphasis.
+									</p>
+									<div className="text-sm text-gray-500">
+										46 characters • Beginner level
+									</div>
+								</div>
+							</div>
+
+							{/* Kanji */}
+							<div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+								<div className="text-center">
+									<div className="jp text-6xl font-bold text-warning mb-4">漢</div>
+									<h3 className="heading text-2xl font-semibold text-gray-900 mb-2">
+										Kanji
+									</h3>
+									<p className="body text-gray-600 mb-4">
+										Study Chinese characters adapted for Japanese writing.
+									</p>
+									<div className="text-sm text-gray-500">
+										2,000+ characters • Advanced level
+									</div>
+								</div>
 							</div>
 						</div>
-					</Section>
-				</MainContentArea>
-			</div>
-		</AppShell>
+					</div>
+				</section>
+
+				{/* CTA Section */}
+				<section className="py-20 bg-primary">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+						<h2 className="heading text-3xl lg:text-4xl font-bold text-white mb-4">
+							Ready to Start Your Japanese Journey?
+						</h2>
+						<p className="body text-xl text-blue-100 max-w-2xl mx-auto mb-8">
+							Join thousands of learners who have already mastered Japanese writing with WriteWave.
+						</p>
+						<Button
+							size="lg"
+							variant="secondary"
+							onClick={() => router.push('/register')}
+							className="text-lg px-8 py-4"
+						>
+							Get Started Today
+							<ArrowRight className="ml-2 h-5 w-5" />
+						</Button>
+					</div>
+				</section>
+
+				{/* Footer */}
+				<footer className="bg-gray-900 text-white py-12">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="text-center">
+							<h3 className="heading text-2xl font-bold mb-4">WriteWave</h3>
+							<p className="body text-gray-400 mb-6">
+								Master Japanese writing with AI-powered feedback and gamified learning.
+							</p>
+							<div className="flex justify-center space-x-6">
+								<Button
+									variant="secondary"
+									onClick={() => router.push('/login')}
+								>
+									Sign In
+								</Button>
+								<Button
+									onClick={() => router.push('/register')}
+								>
+									Sign Up
+								</Button>
+							</div>
+						</div>
+					</div>
+				</footer>
+			</main>
+		</div>
 	);
 }

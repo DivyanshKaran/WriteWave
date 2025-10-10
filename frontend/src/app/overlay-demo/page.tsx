@@ -8,17 +8,15 @@ import {
   SidebarIcons,
   type SidebarSection 
 } from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/navigation';
+import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
 import { 
   Modal, 
   Drawer, 
   ToastProvider, 
   useToast, 
-  DropdownMenuComponent, 
-  SimpleDropdown,
-  type DropdownMenuItem 
-} from '@/components/overlay';
-import { Button } from '@/components/forms';
+  DropdownMenu 
+} from '@/components/ui';
+import { Button } from '@/components/ui';
 import { useState } from 'react';
 import { Settings, User, LogOut, MoreHorizontal, Bell, Mail } from 'lucide-react';
 
@@ -44,7 +42,7 @@ const sidebarSections: SidebarSection[] = [
   },
 ];
 
-const dropdownItems: DropdownMenuItem[] = [
+const dropdownItems: Array<{ id: string; label: string; icon: React.ReactNode }> = [
   { id: 'profile', label: 'Profile', icon: <User className="w-5 h-5" /> },
   { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   { id: 'logout', label: 'Logout', icon: <LogOut className="w-5 h-5" /> },
@@ -192,12 +190,7 @@ function OverlayDemoContent() {
           <div className="space-y-4">
             <h2 className="heading text-xl font-semibold">Dropdown Menus</h2>
             <div className="flex gap-4 flex-wrap">
-              <SimpleDropdown
-                label="Select Option"
-                items={dropdownItems}
-              />
-              
-              <DropdownMenuComponent
+              <DropdownMenu
                 trigger={
                   <button className="h-12 px-4 body text-base bg-white text-black border-base hover:border-strong flex items-center gap-2">
                     <MoreHorizontal className="w-5 h-5" />
@@ -207,7 +200,7 @@ function OverlayDemoContent() {
                 items={dropdownItems}
               />
               
-              <DropdownMenuComponent
+              <DropdownMenu
                 trigger={
                   <button className="w-12 h-12 border-base bg-white hover:border-strong flex items-center justify-center">
                     <Bell className="w-5 h-5" />
