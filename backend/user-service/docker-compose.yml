@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # User Service
+  user-service:
+    build: .
+    container_name: writewave-user-service
+    ports:
+      - "8001:8001"
+    environment:
+      - NODE_ENV=development
+      - PORT=8001
+      - DATABASE_URL=postgresql://user:password@user-db:5432/writewave_users
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASS=your-app-password
+      - FROM_EMAIL=noreply@writewave.app
+      - FROM_NAME=WriteWave
+      - CORS_ORIGIN=http://localhost:3000,https://writewave.app
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    depends_on:
+      - user-db
+      - redis
+    networks:
+      - writewave-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  user-db:
+    image: postgres:15-alpine
+    container_name: writewave-user-db
+    environment:
+      - POSTGRES_DB=writewave_users
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d writewave_users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: writewave-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - writewave-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # Database Migration Service
+  db-migrate:
+    build: .
+    container_name: writewave-db-migrate
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://user:password@user-db:5432/writewave_users
+    command: npx prisma migrate deploy
+    depends_on:
+      - user-db
+    networks:
+      - writewave-network
+    restart: "no"
+
+volumes:
+  user_db_data:
+  redis_data:
+
+networks:
+  writewave-network:
+    driver: bridge

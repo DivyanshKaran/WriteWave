@@ -1,0 +1,518 @@
+# Production Environment Configuration
+# ====================================
+
+# Global configuration
+global:
+  environment: production
+  domain: writewave.com
+  imageRegistry: ghcr.io/writewave
+  imageTag: stable
+  
+# Database configuration
+databases:
+  postgres:
+    user:
+      host: writewave-user-db.cluster-xyz.us-east-1.rds.amazonaws.com
+      port: 5432
+      database: writewave_users
+      username: postgres
+      password: ${POSTGRES_PASSWORD}
+      ssl: true
+      pool:
+        min: 5
+        max: 20
+        idle: 30000
+    content:
+      host: writewave-content-db.cluster-xyz.us-east-1.rds.amazonaws.com
+      port: 5432
+      database: writewave_content
+      username: postgres
+      password: ${POSTGRES_PASSWORD}
+      ssl: true
+      pool:
+        min: 5
+        max: 20
+        idle: 30000
+    progress:
+      host: writewave-progress-db.cluster-xyz.us-east-1.rds.amazonaws.com
+      port: 5432
+      database: writewave_progress
+      username: postgres
+      password: ${POSTGRES_PASSWORD}
+      ssl: true
+      pool:
+        min: 5
+        max: 20
+        idle: 30000
+    community:
+      host: writewave-community-db.cluster-xyz.us-east-1.rds.amazonaws.com
+      port: 5432
+      database: writewave_community
+      username: postgres
+      password: ${POSTGRES_PASSWORD}
+      ssl: true
+      pool:
+        min: 5
+        max: 20
+        idle: 30000
+    analytics:
+      host: writewave-analytics-db.cluster-xyz.us-east-1.rds.amazonaws.com
+      port: 5432
+      database: writewave_analytics
+      username: postgres
+      password: ${POSTGRES_PASSWORD}
+      ssl: true
+      pool:
+        min: 5
+        max: 20
+        idle: 30000
+
+# Redis configuration
+redis:
+  host: writewave-redis.xyz.cache.amazonaws.com
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  cluster:
+    enabled: true
+    nodes:
+      - writewave-redis-0001.xyz.cache.amazonaws.com:6379
+      - writewave-redis-0002.xyz.cache.amazonaws.com:6379
+      - writewave-redis-0003.xyz.cache.amazonaws.com:6379
+  tls:
+    enabled: true
+  pool:
+    min: 5
+    max: 20
+    idle: 30000
+
+# Message queues
+messaging:
+  rabbitmq:
+    host: rabbitmq.writewave.com
+    port: 5671
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+    vhost: /
+    tls:
+      enabled: true
+  kafka:
+    brokers:
+      - kafka-1.writewave.com:9092
+      - kafka-2.writewave.com:9092
+      - kafka-3.writewave.com:9092
+    topics:
+      - user-events
+      - content-events
+      - progress-events
+      - community-events
+      - notification-events
+      - analytics-events
+    security:
+      enabled: true
+      protocol: SASL_SSL
+
+# ClickHouse configuration
+clickhouse:
+  host: clickhouse.writewave.com
+  port: 8123
+  database: analytics
+  username: ${CLICKHOUSE_USER}
+  password: ${CLICKHOUSE_PASSWORD}
+  tls:
+    enabled: true
+
+# Microservices configuration
+services:
+  user:
+    name: user-service
+    port: 8001
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    env:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET}
+      BCRYPT_ROUNDS: 12
+      RATE_LIMIT_WINDOW: 900000
+      RATE_LIMIT_MAX: 100
+    healthCheck:
+      enabled: true
+      path: /health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    livenessProbe:
+      enabled: true
+      path: /health/live
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    readinessProbe:
+      enabled: true
+      path: /health/ready
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      
+  content:
+    name: content-service
+    port: 8002
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    env:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET}
+      MAX_FILE_SIZE: 52428800  # 50MB
+      S3_BUCKET: writewave-content-prod
+      S3_REGION: us-east-1
+    healthCheck:
+      enabled: true
+      path: /health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      
+  progress:
+    name: progress-service
+    port: 8003
+    replicas: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    env:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET}
+    healthCheck:
+      enabled: true
+      path: /health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      
+  community:
+    name: community-service
+    port: 8004
+    replicas: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    env:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET}
+    healthCheck:
+      enabled: true
+      path: /health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      
+  notification:
+    name: notification-service
+    port: 8005
+    replicas: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    env:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+    healthCheck:
+      enabled: true
+      path: /health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      
+  analytics:
+    name: analytics-service
+    port: 8006
+    replicas: 2
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+    env:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET}
+    healthCheck:
+      enabled: true
+      path: /health
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    port: 9090
+    retention: 30d
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  grafana:
+    enabled: true
+    port: 3000
+    adminPassword: ${GRAFANA_ADMIN_PASSWORD}
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  jaeger:
+    enabled: true
+    port: 16686
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  elk:
+    enabled: true
+    elasticsearch:
+      replicas: 3
+      resources:
+        requests:
+          memory: "4Gi"
+          cpu: "2000m"
+        limits:
+          memory: "8Gi"
+          cpu: "4000m"
+    kibana:
+      port: 5601
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+    logstash:
+      replicas: 2
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+
+# Security configuration
+security:
+  tls:
+    enabled: true
+    certManager:
+      enabled: true
+      issuer: letsencrypt-prod
+  istio:
+    enabled: true
+    mtls:
+      mode: STRICT
+    authorization:
+      enabled: true
+  networkPolicies:
+    enabled: true
+  podSecurityStandards:
+    enabled: true
+    level: restricted
+  imageScanning:
+    enabled: true
+    policy: strict
+
+# Storage configuration
+storage:
+  persistentVolumes:
+    enabled: true
+    storageClass: gp3
+    size: 100Gi
+    backup:
+      enabled: true
+      schedule: "0 2 * * *"
+      retention: 30d
+  backups:
+    enabled: true
+    schedule: "0 2 * * *"
+    retention: 30d
+    encryption: true
+
+# Networking configuration
+networking:
+  ingress:
+    enabled: true
+    className: istio
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/rate-limit: "100"
+      nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    hosts:
+      - host: api.writewave.com
+        paths:
+          - path: /api/users
+            pathType: Prefix
+            service: user-service
+          - path: /api/content
+            pathType: Prefix
+            service: content-service
+          - path: /api/progress
+            pathType: Prefix
+            service: progress-service
+          - path: /api/community
+            pathType: Prefix
+            service: community-service
+          - path: /api/notifications
+            pathType: Prefix
+            service: notification-service
+          - path: /api/analytics
+            pathType: Prefix
+            service: analytics-service
+    tls:
+      - secretName: writewave-tls
+        hosts:
+          - api.writewave.com
+
+# Load balancing
+loadBalancer:
+  enabled: true
+  type: nginx
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ${ACM_CERTIFICATE_ARN}
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+
+# Feature flags
+features:
+  rateLimiting: true
+  circuitBreaker: true
+  retryPolicy: true
+  healthChecks: true
+  metrics: true
+  tracing: true
+  logging: true
+  caching: true
+  compression: true
+  keepAlive: true
+
+# Resource limits
+resources:
+  limits:
+    cpu: "8000m"
+    memory: "16Gi"
+  requests:
+    cpu: "2000m"
+    memory: "4Gi"
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: 30d
+  encryption: true
+  crossRegion: true
+
+# Logging configuration
+logging:
+  level: info
+  format: json
+  output: stdout
+  retention: 30d
+  aggregation: true
+
+# Performance configuration
+performance:
+  connectionPooling: true
+  caching: true
+  compression: true
+  keepAlive: true
+  http2: true
+  gzip: true
+
+# Disaster recovery
+disasterRecovery:
+  enabled: true
+  backupRegion: us-west-2
+  rto: 3600  # 1 hour
+  rpo: 900   # 15 minutes
+
+# Compliance
+compliance:
+  enabled: true
+  standards:
+    - SOC2
+    - GDPR
+    - HIPAA
+  audit:
+    enabled: true
+    retention: 7y
+  encryption:
+    atRest: true
+    inTransit: true
+    keyManagement: AWS_KMS

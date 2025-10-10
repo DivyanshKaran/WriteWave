@@ -1,0 +1,637 @@
+version: '3.8'
+
+# WriteWave Microservices Infrastructure
+# =====================================
+# Complete development environment with all services
+
+services:
+  # ===========================================
+  # DATABASE SERVICES
+  # ===========================================
+
+  # PostgreSQL Cluster
+  postgres-user-primary:
+    image: postgres:15-alpine
+    container_name: postgres-user-primary
+    environment:
+      POSTGRES_DB: writewave_users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_user_primary_data:/var/lib/postgresql/data
+      - ./databases/postgres-cluster/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./databases/postgres-cluster/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5432:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  postgres-content-primary:
+    image: postgres:15-alpine
+    container_name: postgres-content-primary
+    environment:
+      POSTGRES_DB: writewave_content
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_content_primary_data:/var/lib/postgresql/data
+      - ./databases/postgres-cluster/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./databases/postgres-cluster/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5434:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  postgres-progress-primary:
+    image: postgres:15-alpine
+    container_name: postgres-progress-primary
+    environment:
+      POSTGRES_DB: writewave_progress
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_progress_primary_data:/var/lib/postgresql/data
+      - ./databases/postgres-cluster/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./databases/postgres-cluster/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5435:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  postgres-community-primary:
+    image: postgres:15-alpine
+    container_name: postgres-community-primary
+    environment:
+      POSTGRES_DB: writewave_community
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_community_primary_data:/var/lib/postgresql/data
+      - ./databases/postgres-cluster/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./databases/postgres-cluster/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5436:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  postgres-analytics-primary:
+    image: timescale/timescaledb:latest-pg15
+    container_name: postgres-analytics-primary
+    environment:
+      POSTGRES_DB: writewave_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_analytics_primary_data:/var/lib/postgresql/data
+      - ./databases/postgres-cluster/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./databases/postgres-cluster/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    ports:
+      - "5437:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # ClickHouse for Analytics
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    environment:
+      CLICKHOUSE_DB: analytics
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Redis Cluster
+  redis-node-1:
+    image: redis:7-alpine
+    container_name: redis-node-1
+    command: >
+      redis-server
+      --port 7001
+      --cluster-enabled yes
+      --cluster-config-file nodes-7001.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "7001:7001"
+      - "17001:17001"
+    volumes:
+      - redis_node_1_data:/data
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  redis-node-2:
+    image: redis:7-alpine
+    container_name: redis-node-2
+    command: >
+      redis-server
+      --port 7002
+      --cluster-enabled yes
+      --cluster-config-file nodes-7002.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "7002:7002"
+      - "17002:17002"
+    volumes:
+      - redis_node_2_data:/data
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  redis-node-3:
+    image: redis:7-alpine
+    container_name: redis-node-3
+    command: >
+      redis-server
+      --port 7003
+      --cluster-enabled yes
+      --cluster-config-file nodes-7003.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "7003:7003"
+      - "17003:17003"
+    volumes:
+      - redis_node_3_data:/data
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Redis Cluster Proxy
+  redis-cluster-proxy:
+    image: redis/redis-cluster-proxy:latest
+    container_name: redis-cluster-proxy
+    environment:
+      REDIS_CLUSTER_NODES: "redis-node-1:7001,redis-node-2:7002,redis-node-3:7003"
+      PROXY_PORT: 6379
+    ports:
+      - "6379:6379"
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # ===========================================
+  # MESSAGE QUEUE SERVICES
+  # ===========================================
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./message-queue/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    ports:
+      - "2181:2181"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  kafka-1:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-1
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_1_data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-2
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_2_data:/var/lib/kafka/data
+    ports:
+      - "9093:9093"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9094
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_3_data:/var/lib/kafka/data
+    ports:
+      - "9094:9094"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: writewave-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # ===========================================
+  # MICROSERVICES
+  # ===========================================
+
+  # User Service
+  user-service:
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    environment:
+      NODE_ENV: development
+      PORT: 8001
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-user-primary:5432/writewave_users
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres-user-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Content Service
+  content-service:
+    build:
+      context: ./backend/content-service
+      dockerfile: Dockerfile
+    container_name: content-service
+    environment:
+      NODE_ENV: development
+      PORT: 8002
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-content-primary:5432/writewave_content
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8002:8002"
+    depends_on:
+      - postgres-content-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Progress Service
+  progress-service:
+    build:
+      context: ./backend/progress-service
+      dockerfile: Dockerfile
+    container_name: progress-service
+    environment:
+      NODE_ENV: development
+      PORT: 8003
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-progress-primary:5432/writewave_progress
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8003:8003"
+    depends_on:
+      - postgres-progress-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Community Service
+  community-service:
+    build:
+      context: ./backend/community-service
+      dockerfile: Dockerfile
+    container_name: community-service
+    environment:
+      NODE_ENV: development
+      PORT: 8004
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-community-primary:5432/writewave_community
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8004:8004"
+    depends_on:
+      - postgres-community-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./backend/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      NODE_ENV: development
+      PORT: 8005
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-user-primary:5432/writewave_users
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8005:8005"
+    depends_on:
+      - postgres-user-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Analytics Service
+  analytics-service:
+    build:
+      context: ./backend/analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    environment:
+      NODE_ENV: development
+      PORT: 8006
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-analytics-primary:5432/writewave_analytics
+      CLICKHOUSE_URL: http://clickhouse:8123
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+    ports:
+      - "8006:8006"
+    depends_on:
+      - postgres-analytics-primary
+      - clickhouse
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # ===========================================
+  # MONITORING & OBSERVABILITY
+  # ===========================================
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # ===========================================
+  # API GATEWAY & LOAD BALANCER
+  # ===========================================
+
+  # Nginx Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - user-service
+      - content-service
+      - progress-service
+      - community-service
+      - notification-service
+      - analytics-service
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # ===========================================
+  # DEVELOPMENT TOOLS
+  # ===========================================
+
+  # Mailhog for Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+  # MinIO for S3-compatible Storage
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    networks:
+      - writewave-network
+    restart: unless-stopped
+
+volumes:
+  # PostgreSQL
+  postgres_user_primary_data:
+  postgres_content_primary_data:
+  postgres_progress_primary_data:
+  postgres_community_primary_data:
+  postgres_analytics_primary_data:
+  
+  # ClickHouse
+  clickhouse_data:
+  
+  # Redis
+  redis_node_1_data:
+  redis_node_2_data:
+  redis_node_3_data:
+  
+  # RabbitMQ
+  rabbitmq_data:
+  
+  # Kafka
+  zookeeper_data:
+  kafka_1_data:
+  kafka_2_data:
+  kafka_3_data:
+  
+  # Monitoring
+  prometheus_data:
+  grafana_data:
+  
+  # Storage
+  minio_data:
+
+networks:
+  writewave-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

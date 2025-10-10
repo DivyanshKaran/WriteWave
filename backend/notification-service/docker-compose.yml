@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  notification-service:
+    build: .
+    ports:
+      - "8005:8005"
+    environment:
+      - NODE_ENV=production
+      - PORT=8005
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key
+      - SENDGRID_API_KEY=your-sendgrid-api-key
+      - TWILIO_ACCOUNT_SID=your-twilio-account-sid
+      - TWILIO_AUTH_TOKEN=your-twilio-auth-token
+      - VAPID_PUBLIC_KEY=your-vapid-public-key
+      - VAPID_PRIVATE_KEY=your-vapid-private-key
+      - VAPID_SUBJECT=mailto:admin@writewave.com
+    depends_on:
+      - redis
+    volumes:
+      - ./templates:/app/templates
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - notification-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - notification-network
+
+  queue-dashboard:
+    build: .
+    command: npm run queue:dashboard
+    ports:
+      - "3001:3001"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DASHBOARD_USERNAME=admin
+      - DASHBOARD_PASSWORD=admin123
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - notification-network
+
+volumes:
+  redis_data:
+
+networks:
+  notification-network:
+    driver: bridge

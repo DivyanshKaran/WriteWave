@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: writewave
+  labels:
+    name: writewave
+    environment: production
+    app.kubernetes.io/name: writewave
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: infrastructure
+    app.kubernetes.io/part-of: writewave-platform
+    app.kubernetes.io/managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: writewave-monitoring
+  labels:
+    name: writewave-monitoring
+    environment: production
+    app.kubernetes.io/name: writewave-monitoring
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: writewave-platform
+    app.kubernetes.io/managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: writewave-databases
+  labels:
+    name: writewave-databases
+    environment: production
+    app.kubernetes.io/name: writewave-databases
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: writewave-platform
+    app.kubernetes.io/managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: writewave-messaging
+  labels:
+    name: writewave-messaging
+    environment: production
+    app.kubernetes.io/name: writewave-messaging
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: messaging
+    app.kubernetes.io/part-of: writewave-platform
+    app.kubernetes.io/managed-by: kubernetes

@@ -1,0 +1,270 @@
+// Progress Service Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Progress Tracking
+model UserProgress {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  currentLevel      Int      @default(1)
+  totalXp           Int      @default(0)
+  currentXp         Int      @default(0)
+  xpToNextLevel     Int      @default(100)
+  levelName         String   @default("Bronze")
+  streakCount       Int      @default(0)
+  longestStreak     Int      @default(0)
+  lastActivityDate  DateTime?
+  totalStudyTime    Int      @default(0) // in minutes
+  charactersLearned Int      @default(0)
+  charactersMastered Int     @default(0)
+  perfectScores     Int      @default(0)
+  achievementsCount Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  xpTransactions    XpTransaction[]
+  achievements       UserAchievement[]
+  characterMastery   CharacterMastery[]
+  streaks           Streak[]
+  analytics         UserAnalytics[]
+
+  @@map("user_progress")
+}
+
+// XP Transaction History
+model XpTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  source      XpSource
+  description String
+  metadata    Json?    // Additional data like characterId, lessonId, etc.
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userProgress UserProgress @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("xp_transactions")
+}
+
+// Character Mastery Tracking
+model CharacterMastery {
+  id                String   @id @default(cuid())
+  userId            String
+  characterId       String
+  characterType     CharacterType
+  masteryLevel      MasteryLevel @default(LEARNING)
+  accuracyScore     Float    @default(0.0)
+  practiceCount     Int      @default(0)
+  correctCount      Int      @default(0)
+  totalTimeSpent    Int      @default(0) // in seconds
+  lastPracticed     DateTime?
+  nextReviewDate    DateTime?
+  streakCount       Int      @default(0)
+  difficultyRating  Float    @default(1.0)
+  strokeOrderScore  Float    @default(0.0)
+  recognitionScore  Float    @default(0.0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  userProgress      UserProgress @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  practiceSessions  PracticeSession[]
+
+  @@unique([userId, characterId])
+  @@map("character_mastery")
+}
+
+// Practice Session Details
+model PracticeSession {
+  id                String   @id @default(cuid())
+  characterMasteryId String
+  userId            String
+  characterId       String
+  startTime         DateTime
+  endTime           DateTime?
+  duration          Int?     // in seconds
+  accuracy          Float?
+  strokesCorrect    Int      @default(0)
+  strokesTotal      Int      @default(0)
+  xpEarned          Int      @default(0)
+  isPerfect         Boolean  @default(false)
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  // Relations
+  characterMastery  CharacterMastery @relation(fields: [characterMasteryId], references: [id], onDelete: Cascade)
+
+  @@map("practice_sessions")
+}
+
+// Achievement System
+model Achievement {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  description   String
+  category      AchievementCategory
+  rarity        AchievementRarity
+  icon          String?
+  xpReward      Int      @default(0)
+  badgeReward   String?
+  unlockCondition Json   // Conditions to unlock this achievement
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+// User Achievement Progress
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  progress      Json     // Current progress towards achievement
+  isUnlocked    Boolean  @default(false)
+  unlockedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  userProgress  UserProgress @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// Streak Management
+model Streak {
+  id            String   @id @default(cuid())
+  userId        String
+  type          StreakType
+  currentCount  Int      @default(0)
+  longestCount  Int      @default(0)
+  lastActivity  DateTime?
+  freezeCount   Int      @default(0) // Number of freezes used
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  userProgress  UserProgress @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("streaks")
+}
+
+// User Analytics and Insights
+model UserAnalytics {
+  id                    String   @id @default(cuid())
+  userId                String
+  date                  DateTime @default(now())
+  studyTimeMinutes      Int      @default(0)
+  charactersPracticed   Int      @default(0)
+  accuracyAverage       Float    @default(0.0)
+  xpEarned             Int      @default(0)
+  achievementsUnlocked Int      @default(0)
+  streakMaintained     Boolean  @default(false)
+  weakAreas            Json?    // Identified weak areas
+  improvementTrends    Json?    // Learning velocity trends
+  predictions          Json?    // Progress predictions
+  createdAt            DateTime @default(now())
+
+  // Relations
+  userProgress         UserProgress @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("user_analytics")
+}
+
+// Leaderboard Entries
+model Leaderboard {
+  id            String   @id @default(cuid())
+  userId        String
+  period        LeaderboardPeriod
+  rank          Int
+  score         Int
+  metadata      Json?    // Additional ranking data
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, period])
+  @@map("leaderboard")
+}
+
+// Enums
+enum XpSource {
+  CHARACTER_PRACTICE
+  PERFECT_STROKE
+  DAILY_STREAK
+  ACHIEVEMENT_UNLOCK
+  LESSON_COMPLETION
+  VOCABULARY_LEARNED
+  STREAK_MILESTONE
+  PERFECT_SCORE
+  DAILY_LOGIN
+  WEEKLY_CHALLENGE
+  MONTHLY_CHALLENGE
+  SOCIAL_SHARE
+  REVIEW_SESSION
+  MISTAKE_CORRECTION
+  SPEED_CHALLENGE
+}
+
+enum CharacterType {
+  HIRAGANA
+  KATAKANA
+  KANJI
+}
+
+enum MasteryLevel {
+  LEARNING
+  PRACTICING
+  MASTERED
+  EXPERT
+}
+
+enum AchievementCategory {
+  LEARNING
+  PRACTICE
+  STREAK
+  MASTERY
+  SOCIAL
+  SPECIAL
+  MILESTONE
+  CHALLENGE
+}
+
+enum AchievementRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum StreakType {
+  DAILY_LOGIN
+  DAILY_PRACTICE
+  PERFECT_SCORE
+  WEEKLY_STUDY
+  MONTHLY_GOAL
+}
+
+enum LeaderboardPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}

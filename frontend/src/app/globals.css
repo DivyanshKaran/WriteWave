@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/* Design tokens using Tailwind v4 @theme */
+@theme inline {
+	/* Fonts */
+	--font-inter: var(--font-inter);
+	--font-grotesk: var(--font-space-grotesk);
+	--font-jp: var(--font-noto-sans-jp);
+
+	/* Type scale */
+	--text-xs: 12px;
+	--text-sm: 14px;
+	--text-base: 16px;
+	--text-lg: 20px;
+	--text-xl: 24px;
+	--text-2xl: 32px;
+	--text-3xl: 48px;
+	--text-4xl: 64px;
+
+	/* Line heights */
+	--leading-tightHeading: 1.2;
+	--leading-body: 1.5;
+	--leading-jp: 1.8;
+
+	/* Colors */
+	--color-white: #ffffff;
+	--color-black: #000000;
+	--color-gray-50: #f8f8f8;
+	--color-gray-200: #e5e5e5;
+	--color-gray-600: #999999;
+	--color-gray-800: #333333;
+	--color-primary: #0066ff; /* Electric Blue */
+	--color-success: #00a86b; /* Forest Green */
+	--color-warning: #ff9500; /* Amber */
+	--color-error: #dc143c; /* Crimson */
+
+	/* Spacing (8px base) */
+	--spacing-1: 4px;
+	--spacing-2: 8px;
+	--spacing-4: 16px;
+	--spacing-6: 24px;
+	--spacing-8: 32px;
+	--spacing-12: 48px;
+	--spacing-16: 64px;
+	--spacing-24: 96px;
+	--spacing-32: 128px;
+
+	/* Borders */
+	--border: 1px;
+	--border-2: 2px;
+	--radius-none: 0px;
+	--radius-sm: 2px;
+	--radius-md: 4px; /* for cards */
+
+	/* Shadows */
+	--shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Base styles adhering to the system */
+:root {
+	color-scheme: light;
+	--background: var(--color-white);
+	--foreground: var(--color-gray-800);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		color-scheme: dark;
+		--background: #0a0a0a; /* not part of minimalist palette but for UX */
+		--foreground: #ededed;
+	}
+}
+
+html {
+	font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+	font-size: 16px;
+}
+
+body {
+	background: var(--background);
+	color: var(--foreground);
+}
+
+/* Utility classes for typography roles */
+.heading {
+	font-family: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+	line-height: var(--leading-tightHeading);
+}
+
+.body {
+	font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+	line-height: var(--leading-body);
+}
+
+.jp {
+	font-family: var(--font-jp), system-ui, sans-serif;
+	line-height: var(--leading-jp);
+}
+
+/* Divider rule */
+.divider {
+  border-color: var(--color-gray-200);
+}
+
+/* Toast animations */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.3s ease-in;
+}

@@ -1,0 +1,217 @@
+version: '3.8'
+
+services:
+  # RabbitMQ Management Node
+  rabbitmq-management:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-management
+    hostname: rabbitmq-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,info}]"
+    volumes:
+      - rabbitmq_management_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./definitions.json:/etc/rabbitmq/definitions.json
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+      - "25672:25672" # Cluster communication
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ Node 2
+  rabbitmq-node-2:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-node-2
+    hostname: rabbitmq-node-2
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,info}]"
+    volumes:
+      - rabbitmq_node_2_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+    ports:
+      - "5673:5672"   # AMQP port
+      - "15673:15672" # Management UI
+      - "25673:25672" # Cluster communication
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ Node 3
+  rabbitmq-node-3:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-node-3
+    hostname: rabbitmq-node-3
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,info}]"
+    volumes:
+      - rabbitmq_node_3_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+    ports:
+      - "5674:5672"   # AMQP port
+      - "15674:15672" # Management UI
+      - "25674:25672" # Cluster communication
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ Cluster Initialization
+  rabbitmq-cluster-init:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-cluster-init
+    depends_on:
+      - rabbitmq-management
+      - rabbitmq-node-2
+      - rabbitmq-node-3
+    networks:
+      - rabbitmq-network
+    command: >
+      sh -c "
+        echo 'Waiting for RabbitMQ nodes to be ready...'
+        sleep 30
+        echo 'Joining RabbitMQ nodes to cluster...'
+        rabbitmqctl -n rabbit@rabbitmq-node-2 stop_app
+        rabbitmqctl -n rabbit@rabbitmq-node-2 join_cluster rabbit@rabbitmq-management
+        rabbitmqctl -n rabbit@rabbitmq-node-2 start_app
+        rabbitmqctl -n rabbit@rabbitmq-node-3 stop_app
+        rabbitmqctl -n rabbit@rabbitmq-node-3 join_cluster rabbit@rabbitmq-management
+        rabbitmqctl -n rabbit@rabbitmq-node-3 start_app
+        echo 'RabbitMQ cluster created successfully!'
+        rabbitmqctl cluster_status
+      "
+    restart: "no"
+
+  # RabbitMQ Federation
+  rabbitmq-federation:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-federation
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+    volumes:
+      - rabbitmq_federation_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+    ports:
+      - "5675:5672"   # AMQP port
+      - "15675:15672" # Management UI
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ Shovel
+  rabbitmq-shovel:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-shovel
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+    volumes:
+      - rabbitmq_shovel_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+    ports:
+      - "5676:5672"   # AMQP port
+      - "15676:15672" # Management UI
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # RabbitMQ Monitoring
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter:latest
+    container_name: rabbitmq-exporter
+    environment:
+      RABBIT_URL: "http://rabbitmq-management:15672"
+      RABBIT_USER: ${RABBITMQ_USER}
+      RABBIT_PASSWORD: ${RABBITMQ_PASSWORD}
+      PUBLISH_PORT: 9419
+      OUTPUT_FORMAT: "JSON"
+      INCLUDE_QUEUES: ".*"
+      INCLUDE_VHOST: ".*"
+      SKIP_VERIFY: "true"
+      RABBIT_CAPABILITIES: "no_sort"
+    ports:
+      - "9419:9419"
+    depends_on:
+      - rabbitmq-management
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+
+  # RabbitMQ Load Balancer
+  rabbitmq-lb:
+    image: nginx:alpine
+    container_name: rabbitmq-lb
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "5671:5671"   # AMQP port
+      - "15671:15671" # Management UI
+    depends_on:
+      - rabbitmq-management
+      - rabbitmq-node-2
+      - rabbitmq-node-3
+    networks:
+      - rabbitmq-network
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_management_data:
+  rabbitmq_node_2_data:
+  rabbitmq_node_3_data:
+  rabbitmq_federation_data:
+  rabbitmq_shovel_data:
+
+networks:
+  rabbitmq-network:
+    driver: bridge

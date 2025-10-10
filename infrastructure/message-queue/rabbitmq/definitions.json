@@ -1,0 +1,396 @@
+{
+  "rabbit_version": "3.12.0",
+  "rabbitmq_version": "3.12.0",
+  "product_name": "RabbitMQ",
+  "product_version": "3.12.0",
+  "users": [
+    {
+      "name": "writewave_admin",
+      "password_hash": "generated_password_hash",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator",
+      "limits": {}
+    },
+    {
+      "name": "writewave_user",
+      "password_hash": "generated_password_hash",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "management",
+      "limits": {}
+    },
+    {
+      "name": "writewave_worker",
+      "password_hash": "generated_password_hash",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "management",
+      "limits": {}
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    },
+    {
+      "name": "writewave_users"
+    },
+    {
+      "name": "writewave_content"
+    },
+    {
+      "name": "writewave_progress"
+    },
+    {
+      "name": "writewave_community"
+    },
+    {
+      "name": "writewave_analytics"
+    },
+    {
+      "name": "writewave_notifications"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "writewave_admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "writewave_user",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "writewave_worker",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [],
+  "parameters": [
+    {
+      "vhost": "/",
+      "component": "federation",
+      "name": "writewave-federation",
+      "value": {
+        "uri": "amqp://writewave_user:password@rabbitmq-federation:5672",
+        "expires": 3600000,
+        "message-ttl": 3600000,
+        "max-hops": 1,
+        "prefetch-count": 1000,
+        "reconnect-delay": 1,
+        "ack-mode": "on-confirm",
+        "trust-user-id": false
+      }
+    }
+  ],
+  "global_parameters": [
+    {
+      "name": "cluster_name",
+      "value": "writewave-cluster"
+    }
+  ],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "writewave-ha-policy",
+      "pattern": ".*",
+      "apply-to": "all",
+      "definition": {
+        "ha-mode": "exactly",
+        "ha-params": 2,
+        "ha-sync-mode": "automatic"
+      },
+      "priority": 0
+    },
+    {
+      "vhost": "/",
+      "name": "writewave-ttl-policy",
+      "pattern": ".*",
+      "apply-to": "all",
+      "definition": {
+        "message-ttl": 3600000,
+        "expires": 7200000
+      },
+      "priority": 1
+    },
+    {
+      "vhost": "/",
+      "name": "writewave-dlq-policy",
+      "pattern": ".*",
+      "apply-to": "all",
+      "definition": {
+        "dead-letter-exchange": "dlx",
+        "dead-letter-routing-key": "dlq"
+      },
+      "priority": 2
+    }
+  ],
+  "queues": [
+    {
+      "name": "user.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-expires": 7200000,
+        "x-max-length": 10000,
+        "x-overflow": "drop-head"
+      }
+    },
+    {
+      "name": "content.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-expires": 7200000,
+        "x-max-length": 10000,
+        "x-overflow": "drop-head"
+      }
+    },
+    {
+      "name": "progress.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-expires": 7200000,
+        "x-max-length": 10000,
+        "x-overflow": "drop-head"
+      }
+    },
+    {
+      "name": "community.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-expires": 7200000,
+        "x-max-length": 10000,
+        "x-overflow": "drop-head"
+      }
+    },
+    {
+      "name": "analytics.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-expires": 7200000,
+        "x-max-length": 10000,
+        "x-overflow": "drop-head"
+      }
+    },
+    {
+      "name": "notifications.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-expires": 7200000,
+        "x-max-length": 10000,
+        "x-overflow": "drop-head"
+      }
+    },
+    {
+      "name": "user.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-expires": 172800000
+      }
+    },
+    {
+      "name": "content.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-expires": 172800000
+      }
+    },
+    {
+      "name": "progress.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-expires": 172800000
+      }
+    },
+    {
+      "name": "community.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-expires": 172800000
+      }
+    },
+    {
+      "name": "analytics.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-expires": 172800000
+      }
+    },
+    {
+      "name": "notifications.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-expires": 172800000
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "writewave.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "writewave.notifications",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "writewave.events",
+      "vhost": "/",
+      "destination": "user.events",
+      "destination_type": "queue",
+      "routing_key": "user.*",
+      "arguments": {}
+    },
+    {
+      "source": "writewave.events",
+      "vhost": "/",
+      "destination": "content.events",
+      "destination_type": "queue",
+      "routing_key": "content.*",
+      "arguments": {}
+    },
+    {
+      "source": "writewave.events",
+      "vhost": "/",
+      "destination": "progress.events",
+      "destination_type": "queue",
+      "routing_key": "progress.*",
+      "arguments": {}
+    },
+    {
+      "source": "writewave.events",
+      "vhost": "/",
+      "destination": "community.events",
+      "destination_type": "queue",
+      "routing_key": "community.*",
+      "arguments": {}
+    },
+    {
+      "source": "writewave.events",
+      "vhost": "/",
+      "destination": "analytics.events",
+      "destination_type": "queue",
+      "routing_key": "analytics.*",
+      "arguments": {}
+    },
+    {
+      "source": "writewave.notifications",
+      "vhost": "/",
+      "destination": "notifications.events",
+      "destination_type": "queue",
+      "routing_key": "notifications.*",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "user.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "dlq",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "content.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "dlq",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "progress.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "dlq",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "community.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "dlq",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "analytics.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "dlq",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "notifications.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "dlq",
+      "arguments": {}
+    }
+  ]
+}

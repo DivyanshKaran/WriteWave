@@ -1,0 +1,480 @@
+version: '3.8'
+
+# Development Docker Compose for WriteWave Microservices
+# =====================================================
+
+services:
+  # ===========================================
+  # MICROSERVICES
+  # ===========================================
+
+  user-service:
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: user-service-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8001
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-user-primary:5432/writewave_users
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+      LOG_LEVEL: debug
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/user-service:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-user-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+    command: npm run dev
+
+  content-service:
+    build:
+      context: ./backend/content-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: content-service-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8002
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-content-primary:5432/writewave_content
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+      LOG_LEVEL: debug
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./backend/content-service:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-content-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+    command: npm run dev
+
+  progress-service:
+    build:
+      context: ./backend/progress-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: progress-service-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8003
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-progress-primary:5432/writewave_progress
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+      LOG_LEVEL: debug
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./backend/progress-service:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-progress-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+    command: npm run dev
+
+  community-service:
+    build:
+      context: ./backend/community-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: community-service-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8004
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-community-primary:5432/writewave_community
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+      LOG_LEVEL: debug
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./backend/community-service:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-community-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+    command: npm run dev
+
+  notification-service:
+    build:
+      context: ./backend/notification-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: notification-service-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8005
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-user-primary:5432/writewave_users
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+      LOG_LEVEL: debug
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./backend/notification-service:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-user-primary
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+    command: npm run dev
+
+  analytics-service:
+    build:
+      context: ./backend/analytics-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: analytics-service-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8006
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres-analytics-primary:5432/writewave_analytics
+      CLICKHOUSE_URL: http://clickhouse:8123
+      REDIS_URL: redis://redis-cluster-proxy:6379
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      KAFKA_BROKERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
+      LOG_LEVEL: debug
+    ports:
+      - "8006:8006"
+    volumes:
+      - ./backend/analytics-service:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-analytics-primary
+      - clickhouse
+      - redis-cluster-proxy
+      - rabbitmq
+      - kafka-1
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+    command: npm run dev
+
+  # ===========================================
+  # DATABASES
+  # ===========================================
+
+  postgres-user-primary:
+    image: postgres:15-alpine
+    container_name: postgres-user-primary-dev
+    environment:
+      POSTGRES_DB: writewave_users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_user_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  postgres-content-primary:
+    image: postgres:15-alpine
+    container_name: postgres-content-primary-dev
+    environment:
+      POSTGRES_DB: writewave_content
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_content_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  postgres-progress-primary:
+    image: postgres:15-alpine
+    container_name: postgres-progress-primary-dev
+    environment:
+      POSTGRES_DB: writewave_progress
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_progress_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  postgres-community-primary:
+    image: postgres:15-alpine
+    container_name: postgres-community-primary-dev
+    environment:
+      POSTGRES_DB: writewave_community
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_community_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  postgres-analytics-primary:
+    image: timescale/timescaledb:latest-pg15
+    container_name: postgres-analytics-primary-dev
+    environment:
+      POSTGRES_DB: writewave_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_analytics_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5437:5432"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-dev
+    environment:
+      CLICKHOUSE_DB: analytics
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    volumes:
+      - clickhouse_dev_data:/var/lib/clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  redis-cluster-proxy:
+    image: redis/redis-cluster-proxy:latest
+    container_name: redis-cluster-proxy-dev
+    environment:
+      REDIS_CLUSTER_NODES: "redis-node-1:7001,redis-node-2:7002,redis-node-3:7003"
+      PROXY_PORT: 6379
+    ports:
+      - "6379:6379"
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  redis-node-1:
+    image: redis:7-alpine
+    container_name: redis-node-1-dev
+    command: redis-server --port 7001 --cluster-enabled yes --cluster-config-file nodes-7001.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "7001:7001"
+    volumes:
+      - redis_node_1_dev_data:/data
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  redis-node-2:
+    image: redis:7-alpine
+    container_name: redis-node-2-dev
+    command: redis-server --port 7002 --cluster-enabled yes --cluster-config-file nodes-7002.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "7002:7002"
+    volumes:
+      - redis_node_2_dev_data:/data
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  redis-node-3:
+    image: redis:7-alpine
+    container_name: redis-node-3-dev
+    command: redis-server --port 7003 --cluster-enabled yes --cluster-config-file nodes-7003.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "7003:7003"
+    volumes:
+      - redis_node_3_dev_data:/data
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  # ===========================================
+  # MESSAGE QUEUES
+  # ===========================================
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-dev
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_dev_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper-dev
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_dev_data:/var/lib/zookeeper/data
+    ports:
+      - "2181:2181"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  kafka-1:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-1-dev
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_1_dev_data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-2-dev
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_2_dev_data:/var/lib/kafka/data
+    ports:
+      - "9093:9093"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-3-dev
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9094
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_3_dev_data:/var/lib/kafka/data
+    ports:
+      - "9094:9094"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  # ===========================================
+  # DEVELOPMENT TOOLS
+  # ===========================================
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog-dev
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-dev
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_dev_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    networks:
+      - writewave-dev-network
+    restart: unless-stopped
+
+volumes:
+  postgres_user_dev_data:
+  postgres_content_dev_data:
+  postgres_progress_dev_data:
+  postgres_community_dev_data:
+  postgres_analytics_dev_data:
+  clickhouse_dev_data:
+  redis_node_1_dev_data:
+  redis_node_2_dev_data:
+  redis_node_3_dev_data:
+  rabbitmq_dev_data:
+  zookeeper_dev_data:
+  kafka_1_dev_data:
+  kafka_2_dev_data:
+  kafka_3_dev_data:
+  minio_dev_data:
+
+networks:
+  writewave-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

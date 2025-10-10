@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  content-service:
+    build: .
+    container_name: content-service
+    ports:
+      - "8002:8002"
+    environment:
+      - NODE_ENV=development
+      - PORT=8002
+      - DATABASE_URL=postgresql://content_user:content_password@db:5432/content_db
+      - REDIS_URL=redis://redis:6379
+      - MEDIA_STORAGE_PATH=/app/uploads
+      - BASE_URL=http://localhost:8002
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - content-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8002/api/v1/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:15-alpine
+    container_name: content-db
+    environment:
+      - POSTGRES_DB=content_db
+      - POSTGRES_USER=content_user
+      - POSTGRES_PASSWORD=content_password
+    volumes:
+      - content_db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - content-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U content_user -d content_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: content-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - content_redis_data:/data
+    networks:
+      - content-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  content_db_data:
+  content_redis_data:
+
+networks:
+  content-network:
+    driver: bridge

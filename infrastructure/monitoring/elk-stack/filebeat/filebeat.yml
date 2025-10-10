@@ -1,0 +1,68 @@
+filebeat.inputs:
+- type: container
+  enabled: true
+  paths:
+    - '/var/lib/docker/containers/*/*.log'
+  processors:
+    - add_docker_metadata:
+        host: "unix:///var/run/docker.sock"
+    - add_kubernetes_metadata:
+        in_cluster: false
+        host: "minikube"
+        kube_config: "/etc/kubernetes/kubelet.conf"
+  fields:
+    logtype: container
+  fields_under_root: true
+  multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+  multiline.negate: true
+  multiline.match: after
+
+- type: log
+  enabled: true
+  paths:
+    - '/var/log/*.log'
+    - '/var/log/syslog'
+    - '/var/log/auth.log'
+  fields:
+    logtype: system
+  fields_under_root: true
+
+- type: log
+  enabled: true
+  paths:
+    - '/var/log/nginx/*.log'
+  fields:
+    logtype: nginx
+  fields_under_root: true
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+
+setup.kibana:
+  host: "kibana:5601"
+
+setup.dashboards.enabled: true
+setup.dashboards.directory: /usr/share/filebeat/kibana/
+
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]

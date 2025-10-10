@@ -1,0 +1,393 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Primary for User Service
+  postgres-user-primary:
+    image: postgres:15-alpine
+    container_name: postgres-user-primary
+    environment:
+      POSTGRES_DB: writewave_users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_user_primary_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d writewave_users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Replica for User Service
+  postgres-user-replica:
+    image: postgres:15-alpine
+    container_name: postgres-user-replica
+    environment:
+      POSTGRES_DB: writewave_users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGUSER: postgres
+    volumes:
+      - postgres_user_replica_data:/var/lib/postgresql/data
+      - ./replica-recovery.conf:/var/lib/postgresql/data/recovery.conf
+    ports:
+      - "5433:5432"
+    command: >
+      postgres
+      -c hot_standby=on
+      -c max_standby_streaming_delay=30s
+      -c max_standby_archive_delay=30s
+    depends_on:
+      - postgres-user-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d writewave_users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Primary for Content Service
+  postgres-content-primary:
+    image: postgres:15-alpine
+    container_name: postgres-content-primary
+    environment:
+      POSTGRES_DB: writewave_content
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_content_primary_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d writewave_content"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Primary for Progress Service
+  postgres-progress-primary:
+    image: postgres:15-alpine
+    container_name: postgres-progress-primary
+    environment:
+      POSTGRES_DB: writewave_progress
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_progress_primary_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5435:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d writewave_progress"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Primary for Community Service
+  postgres-community-primary:
+    image: postgres:15-alpine
+    container_name: postgres-community-primary
+    environment:
+      POSTGRES_DB: writewave_community
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_community_primary_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5436:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d writewave_community"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Primary for Analytics Service
+  postgres-analytics-primary:
+    image: timescale/timescaledb:latest-pg15
+    container_name: postgres-analytics-primary
+    environment:
+      POSTGRES_DB: writewave_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: replicator
+      POSTGRES_REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+    volumes:
+      - postgres_analytics_primary_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5437:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d writewave_analytics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgBouncer for User Service
+  pgbouncer-user:
+    image: pgbouncer/pgbouncer:latest
+    container_name: pgbouncer-user
+    environment:
+      DATABASES_HOST: postgres-user-primary
+      DATABASES_PORT: 5432
+      DATABASES_USER: postgres
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASES_DBNAME: writewave_users
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      MAX_DB_CONNECTIONS: 100
+      MAX_USER_CONNECTIONS: 100
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - "6432:6432"
+    depends_on:
+      - postgres-user-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -p 6432 -U postgres -d writewave_users -c 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgBouncer for Content Service
+  pgbouncer-content:
+    image: pgbouncer/pgbouncer:latest
+    container_name: pgbouncer-content
+    environment:
+      DATABASES_HOST: postgres-content-primary
+      DATABASES_PORT: 5432
+      DATABASES_USER: postgres
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASES_DBNAME: writewave_content
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      MAX_DB_CONNECTIONS: 100
+      MAX_USER_CONNECTIONS: 100
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - "6433:6432"
+    depends_on:
+      - postgres-content-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+
+  # PgBouncer for Progress Service
+  pgbouncer-progress:
+    image: pgbouncer/pgbouncer:latest
+    container_name: pgbouncer-progress
+    environment:
+      DATABASES_HOST: postgres-progress-primary
+      DATABASES_PORT: 5432
+      DATABASES_USER: postgres
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASES_DBNAME: writewave_progress
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      MAX_DB_CONNECTIONS: 100
+      MAX_USER_CONNECTIONS: 100
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - "6434:6432"
+    depends_on:
+      - postgres-progress-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+
+  # PgBouncer for Community Service
+  pgbouncer-community:
+    image: pgbouncer/pgbouncer:latest
+    container_name: pgbouncer-community
+    environment:
+      DATABASES_HOST: postgres-community-primary
+      DATABASES_PORT: 5432
+      DATABASES_USER: postgres
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASES_DBNAME: writewave_community
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      MAX_DB_CONNECTIONS: 100
+      MAX_USER_CONNECTIONS: 100
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - "6435:6432"
+    depends_on:
+      - postgres-community-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+
+  # PgBouncer for Analytics Service
+  pgbouncer-analytics:
+    image: pgbouncer/pgbouncer:latest
+    container_name: pgbouncer-analytics
+    environment:
+      DATABASES_HOST: postgres-analytics-primary
+      DATABASES_PORT: 5432
+      DATABASES_USER: postgres
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASES_DBNAME: writewave_analytics
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      MAX_DB_CONNECTIONS: 100
+      MAX_USER_CONNECTIONS: 100
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - "6436:6432"
+    depends_on:
+      - postgres-analytics-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+
+  # Backup Service
+  postgres-backup:
+    image: postgres:15-alpine
+    container_name: postgres-backup
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_SCHEDULE: "0 2 * * *"  # Daily at 2 AM
+      RETENTION_DAYS: 30
+    volumes:
+      - ./backup-scripts:/backup-scripts
+      - postgres_backups:/backups
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "
+        apk add --no-cache dcron &&
+        crontab /backup-scripts/crontab &&
+        crond -f
+      "
+    depends_on:
+      - postgres-user-primary
+      - postgres-content-primary
+      - postgres-progress-primary
+      - postgres-community-primary
+      - postgres-analytics-primary
+    networks:
+      - postgres-network
+    restart: unless-stopped
+
+volumes:
+  postgres_user_primary_data:
+  postgres_user_replica_data:
+  postgres_content_primary_data:
+  postgres_progress_primary_data:
+  postgres_community_primary_data:
+  postgres_analytics_primary_data:
+  postgres_backups:
+
+networks:
+  postgres-network:
+    driver: bridge

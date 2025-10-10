@@ -1,0 +1,430 @@
+name: WriteWave CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ===========================================
+  # CODE QUALITY AND SECURITY
+  # ===========================================
+  
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend/user-service && npm ci
+          cd ../content-service && npm ci
+          cd ../progress-service && npm ci
+          cd ../community-service && npm ci
+          cd ../notification-service && npm ci
+          cd ../analytics-service && npm ci
+
+      - name: Run ESLint
+        run: |
+          cd backend/user-service && npm run lint
+          cd ../content-service && npm run lint
+          cd ../progress-service && npm run lint
+          cd ../community-service && npm run lint
+          cd ../notification-service && npm run lint
+          cd ../analytics-service && npm run lint
+
+      - name: Run Prettier
+        run: |
+          cd backend/user-service && npm run format:check
+          cd ../content-service && npm run format:check
+          cd ../progress-service && npm run format:check
+          cd ../community-service && npm run format:check
+          cd ../notification-service && npm run format:check
+          cd ../analytics-service && npm run format:check
+
+      - name: TypeScript type checking
+        run: |
+          cd backend/user-service && npm run type-check
+          cd ../content-service && npm run type-check
+          cd ../progress-service && npm run type-check
+          cd ../community-service && npm run type-check
+          cd ../notification-service && npm run type-check
+          cd ../analytics-service && npm run type-check
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run npm audit
+        run: |
+          cd backend/user-service && npm audit --audit-level=moderate
+          cd ../content-service && npm audit --audit-level=moderate
+          cd ../progress-service && npm audit --audit-level=moderate
+          cd ../community-service && npm audit --audit-level=moderate
+          cd ../notification-service && npm audit --audit-level=moderate
+          cd ../analytics-service && npm audit --audit-level=moderate
+
+  # ===========================================
+  # TESTING
+  # ===========================================
+  
+  unit-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend/user-service && npm ci
+          cd ../content-service && npm ci
+          cd ../progress-service && npm ci
+          cd ../community-service && npm ci
+          cd ../notification-service && npm ci
+          cd ../analytics-service && npm ci
+
+      - name: Run unit tests
+        env:
+          POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+        run: |
+          cd backend/user-service && npm run test:unit
+          cd ../content-service && npm run test:unit
+          cd ../progress-service && npm run test:unit
+          cd ../community-service && npm run test:unit
+          cd ../notification-service && npm run test:unit
+          cd ../analytics-service && npm run test:unit
+
+      - name: Generate coverage report
+        run: |
+          cd backend/user-service && npm run test:coverage
+          cd ../content-service && npm run test:coverage
+          cd ../progress-service && npm run test:coverage
+          cd ../community-service && npm run test:coverage
+          cd ../notification-service && npm run test:coverage
+          cd ../analytics-service && npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/*/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend/user-service && npm ci
+          cd ../content-service && npm ci
+          cd ../progress-service && npm ci
+          cd ../community-service && npm ci
+          cd ../notification-service && npm ci
+          cd ../analytics-service && npm ci
+
+      - name: Start test infrastructure
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 30
+
+      - name: Run integration tests
+        run: |
+          cd backend/user-service && npm run test:integration
+          cd ../content-service && npm run test:integration
+          cd ../progress-service && npm run test:integration
+          cd ../community-service && npm run test:integration
+          cd ../notification-service && npm run test:integration
+          cd ../analytics-service && npm run test:integration
+
+      - name: Stop test infrastructure
+        run: docker-compose -f docker-compose.test.yml down
+
+  # ===========================================
+  # BUILD AND PUSH IMAGES
+  # ===========================================
+  
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, unit-tests, integration-tests]
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        service: [user-service, content-service, progress-service, community-service, notification-service, analytics-service]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/${{ matrix.service }}
+          file: ./backend/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ===========================================
+  # DEPLOYMENT
+  # ===========================================
+  
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to staging
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl config use-context staging
+          
+          # Update image tags
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/user-service:${{ github.sha }}|g" infrastructure/kubernetes/staging/user-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/content-service:${{ github.sha }}|g" infrastructure/kubernetes/staging/content-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/progress-service:${{ github.sha }}|g" infrastructure/kubernetes/staging/progress-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/community-service:${{ github.sha }}|g" infrastructure/kubernetes/staging/community-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/notification-service:${{ github.sha }}|g" infrastructure/kubernetes/staging/notification-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/analytics-service:${{ github.sha }}|g" infrastructure/kubernetes/staging/analytics-service-deployment.yaml
+          
+          # Apply manifests
+          kubectl apply -f infrastructure/kubernetes/staging/
+          
+          # Wait for rollout
+          kubectl rollout status deployment/user-service -n writewave-staging --timeout=300s
+          kubectl rollout status deployment/content-service -n writewave-staging --timeout=300s
+          kubectl rollout status deployment/progress-service -n writewave-staging --timeout=300s
+          kubectl rollout status deployment/community-service -n writewave-staging --timeout=300s
+          kubectl rollout status deployment/notification-service -n writewave-staging --timeout=300s
+          kubectl rollout status deployment/analytics-service -n writewave-staging --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl config use-context staging
+          
+          # Get service URLs
+          USER_SERVICE_URL=$(kubectl get service user-service -n writewave-staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          CONTENT_SERVICE_URL=$(kubectl get service content-service -n writewave-staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          
+          # Run smoke tests
+          curl -f http://$USER_SERVICE_URL:8001/health
+          curl -f http://$CONTENT_SERVICE_URL:8002/health
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Blue-Green Deployment
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl config use-context production
+          
+          # Deploy to green environment
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/user-service:${{ github.sha }}|g" infrastructure/kubernetes/production/green/user-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/content-service:${{ github.sha }}|g" infrastructure/kubernetes/production/green/content-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/progress-service:${{ github.sha }}|g" infrastructure/kubernetes/production/green/progress-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/community-service:${{ github.sha }}|g" infrastructure/kubernetes/production/green/community-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/notification-service:${{ github.sha }}|g" infrastructure/kubernetes/production/green/notification-service-deployment.yaml
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/analytics-service:${{ github.sha }}|g" infrastructure/kubernetes/production/green/analytics-service-deployment.yaml
+          
+          # Apply green deployment
+          kubectl apply -f infrastructure/kubernetes/production/green/
+          
+          # Wait for green deployment to be ready
+          kubectl rollout status deployment/user-service-green -n writewave-production --timeout=300s
+          kubectl rollout status deployment/content-service-green -n writewave-production --timeout=300s
+          kubectl rollout status deployment/progress-service-green -n writewave-production --timeout=300s
+          kubectl rollout status deployment/community-service-green -n writewave-production --timeout=300s
+          kubectl rollout status deployment/notification-service-green -n writewave-production --timeout=300s
+          kubectl rollout status deployment/analytics-service-green -n writewave-production --timeout=300s
+          
+          # Run health checks on green deployment
+          kubectl run health-check --image=curlimages/curl --rm -i --restart=Never -- \
+            curl -f http://user-service-green:8001/health
+          kubectl run health-check --image=curlimages/curl --rm -i --restart=Never -- \
+            curl -f http://content-service-green:8002/health
+          
+          # Switch traffic to green
+          kubectl patch service user-service -n writewave-production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service content-service -n writewave-production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service progress-service -n writewave-production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service community-service -n writewave-production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service notification-service -n writewave-production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service analytics-service -n writewave-production -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          # Wait for traffic to stabilize
+          sleep 60
+          
+          # Scale down blue deployment
+          kubectl scale deployment user-service-blue --replicas=0 -n writewave-production
+          kubectl scale deployment content-service-blue --replicas=0 -n writewave-production
+          kubectl scale deployment progress-service-blue --replicas=0 -n writewave-production
+          kubectl scale deployment community-service-blue --replicas=0 -n writewave-production
+          kubectl scale deployment notification-service-blue --replicas=0 -n writewave-production
+          kubectl scale deployment analytics-service-blue --replicas=0 -n writewave-production
+
+      - name: Run production smoke tests
+        run: |
+          export KUBECONFIG=kubeconfig
+          kubectl config use-context production
+          
+          # Get production URLs
+          PROD_URL=$(kubectl get ingress writewave-ingress -n writewave-production -o jsonpath='{.spec.rules[0].host}')
+          
+          # Run smoke tests
+          curl -f https://$PROD_URL/api/users/health
+          curl -f https://$PROD_URL/api/content/health
+          curl -f https://$PROD_URL/api/progress/health
+          curl -f https://$PROD_URL/api/community/health
+          curl -f https://$PROD_URL/api/notifications/health
+          curl -f https://$PROD_URL/api/analytics/health
+
+  # ===========================================
+  # NOTIFICATIONS
+  # ===========================================
+  
+  notify:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

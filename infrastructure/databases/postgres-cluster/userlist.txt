@@ -1,0 +1,8 @@
+# PgBouncer user list
+# Format: "username" "password_hash"
+# Use: echo -n "password" | openssl dgst -sha256 -binary | openssl enc -base64
+
+"postgres" "SCRAM-SHA-256$4096:Z2VuZXJhdGVkX3NhbHQ=$generated_salt:generated_stored_key"
+"pgbouncer" "SCRAM-SHA-256$4096:Z2VuZXJhdGVkX3NhbHQ=$generated_salt:generated_stored_key"
+"replicator" "SCRAM-SHA-256$4096:Z2VuZXJhdGVkX3NhbHQ=$generated_salt:generated_stored_key"
+"backup" "SCRAM-SHA-256$4096:Z2VuZXJhdGVkX3NhbHQ=$generated_salt:generated_stored_key"

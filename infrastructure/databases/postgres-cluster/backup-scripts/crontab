@@ -1,0 +1,14 @@
+# Crontab for PostgreSQL Backup Service
+# =====================================
+
+# Daily full backup at 2:00 AM
+0 2 * * * /backup-scripts/backup.sh backup >> /var/log/postgres-backup.log 2>&1
+
+# Weekly backup verification on Sundays at 3:00 AM
+0 3 * * 0 /backup-scripts/backup.sh stats >> /var/log/postgres-backup.log 2>&1
+
+# Monthly cleanup on the 1st at 4:00 AM
+0 4 1 * * /backup-scripts/backup.sh cleanup >> /var/log/postgres-backup.log 2>&1
+
+# Health check every 6 hours
+0 */6 * * * /backup-scripts/health-check.sh >> /var/log/postgres-backup.log 2>&1

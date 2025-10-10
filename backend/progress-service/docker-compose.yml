@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  progress-service:
+    build: .
+    container_name: progress-service
+    ports:
+      - "8003:8003"
+    environment:
+      - NODE_ENV=development
+      - PORT=8003
+      - DATABASE_URL=postgresql://progress_user:progress_password@db:5432/progress_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-here
+      - BASE_URL=http://localhost:8003
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - progress-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8003/api/v1/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:15-alpine
+    container_name: progress-db
+    environment:
+      - POSTGRES_DB=progress_db
+      - POSTGRES_USER=progress_user
+      - POSTGRES_PASSWORD=progress_password
+    volumes:
+      - progress_db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5434:5432"
+    networks:
+      - progress-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U progress_user -d progress_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: progress-redis
+    ports:
+      - "6381:6379"
+    volumes:
+      - progress_redis_data:/data
+    networks:
+      - progress-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  progress_db_data:
+  progress_redis_data:
+
+networks:
+  progress-network:
+    driver: bridge

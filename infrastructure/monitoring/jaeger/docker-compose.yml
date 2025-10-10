@@ -1,0 +1,166 @@
+version: '3.8'
+
+services:
+  # Jaeger All-in-One
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_TAGS_AS_FIELDS_ALL=true
+      - ES_TAGS_AS_FIELDS=cluster,service,environment
+      - LOG_LEVEL=info
+      - METRICS_BACKEND=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "14268:14268"   # Jaeger collector HTTP
+      - "14250:14250"   # Jaeger collector gRPC
+      - "6831:6831/udp" # Jaeger agent UDP
+      - "6832:6832/udp" # Jaeger agent UDP
+      - "5778:5778"     # Jaeger agent config
+      - "4317:4317"     # OTLP gRPC receiver
+      - "4318:4318"     # OTLP HTTP receiver
+      - "9411:9411"     # Zipkin compatible endpoint
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger Agent (for sidecar deployment)
+  jaeger-agent:
+    image: jaegertracing/jaeger-agent:latest
+    container_name: jaeger-agent
+    environment:
+      - REPORTER_GRPC_HOST_PORT=jaeger:14250
+      - AGENT_HTTP_SERVER_HOST=0.0.0.0
+      - AGENT_HTTP_SERVER_PORT=5778
+      - LOG_LEVEL=info
+    ports:
+      - "5778:5778"     # Agent config
+      - "6831:6831/udp" # Agent UDP
+      - "6832:6832/udp" # Agent UDP
+    networks:
+      - monitoring-network
+    restart: unless-stopped
+
+  # Jaeger Collector (standalone)
+  jaeger-collector:
+    image: jaegertracing/jaeger-collector:latest
+    container_name: jaeger-collector
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_TAGS_AS_FIELDS_ALL=true
+      - ES_TAGS_AS_FIELDS=cluster,service,environment
+      - COLLECTOR_OTLP_ENABLED=true
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - LOG_LEVEL=info
+    ports:
+      - "14268:14268"   # HTTP
+      - "14250:14250"   # gRPC
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+      - "9411:9411"     # Zipkin
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Jaeger Query
+  jaeger-query:
+    image: jaegertracing/jaeger-query:latest
+    container_name: jaeger-query
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_TAGS_AS_FIELDS_ALL=true
+      - ES_TAGS_AS_FIELDS=cluster,service,environment
+      - LOG_LEVEL=info
+    ports:
+      - "16686:16686"
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Jaeger Ingester
+  jaeger-ingester:
+    image: jaegertracing/jaeger-ingester:latest
+    container_name: jaeger-ingester
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_TAGS_AS_FIELDS_ALL=true
+      - ES_TAGS_AS_FIELDS=cluster,service,environment
+      - LOG_LEVEL=info
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Elasticsearch (for Jaeger storage)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: jaeger-elasticsearch
+    environment:
+      - node.name=jaeger-elasticsearch
+      - cluster.name=jaeger-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - jaeger_elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9201:9200"
+    networks:
+      - monitoring-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Jaeger Exporter for Prometheus
+  jaeger-exporter:
+    image: jaegertracing/jaeger-exporter:latest
+    container_name: jaeger-exporter
+    environment:
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+    ports:
+      - "14269:14269"
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  jaeger_elasticsearch_data:
+
+networks:
+  monitoring-network:
+    driver: bridge

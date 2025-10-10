@@ -1,0 +1,95 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: user-service-pdb
+  namespace: writewave
+  labels:
+    app.kubernetes.io/name: user-service-pdb
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: writewave-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: user-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: content-service-pdb
+  namespace: writewave
+  labels:
+    app.kubernetes.io/name: content-service-pdb
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: writewave-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: content-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: progress-service-pdb
+  namespace: writewave
+  labels:
+    app.kubernetes.io/name: progress-service-pdb
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: writewave-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: progress-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: community-service-pdb
+  namespace: writewave
+  labels:
+    app.kubernetes.io/name: community-service-pdb
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: writewave-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: community-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: notification-service-pdb
+  namespace: writewave
+  labels:
+    app.kubernetes.io/name: notification-service-pdb
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: writewave-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notification-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: analytics-service-pdb
+  namespace: writewave
+  labels:
+    app.kubernetes.io/name: analytics-service-pdb
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: writewave-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: analytics-service

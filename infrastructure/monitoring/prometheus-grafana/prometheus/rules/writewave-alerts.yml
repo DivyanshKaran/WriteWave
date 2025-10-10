@@ -1,0 +1,285 @@
+groups:
+- name: writewave.rules
+  rules:
+  # Service Availability
+  - alert: ServiceDown
+    expr: up{job=~"user-service|content-service|progress-service|community-service|notification-service|analytics-service"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "Service {{ $labels.job }} is down"
+      description: "Service {{ $labels.job }} has been down for more than 1 minute"
+      runbook_url: "https://docs.writewave.com/runbooks/service-down"
+
+  - alert: ServiceHighErrorRate
+    expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "High error rate for {{ $labels.job }}"
+      description: "Error rate is {{ $value | humanizePercentage }} for service {{ $labels.job }}"
+      runbook_url: "https://docs.writewave.com/runbooks/high-error-rate"
+
+  - alert: ServiceHighLatency
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+    for: 5m
+    labels:
+      severity: warning
+      service: "{{ $labels.job }}"
+    annotations:
+      summary: "High latency for {{ $labels.job }}"
+      description: "95th percentile latency is {{ $value }}s for service {{ $labels.job }}"
+      runbook_url: "https://docs.writewave.com/runbooks/high-latency"
+
+  # Database Alerts
+  - alert: DatabaseDown
+    expr: up{job="postgres-exporter"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: database
+    annotations:
+      summary: "PostgreSQL database is down"
+      description: "PostgreSQL database has been unreachable for more than 1 minute"
+      runbook_url: "https://docs.writewave.com/runbooks/database-down"
+
+  - alert: DatabaseHighConnections
+    expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+    for: 5m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "High database connections"
+      description: "Database connections are at {{ $value | humanizePercentage }} of maximum"
+      runbook_url: "https://docs.writewave.com/runbooks/high-db-connections"
+
+  - alert: DatabaseSlowQueries
+    expr: rate(pg_stat_database_tup_returned[5m]) / rate(pg_stat_database_tup_fetched[5m]) < 0.1
+    for: 10m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "Slow database queries detected"
+      description: "Database query efficiency is low: {{ $value | humanizePercentage }}"
+      runbook_url: "https://docs.writewave.com/runbooks/slow-queries"
+
+  # Redis Alerts
+  - alert: RedisDown
+    expr: up{job="redis-exporter"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: cache
+    annotations:
+      summary: "Redis is down"
+      description: "Redis cache has been unreachable for more than 1 minute"
+      runbook_url: "https://docs.writewave.com/runbooks/redis-down"
+
+  - alert: RedisHighMemoryUsage
+    expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+    for: 5m
+    labels:
+      severity: warning
+      component: cache
+    annotations:
+      summary: "Redis high memory usage"
+      description: "Redis memory usage is at {{ $value | humanizePercentage }} of maximum"
+      runbook_url: "https://docs.writewave.com/runbooks/redis-high-memory"
+
+  - alert: RedisHighKeyEviction
+    expr: rate(redis_evicted_keys_total[5m]) > 10
+    for: 5m
+    labels:
+      severity: warning
+      component: cache
+    annotations:
+      summary: "Redis high key eviction rate"
+      description: "Redis is evicting keys at {{ $value }} keys/second"
+      runbook_url: "https://docs.writewave.com/runbooks/redis-eviction"
+
+  # Message Queue Alerts
+  - alert: RabbitMQDown
+    expr: up{job="rabbitmq-exporter"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: messaging
+    annotations:
+      summary: "RabbitMQ is down"
+      description: "RabbitMQ message broker has been unreachable for more than 1 minute"
+      runbook_url: "https://docs.writewave.com/runbooks/rabbitmq-down"
+
+  - alert: RabbitMQHighQueueLength
+    expr: rabbitmq_queue_messages > 1000
+    for: 5m
+    labels:
+      severity: warning
+      component: messaging
+    annotations:
+      summary: "RabbitMQ high queue length"
+      description: "Queue {{ $labels.queue }} has {{ $value }} messages"
+      runbook_url: "https://docs.writewave.com/runbooks/rabbitmq-queue-length"
+
+  - alert: KafkaDown
+    expr: up{job="kafka-exporter"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: messaging
+    annotations:
+      summary: "Kafka is down"
+      description: "Kafka message broker has been unreachable for more than 1 minute"
+      runbook_url: "https://docs.writewave.com/runbooks/kafka-down"
+
+  - alert: KafkaHighLag
+    expr: kafka_consumer_lag_sum > 10000
+    for: 5m
+    labels:
+      severity: warning
+      component: messaging
+    annotations:
+      summary: "Kafka high consumer lag"
+      description: "Consumer group {{ $labels.group }} has lag of {{ $value }} messages"
+      runbook_url: "https://docs.writewave.com/runbooks/kafka-lag"
+
+  # System Resource Alerts
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: warning
+      component: system
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+      description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+      runbook_url: "https://docs.writewave.com/runbooks/high-cpu"
+
+  - alert: HighMemoryUsage
+    expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+    for: 5m
+    labels:
+      severity: warning
+      component: system
+    annotations:
+      summary: "High memory usage on {{ $labels.instance }}"
+      description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+      runbook_url: "https://docs.writewave.com/runbooks/high-memory"
+
+  - alert: HighDiskUsage
+    expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+    for: 5m
+    labels:
+      severity: warning
+      component: system
+    annotations:
+      summary: "High disk usage on {{ $labels.instance }}"
+      description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+      runbook_url: "https://docs.writewave.com/runbooks/high-disk"
+
+  - alert: DiskSpaceCritical
+    expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 95
+    for: 1m
+    labels:
+      severity: critical
+      component: system
+    annotations:
+      summary: "Critical disk usage on {{ $labels.instance }}"
+      description: "Disk usage is {{ $value }}% on {{ $labels.instance }}"
+      runbook_url: "https://docs.writewave.com/runbooks/critical-disk"
+
+  # Business Metrics Alerts
+  - alert: LowUserRegistrationRate
+    expr: rate(user_registrations_total[1h]) < 0.1
+    for: 30m
+    labels:
+      severity: warning
+      component: business
+    annotations:
+      summary: "Low user registration rate"
+      description: "User registration rate is {{ $value }} registrations/second"
+      runbook_url: "https://docs.writewave.com/runbooks/low-registrations"
+
+  - alert: HighUserChurnRate
+    expr: rate(user_churn_total[1h]) > 0.05
+    for: 30m
+    labels:
+      severity: warning
+      component: business
+    annotations:
+      summary: "High user churn rate"
+      description: "User churn rate is {{ $value }} churns/second"
+      runbook_url: "https://docs.writewave.com/runbooks/high-churn"
+
+  - alert: LowContentCreationRate
+    expr: rate(content_creations_total[1h]) < 0.5
+    for: 30m
+    labels:
+      severity: warning
+      component: business
+    annotations:
+      summary: "Low content creation rate"
+      description: "Content creation rate is {{ $value }} creations/second"
+      runbook_url: "https://docs.writewave.com/runbooks/low-content-creation"
+
+  - alert: HighErrorRateInAnalytics
+    expr: rate(analytics_errors_total[5m]) > 0.01
+    for: 5m
+    labels:
+      severity: warning
+      component: analytics
+    annotations:
+      summary: "High error rate in analytics service"
+      description: "Analytics error rate is {{ $value }} errors/second"
+      runbook_url: "https://docs.writewave.com/runbooks/analytics-errors"
+
+  # SLA Monitoring
+  - alert: SLABreach
+    expr: (rate(http_requests_total{status=~"2.."}[5m]) / rate(http_requests_total[5m])) < 0.99
+    for: 5m
+    labels:
+      severity: critical
+      component: sla
+    annotations:
+      summary: "SLA breach detected"
+      description: "Success rate is {{ $value | humanizePercentage }}, below 99% SLA"
+      runbook_url: "https://docs.writewave.com/runbooks/sla-breach"
+
+  - alert: ResponseTimeSLABreach
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+    for: 5m
+    labels:
+      severity: warning
+      component: sla
+    annotations:
+      summary: "Response time SLA breach"
+      description: "95th percentile response time is {{ $value }}s, above 2s SLA"
+      runbook_url: "https://docs.writewave.com/runbooks/response-time-sla"
+
+  # Security Alerts
+  - alert: HighFailedLoginAttempts
+    expr: rate(auth_failed_logins_total[5m]) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+      component: security
+    annotations:
+      summary: "High failed login attempts"
+      description: "Failed login rate is {{ $value }} attempts/second"
+      runbook_url: "https://docs.writewave.com/runbooks/failed-logins"
+
+  - alert: SuspiciousActivity
+    expr: rate(suspicious_requests_total[5m]) > 0.01
+    for: 1m
+    labels:
+      severity: critical
+      component: security
+    annotations:
+      summary: "Suspicious activity detected"
+      description: "Suspicious request rate is {{ $value }} requests/second"
+      runbook_url: "https://docs.writewave.com/runbooks/suspicious-activity"
