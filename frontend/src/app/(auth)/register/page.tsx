@@ -413,20 +413,20 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Side - Registration Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-8 py-12">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-10 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-xl"
         >
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-black rounded-none border border-black flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">WW</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
-            <p className="text-gray-600">Step {currentStep} of {totalSteps}</p>
+            <h1 className="text-3xl font-bold text-black mb-2">Create your account</h1>
+            <p className="text-black/70">Step {currentStep} of {totalSteps}</p>
           </div>
 
           {/* Progress Bar */}
@@ -435,19 +435,19 @@ export default function RegisterPage() {
               {Array.from({ length: totalSteps }, (_, i) => (
                 <div
                   key={i}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  className={`w-10 h-10 border border-black flex items-center justify-center text-sm font-medium ${
                     i + 1 <= currentStep
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-200 text-gray-600'
+                      ? 'bg-black text-white'
+                      : 'bg-white text-black'
                   }`}
                 >
                   {i + 1}
                 </div>
               ))}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-black/10 h-2">
               <div
-                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                className="bg-black h-2 transition-all duration-300"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               />
             </div>

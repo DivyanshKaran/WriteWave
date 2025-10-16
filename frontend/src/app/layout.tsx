@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "../styles/globals.css";
 import { StoreInitializer } from "@/components/StoreInitializer";
+import MonochromeAppShell from "@/components/layout/MonochromeAppShell";
 
 // Font configuration
 const inter = Inter({
@@ -151,9 +152,11 @@ export default function RootLayout({
 				{/* Store initialization for global state */}
 				<StoreInitializer />
 				
-				{/* Main application content */}
-				<div id="root" className="min-h-screen bg-white text-gray-900">
-					{children}
+				{/* Main application content wrapped in monochrome shell */}
+				<div id="root" className="min-h-screen">
+					<MonochromeAppShell>
+						{children}
+					</MonochromeAppShell>
 				</div>
 				
 				{/* Skip to main content for accessibility */}

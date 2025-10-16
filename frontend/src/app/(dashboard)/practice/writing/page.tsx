@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CleanAppShell, CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
+import { CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
 import { ArrowLeft, Pen, RotateCcw, CheckCircle, XCircle, Info, Volume2, Target, Star, Clock } from 'lucide-react';
 
 interface Character {
@@ -18,6 +18,7 @@ interface Character {
 export default function WritingPracticePage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentCharacterIndex, setCurrentCharacterIndex] = useState(0);
   const [showStrokeOrder, setShowStrokeOrder] = useState(false);
@@ -25,6 +26,9 @@ export default function WritingPracticePage() {
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [sessionScore, setSessionScore] = useState(0);
   const [attempts, setAttempts] = useState(0);
+  const [brushSize, setBrushSize] = useState(6);
+  const [isEraser, setIsEraser] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
 
   const breadcrumbs = [
@@ -32,6 +36,9 @@ export default function WritingPracticePage() {
     { label: 'Practice', href: '/practice' },
     { label: 'Writing Practice', href: '/practice/writing' }
   ];
+
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const scriptParam = (searchParams.get('script') || 'kanji') as 'kanji' | 'hiragana' | 'katakana';
 
   const characters: Character[] = [
     { id: '1', character: 'あ', reading: 'a', meaning: 'a (hiragana)', strokes: 3, difficulty: 'beginner', type: 'hiragana' },
@@ -48,10 +55,18 @@ export default function WritingPracticePage() {
 
   const currentCharacter = characters[currentCharacterIndex];
 
-  const handleStartDrawing = () => {
+  const handleStartDrawing = (e?: React.MouseEvent | React.TouchEvent) => {
     setIsDrawing(true);
     setDrawingComplete(false);
     setAccuracy(null);
+    if (!canvasRef.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+    const pos = getPointerPos(e);
+    if (pos) {
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
   };
 
   const handleCompleteDrawing = () => {
@@ -67,6 +82,58 @@ export default function WritingPracticePage() {
       setSessionScore(sessionScore + 10);
     }
   };
+
+  const getPointerPos = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (!canvasRef.current) return null;
+    const rect = canvasRef.current.getBoundingClientRect();
+    if (!e) return null;
+    if ('touches' in e && e.touches[0]) {
+      const t = e.touches[0];
+      return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+    } else if ('clientX' in e) {
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+    return null;
+  };
+
+  const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawing || !canvasRef.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    const pos = getPointerPos(e);
+    if (!ctx || !pos) return;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = isEraser ? '#ffffff' : '#000000';
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = canvasContainerRef.current;
+    if (!canvas || !container) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      const width = Math.floor(container.clientWidth);
+      const height = Math.floor(container.clientHeight);
+      if (width > 0 && height > 0) {
+        canvas.width = width;
+        canvas.height = height;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+      }
+    };
+
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
+    if (ro) ro.observe(container);
+    resize();
+
+    return () => {
+      if (ro) ro.disconnect();
+    };
+  }, []);
 
   const handleClearCanvas = () => {
     if (canvasRef.current) {
@@ -120,7 +187,6 @@ export default function WritingPracticePage() {
   };
 
   return (
-    <CleanAppShell currentPage="practice" user={{ streak: 12, notifications: 3 }}>
       <CleanPageLayout
         title="Writing Practice"
         description="Practice writing Japanese characters with interactive guidance"
@@ -144,9 +210,10 @@ export default function WritingPracticePage() {
             <CleanCard>
               <div className="text-center">
                 <div className="mb-6">
-                  <div className="text-8xl font-bold text-gray-900 mb-4">
+                  <div className="text-8xl font-bold text-gray-900 mb-1">
                     {currentCharacter.character}
                   </div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500 mb-3">{scriptParam}</div>
                   <div className="flex items-center justify-center space-x-4 mb-4">
                     <span className="text-lg text-gray-600">{currentCharacter.reading}</span>
                     <span className="text-sm text-gray-500">•</span>
@@ -191,35 +258,32 @@ export default function WritingPracticePage() {
 
                 {/* Drawing Canvas */}
                 <div className="mb-6">
-                  <div className="w-full h-64 bg-white border-2 border-gray-300 rounded-lg relative">
+                  <div ref={canvasContainerRef} className="w-full h-[calc(100vh-320px)] bg-white border border-black relative">
                     <canvas
                       ref={canvasRef}
-                      width={400}
-                      height={200}
-                      className="w-full h-full cursor-crosshair"
+                      className="w-full h-full cursor-crosshair touch-none block"
                       onMouseDown={handleStartDrawing}
                       onMouseUp={handleCompleteDrawing}
+                      onMouseLeave={handleCompleteDrawing}
+                      onMouseMove={handlePointerMove}
+                      onTouchStart={handleStartDrawing}
+                      onTouchEnd={handleCompleteDrawing}
+                      onTouchCancel={handleCompleteDrawing}
+                      onTouchMove={handlePointerMove}
                     />
-                    {!isDrawing && !drawingComplete && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <Pen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-600 mb-4">Click and drag to draw the character</p>
-                          <CleanButton onClick={handleStartDrawing}>
-                            Start Drawing
-                          </CleanButton>
-                        </div>
-                      </div>
-                    )}
-                    {isDrawing && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10">
-                        <div className="text-center">
-                          <div className="w-16 h-16 border-4 border-gray-300 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-                          <p className="text-gray-600">Drawing in progress...</p>
-                        </div>
-                      </div>
-                    )}
+                    {/* Grid and intro overlay removed for a cleaner canvas */}
+                    {/* No loading overlay while drawing for uninterrupted UX */}
                   </div>
+                </div>
+
+                {/* Canvas Tools */}
+                <div className="mb-6 flex items-center justify-center gap-3">
+                  <label className="text-sm">Brush</label>
+                  <input type="range" min={2} max={18} value={brushSize} onChange={(e) => setBrushSize(parseInt(e.target.value))} />
+                  <button className={`px-3 py-1 border ${isEraser ? 'bg-black text-white' : ''}`} onClick={() => setIsEraser(!isEraser)}>
+                    {isEraser ? 'Eraser' : 'Pen'}
+                  </button>
+                  <button className="px-3 py-1 border" onClick={handleClearCanvas}>Clear</button>
                 </div>
 
                 {/* Results */}
@@ -275,38 +339,9 @@ export default function WritingPracticePage() {
             </CleanCard>
           </div>
 
-          {/* Sidebar */}
+          {/* Kanji Panel */}
           <div className="space-y-6">
-            {/* Session Stats */}
-            <CleanCard title="Session Stats" description="Your progress this session">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Characters Practiced</span>
-                  <span className="font-semibold text-gray-900">{currentCharacterIndex + 1}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Attempts</span>
-                  <span className="font-semibold text-gray-900">{attempts}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Session Score</span>
-                  <span className="font-semibold text-gray-900">{sessionScore}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Average Accuracy</span>
-                  <span className="font-semibold text-gray-900">
-                    {accuracy !== null ? `${accuracy}%` : '--'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Time Spent</span>
-                  <span className="font-semibold text-gray-900">{timeSpent}m</span>
-                </div>
-              </div>
-            </CleanCard>
-
-            {/* Character List */}
-            <CleanCard title="Character List" description="Select a character to practice">
+            <CleanCard title="Kanji List" description="Select a kanji to practice">
               <div className="grid grid-cols-5 gap-2">
                 {characters.map((char, index) => (
                   <button
@@ -324,8 +359,7 @@ export default function WritingPracticePage() {
               </div>
             </CleanCard>
 
-            {/* Character Details */}
-            <CleanCard title="Character Details" description="Information about the current character">
+            <CleanCard title="Kanji Details" description="Information about the selected kanji">
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Reading</span>
@@ -343,39 +377,10 @@ export default function WritingPracticePage() {
                   <span className="text-gray-600">Type</span>
                   <span className="font-semibold text-gray-900 capitalize">{currentCharacter.type}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Difficulty</span>
-                  <span className={`px-2 py-1 rounded-full text-sm font-medium ${getDifficultyColor(currentCharacter.difficulty)}`}>
-                    {currentCharacter.difficulty}
-                  </span>
-                </div>
-              </div>
-            </CleanCard>
-
-            {/* Practice Tips */}
-            <CleanCard title="Practice Tips" description="Get better results">
-              <div className="space-y-3 text-sm text-gray-600">
-                <div className="flex items-start space-x-2">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2"></div>
-                  <span>Follow the stroke order guide for best results</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2"></div>
-                  <span>Draw slowly and deliberately</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2"></div>
-                  <span>Focus on proper proportions</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2"></div>
-                  <span>Practice regularly for improvement</span>
-                </div>
               </div>
             </CleanCard>
           </div>
         </div>
       </CleanPageLayout>
-    </CleanAppShell>
   );
 }

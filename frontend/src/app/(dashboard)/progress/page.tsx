@@ -1,29 +1,26 @@
 "use client";
 
 import React, { useState } from 'react';
-import { CleanAppShell, CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
-import { TrendingUp, Target, Award, Flame, Calendar, Clock, Star, CheckCircle, BarChart, PieChart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
 
 export default function ProgressPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('30d');
+  const router = useRouter();
+  const [hoverInfo, setHoverInfo] = useState<{ date: string; level: number } | null>(null);
 
   const breadcrumbs = [
     { label: 'Home', href: '/' },
     { label: 'Progress', href: '/progress' }
   ];
 
-  const progressStats = [
-    { label: 'Total XP', value: '12,450', change: '+1,250', icon: <Star className="w-5 h-5 text-gray-700" /> },
-    { label: 'Current Level', value: '15', change: '+2', icon: <Target className="w-5 h-5 text-purple-600" /> },
-    { label: 'Streak', value: '12 days', change: '+3', icon: <Flame className="w-5 h-5 text-green-600" /> },
-    { label: 'Accuracy', value: '94%', change: '+2%', icon: <CheckCircle className="w-5 h-5 text-green-600" /> }
+  const essentials = [
+    { label: 'Streak', value: '12' },
+    { label: 'Accuracy', value: '94%' },
+    { label: 'Kanji learned', value: '127' },
   ];
 
-  const recentAchievements = [
-    { id: 1, title: 'Hiragana Master', description: 'Completed all Hiragana characters', date: '2 days ago', icon: <Award className="w-5 h-5 text-purple-600" /> },
-    { id: 2, title: 'Week Warrior', description: '7-day learning streak', date: '1 week ago', icon: <Flame className="w-5 h-5 text-green-600" /> },
-    { id: 3, title: 'Speed Demon', description: 'Answered 50 questions in under 5 minutes', date: '2 weeks ago', icon: <Clock className="w-5 h-5 text-gray-700" /> }
-  ];
+  // Legacy data kept for reference; not rendered in the new minimal layout
+  const recentAchievements = [] as Array<any>;
 
   const weeklyProgress = [
     { day: 'Mon', value: 85, label: 'Monday' },
@@ -42,132 +39,146 @@ export default function ProgressPage() {
   ];
 
   return (
-    <CleanAppShell currentPage="progress" user={{ streak: 12, notifications: 3 }}>
-      <CleanPageLayout
-        title="Your Progress"
-        description="Track your learning journey and celebrate achievements"
-        breadcrumbs={breadcrumbs}
-        actions={
-          <div className="flex items-center space-x-3">
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value as '7d' | '30d' | '90d')}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary"
-            >
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-            </select>
-            <CleanButton variant="outline" size="sm">
-              <BarChart className="w-4 h-4 mr-2" />
-              Detailed Analytics
-            </CleanButton>
+      <CleanPageLayout title="Progress" description="Your practice at a glance" breadcrumbs={breadcrumbs}>
+        <div className="p-6 space-y-8">
+          {/* Quick actions (minimal) */}
+          <div className="flex flex-wrap gap-3">
+            <CleanButton variant="outline" onClick={() => router.push('/practice/writing?script=kanji')}>Practice writing</CleanButton>
+            <CleanButton variant="outline" onClick={() => router.push('/practice/writing?script=hiragana')}>Hiragana</CleanButton>
+            <CleanButton variant="outline" onClick={() => router.push('/practice/writing?script=katakana')}>Katakana</CleanButton>
+            <CleanButton onClick={() => router.push('/practice/vocabulary')}>Vocabulary</CleanButton>
           </div>
-        }
-      >
-        <div className="p-6 space-y-6">
-          {/* Progress Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {progressStats.map((stat, index) => (
-              <CleanCard key={index} padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  {stat.icon}
-                  <span className="text-sm text-green-600 font-medium">{stat.change}</span>
-                </div>
-                <div className="text-2xl font-bold text-gray-900 mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-600">
-                  {stat.label}
-                </div>
+
+          {/* KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <CleanCard title="Kanji learned" description="Cumulative">
+              <div className="text-4xl font-bold">127</div>
+            </CleanCard>
+            <CleanCard title="Goals completed" description="This week">
+              <div className="text-4xl font-bold">7</div>
+            </CleanCard>
+            <CleanCard title="Active days" description="Past 14 days">
+              <div className="text-4xl font-bold">11</div>
+            </CleanCard>
+          </div>
+
+          {/* GitHub-style heatmap (past year) with month labels */}
+          <CleanCard title="Practice heatmap" description="Past year">
+            <div className="overflow-x-auto p-2">
+              {(() => {
+                const weeks = 53; // cover ~365 days
+                const box = 10; const gap = 2;
+                const width = weeks * (box + gap) + gap;
+                const height = 7 * (box + gap) + gap + 24; // + space for month + weekday labels
+                const start = new Date();
+                start.setHours(0,0,0,0);
+                // Align start to last Sunday to match GitHub
+                const today = new Date(start);
+                const dayOfWeek = today.getDay();
+                const startOffset = (weeks * 7) - (dayOfWeek + 1); // go back to oldest column start
+                const oldest = new Date(start);
+                oldest.setDate(start.getDate() - startOffset);
+                const levelForDate = (d: Date) => {
+                  const seed = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+                  const r = (Math.sin(seed) + 1) / 2; // 0..1 pseudo
+                  return r < 0.15 ? 0 : r < 0.45 ? 1 : r < 0.75 ? 2 : 3;
+                };
+                // Month label positions at the first week where a new month starts
+                const monthLabels: Array<{ x: number; label: string }>=[];
+                for (let w=0; w<weeks; w++) {
+                  const colDate = new Date(oldest);
+                  colDate.setDate(oldest.getDate() + w*7);
+                  if (w===0 || colDate.getDate() <= 7) {
+                    const label = colDate.toLocaleString('en-US', { month: 'short' });
+                    monthLabels.push({ x: gap + w*(box+gap), label });
+                  }
+                }
+                return (
+                  <svg viewBox={`0 0 ${width} ${height}`} className="min-w-full" style={{ maxWidth: width }}>
+                    {/* Month labels */}
+                    {monthLabels.map((m, i) => (
+                      <text key={i} x={m.x} y={12} fontSize="10" fill="#000">{m.label}</text>
+                    ))}
+                    {/* Weekday labels (Mon, Wed, Fri) */}
+                    {['Mon','Wed','Fri'].map((d, i) => (
+                      <text key={d} x={0} y={gap + 16 + (i*2+1)*(box+gap) + 7} fontSize="9" fill="#000">{d}</text>
+                    ))}
+                    {/* Day boxes */}
+                    {Array.from({ length: weeks }).map((_, w) => (
+                      Array.from({ length: 7 }).map((__, d) => {
+                        const date = new Date(oldest);
+                        date.setDate(oldest.getDate() + w*7 + d);
+                        if (date > start) return null; // don't draw future
+                        const level = levelForDate(date);
+                        const op = [0.15, 0.35, 0.6, 1][level];
+                        const x = gap + w*(box+gap);
+                        const y = gap + 16 + d*(box+gap);
+                        const label = date.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'2-digit' });
+                        return (
+                          <g key={`${w}-${d}`} onMouseEnter={() => setHoverInfo({ date: label, level })} onMouseLeave={() => setHoverInfo(null)}>
+                            <rect x={x} y={y} width={box} height={box} fill="#000" opacity={op} rx="1" ry="1" />
+                            <title>{`${label} • Level ${level+1}`}</title>
+                          </g>
+                        );
+                      })
+                    ))}
+                  </svg>
+                );
+              })()}
+            </div>
+            <div className="flex items-center justify-between px-2 pb-2 text-sm">
+              <div className="text-black/70">
+                {hoverInfo ? `${hoverInfo.date} • Level ${hoverInfo.level + 1}` : 'Hover a day to see details'}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-black/70 text-xs">Less</span>
+                {[0.15,0.35,0.6,1].map((op, i) => (
+                  <span key={i} className="w-3.5 h-3.5 bg-black" style={{ opacity: op }} />
+                ))}
+                <span className="text-black/70 text-xs">More</span>
+              </div>
+            </div>
+          </CleanCard>
+
+          {/* Hexagon accuracy */}
+          <CleanCard title="Test accuracy" description="6-section hexagon">
+            <div className="flex items-center justify-center p-4">
+              {(() => {
+                const metrics = [90, 84, 88, 92, 80, 86]; // six aspects
+                const max = 100;
+                const cx = 120; const cy = 120; const r = 100;
+                const toPoint = (i: number, val: number) => {
+                  const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 6;
+                  const rr = (val / max) * r;
+                  return [cx + rr * Math.cos(angle), cy + rr * Math.sin(angle)];
+                };
+                const outer = Array.from({ length: 6 }).map((_, i) => toPoint(i, r)).map(p => p.join(',')).join(' ');
+                const poly = metrics.map((v, i) => toPoint(i, v)).map(p => p.join(',')).join(' ');
+                return (
+                  <svg viewBox="0 0 240 240" className="w-72 h-72">
+                    <polygon points={outer} fill="none" stroke="#000" strokeWidth="2" opacity="0.4" />
+                    {[0.66, 0.33].map((f, idx) => (
+                      <polygon key={idx} points={Array.from({ length: 6 }).map((_, i) => toPoint(i, r * f)).map(p => p.join(',')).join(' ')} fill="none" stroke="#000" strokeWidth="1" opacity="0.2" />
+                    ))}
+                    <polygon points={poly} fill="#000" opacity="0.2" stroke="#000" strokeWidth="2" />
+                  </svg>
+                );
+              })()}
+            </div>
+          </CleanCard>
+
+          {/* KPIs row replaces goals */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {essentials.map((e) => (
+              <CleanCard key={e.label} title={e.label} description="">
+                <div className="text-4xl font-bold">{e.value}</div>
               </CleanCard>
             ))}
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Weekly Progress Chart */}
-            <div className="lg:col-span-2">
-              <CleanCard title="Weekly Progress" description="Your learning activity this week">
-                <div className="space-y-4">
-                  <div className="flex items-end justify-between h-32">
-                    {weeklyProgress.map((day, index) => (
-                      <div key={index} className="flex flex-col items-center space-y-2">
-                      <div 
-                        className="bg-green-600 rounded-t w-8 transition-all duration-300 hover:bg-green-700"
-                        style={{ height: `${(day.value / 100) * 80}px` }}
-                        title={`${day.label}: ${day.value}%`}
-                      />
-                        <span className="text-xs text-gray-600">{day.day}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <span>Lowest: 76% (Saturday)</span>
-                    <span>Highest: 95% (Thursday)</span>
-                  </div>
-                </div>
-              </CleanCard>
-            </div>
-
-            {/* Recent Achievements */}
-            <div>
-              <CleanCard title="Recent Achievements" description="Your latest accomplishments">
-                <div className="space-y-3">
-                  {recentAchievements.map((achievement) => (
-                    <div key={achievement.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-shrink-0">
-                        {achievement.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 text-sm">{achievement.title}</h4>
-                        <p className="text-xs text-gray-600 mt-1">{achievement.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">{achievement.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CleanCard>
-            </div>
-          </div>
-
-          {/* Learning Goals */}
-          <CleanCard title="Learning Goals" description="Track your progress towards your objectives">
-            <div className="space-y-4">
-              {learningGoals.map((goal) => (
-                <div key={goal.id} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{goal.title}</h4>
-                    <span className="text-sm text-gray-600">
-                      {goal.progress}/{goal.target}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex-1 mr-4">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${(goal.progress / goal.target) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">
-                      {Math.round((goal.progress / goal.target) * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-gray-600">
-                    <span>Deadline: {new Date(goal.deadline).toLocaleDateString()}</span>
-                    {goal.progress >= goal.target && (
-                      <span className="text-green-600 font-medium">Completed!</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CleanCard>
+          {/* Footer quick links removed for a cleaner look */}
 
         </div>
       </CleanPageLayout>
-    </CleanAppShell>
   );
 }

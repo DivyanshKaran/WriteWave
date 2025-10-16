@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CleanAppShell, CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
+import { CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
 import { ArrowLeft, BookOpen, Volume2, CheckCircle, XCircle, Info, RotateCcw, Star } from 'lucide-react';
 
 interface VocabularyItem {
@@ -140,7 +140,6 @@ export default function VocabularyPracticePage() {
   };
 
   return (
-    <CleanAppShell currentPage="practice" user={{ streak: 12, notifications: 3 }}>
       <CleanPageLayout
         title="Vocabulary Practice"
         description="Learn Japanese vocabulary with context and examples"
@@ -359,6 +358,5 @@ export default function VocabularyPracticePage() {
           </div>
         </div>
       </CleanPageLayout>
-    </CleanAppShell>
   );
 }

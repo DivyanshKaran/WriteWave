@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CleanAppShell, CleanPageLayout, CleanCard, CleanButton, CleanInput } from '@/components/layout';
+import { CleanPageLayout, CleanCard, CleanButton, CleanInput } from '@/components/layout';
 import { Label, Checkbox, Select } from '@/components/ui';
 import { 
   User, 
@@ -499,7 +499,6 @@ export default function ProfilePage() {
   };
 
   return (
-    <CleanAppShell currentPage="profile" user={{ streak: 7, notifications: 2 }}>
       <CleanPageLayout
         title="Profile"
         description="Manage your account settings and preferences"
@@ -566,6 +565,5 @@ export default function ProfilePage() {
           </AnimatePresence>
         </div>
       </CleanPageLayout>
-    </CleanAppShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { CleanAppShell, CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
+import { CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
 import { MessageSquare, Users, Trophy, Zap, PlusCircle, Heart, Share2, Star, TrendingUp } from 'lucide-react';
 
 export default function CommunityPage() {
@@ -220,7 +220,6 @@ export default function CommunityPage() {
   };
 
   return (
-    <CleanAppShell currentPage="community" user={{ streak: 12, notifications: 3 }}>
       <CleanPageLayout
         title="Community Hub"
         description="Connect with fellow learners and share your journey"
@@ -284,6 +283,5 @@ export default function CommunityPage() {
 
         </div>
       </CleanPageLayout>
-    </CleanAppShell>
   );
 }
