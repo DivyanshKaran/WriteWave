@@ -1,7 +1,7 @@
 // API Types - Request/Response types for all API endpoints
 
 // Base API Response
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -103,7 +103,7 @@ export interface UserProfileResponse {
 export interface UserUpdateProfileRequest {
   name?: string;
   avatar?: string;
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 }
 
 export interface UserSettingsResponse {
@@ -322,7 +322,7 @@ export interface NotificationResponse {
   message: string;
   read: boolean;
   createdAt: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export interface NotificationPreferencesResponse {
@@ -346,7 +346,7 @@ export interface NotificationPreferencesRequest {
 // Analytics API Types
 export interface AnalyticsEventRequest {
   event: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   timestamp?: string;
 }
 
@@ -392,7 +392,7 @@ export interface AnalyticsReportResponse {
 export interface ApiError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -407,7 +407,7 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     validation?: ValidationError[];
   };
   timestamp: string;

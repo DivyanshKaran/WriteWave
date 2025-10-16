@@ -52,7 +52,7 @@ export const validateStrokeOrder = (strokes: string[]): boolean => {
 };
 
 // Generic field validation
-export const validateField = (value: any, rules: ValidationRule): ValidationResult => {
+export const validateField = (value: unknown, rules: ValidationRule): ValidationResult => {
   const errors: string[] = [];
   
   // Required validation
@@ -96,7 +96,7 @@ export const validateField = (value: any, rules: ValidationRule): ValidationResu
 };
 
 // Form validation
-export const validateForm = (data: Record<string, any>, rules: Record<string, ValidationRule>): ValidationResult => {
+export const validateForm = (data: Record<string, unknown>, rules: Record<string, ValidationRule>): ValidationResult => {
   const errors: string[] = [];
   let isValid = true;
   

@@ -1,33 +1,22 @@
-// Layout components barrel export
-export { AppShell } from "./AppShell";
-export { Sidebar, SidebarIcons } from "./Sidebar";
-export {
-	MainContentArea,
-	Grid,
-	GridItem,
-	Container,
-	Section,
-	ResponsiveGrid,
-	ResponsiveFlex,
-} from "./MainContentArea";
+// Clean Layout Components
+export { CleanAppShell } from './CleanAppShell';
+export { CleanPageLayout } from './CleanPageLayout';
+export { CleanCard } from './CleanCard';
+export { CleanButton } from './CleanButton';
+export { CleanInput } from './CleanInput';
 
-// Navigation Components
-export { Breadcrumb } from "./Breadcrumb";
-export { TopNavigation } from "./TopNavigation";
-export { QuickActions, CommonQuickActions } from "./QuickActions";
-export { BottomNavigation } from "./BottomNavigation";
-export { MobileNavigationOverlay } from "./MobileNavigationOverlay";
-export { ResponsiveSidebar } from "./ResponsiveSidebar";
+// Legacy Layout Components (for backward compatibility)
+export { AppShell } from './AppShell';
+export { Sidebar } from './Sidebar';
+export { MainContentArea } from './MainContentArea';
+export { Section } from './Section';
+export { TopNavigation } from './TopNavigation';
+export { Breadcrumb } from './Breadcrumb';
+export { BottomNavigation } from './BottomNavigation';
+export { MobileNavigationOverlay } from './MobileNavigationOverlay';
+export { ResponsiveSidebar } from './ResponsiveSidebar';
+export { QuickActions, CommonQuickActions } from './QuickActions';
+export { SidebarIcons } from './Sidebar';
 
-// Re-export types
-export type { UserAreaProps } from "./AppShell";
-export type {
-	SidebarSection,
-	SidebarItem,
-} from "./Sidebar";
-export type {
-	TopNavigationItem,
-} from "./TopNavigation";
-export type {
-	BreadcrumbItem,
-} from "./Breadcrumb";
+// Types
+export type { TopNavigationItem, BreadcrumbItem, SidebarSection } from './types';

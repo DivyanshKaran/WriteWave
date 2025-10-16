@@ -142,5 +142,5 @@ export interface UserActivity {
   type: 'login' | 'logout' | 'character_practiced' | 'lesson_completed' | 'achievement_unlocked';
   description: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }

@@ -1,7 +1,7 @@
 // Authentication Hook
 import { useState, useEffect, useCallback } from 'react';
 import { authService, userService } from '@/lib/api';
-import type { AuthState, LoginRequest, LoginResponse, UserProfile } from '@/types';
+import type { AuthState, LoginRequest, LoginResponse, UserProfile, RegisterRequest } from '@/types';
 
 export const useAuth = () => {
   const [authState, setAuthState] = useState<AuthState>({
@@ -80,7 +80,7 @@ export const useAuth = () => {
     }
   }, []);
 
-  const register = useCallback(async (userData: any) => {
+  const register = useCallback(async (userData: RegisterRequest) => {
     try {
       const response = await authService.register(userData);
       const { access_token, user: registerUser } = response;

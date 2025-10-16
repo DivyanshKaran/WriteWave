@@ -16,22 +16,33 @@ export const useUserStore = create<UserState>()(
       // Initialize auth state from localStorage
       initializeAuth: async () => {
         try {
+          // Check if we're in a browser environment
+          if (typeof window === 'undefined') {
+            set({ isLoading: false });
+            return;
+          }
+
           const token = localStorage.getItem('auth_token');
           if (token) {
-            // Verify token and get user profile
-            const user = await userService.getProfile();
-            set({
-              user,
-              token,
-              isAuthenticated: true,
-              isLoading: false,
-            });
+            try {
+              // Verify token and get user profile
+              const user = await userService.getProfile();
+              set({
+                user,
+                token,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+            } catch (error) {
+              // Token is invalid, clear it
+              localStorage.removeItem('auth_token');
+              set({ isLoading: false });
+            }
           } else {
             set({ isLoading: false });
           }
         } catch (error) {
-          // Token is invalid, clear it
-          localStorage.removeItem('auth_token');
+          console.warn('Auth initialization error:', error);
           set({ isLoading: false });
         }
       },

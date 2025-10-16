@@ -54,7 +54,7 @@ export interface UIState {
   breadcrumbs: Array<{ label: string; href: string }>;
   
   // Form states
-  formErrors: Record<string, string[]>;
+  formErrors: Record<string, Record<string, string[]>>;
   formSubmitting: Record<string, boolean>;
   
   // Actions
@@ -98,7 +98,7 @@ export interface ValidationRule {
   minLength?: number;
   maxLength?: number;
   pattern?: RegExp;
-  custom?: (value: any) => string | null;
+  custom?: (value: unknown) => string | null;
 }
 
 export interface ValidationResult {
@@ -108,7 +108,7 @@ export interface ValidationResult {
 
 // Form Types
 export interface FormState {
-  values: Record<string, any>;
+  values: Record<string, unknown>;
   errors: Record<string, string[]>;
   touched: Record<string, boolean>;
   isSubmitting: boolean;
@@ -286,7 +286,7 @@ export interface Notification {
   message: string;
   read: boolean;
   createdAt: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   actions?: Array<{
     label: string;
     action: () => void;

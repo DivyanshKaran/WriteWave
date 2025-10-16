@@ -70,7 +70,7 @@ export interface XPTransaction {
   source: string; // 'character_practice' | 'lesson_complete' | 'achievement' | 'streak' | 'bonus'
   description: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Level Definition

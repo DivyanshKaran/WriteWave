@@ -8,3 +8,4 @@ export * from './CharacterTutorial';
 export * from './FeatureTour';
 export * from './CelebrationAnimations';
 export * from './RecoveryOnboarding';
+export * from './OnboardingAnalytics';

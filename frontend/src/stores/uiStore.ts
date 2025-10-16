@@ -169,7 +169,7 @@ export const useUIStore = create<UIState>()(
             ...state.formErrors,
             [formId]: {
               ...state.formErrors[formId],
-              [field]: [...((state.formErrors[formId] as any)?.[field] || []), error],
+              [field]: [...(state.formErrors[formId]?.[field] || []), error],
             },
           },
         }));
@@ -180,7 +180,7 @@ export const useUIStore = create<UIState>()(
           const newFormErrors = { ...state.formErrors };
           if (newFormErrors[formId]) {
             newFormErrors[formId] = { ...newFormErrors[formId] };
-            delete (newFormErrors[formId] as any)[field];
+            delete newFormErrors[formId][field];
           }
           return { formErrors: newFormErrors };
         });

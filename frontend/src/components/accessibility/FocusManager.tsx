@@ -28,14 +28,14 @@ export const FocusManager: React.FC<FocusManagerProps> = ({
 
   // Focus management
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) return undefined;
 
     const container = containerRef.current;
     const focusableElements = Array.from(
       container.querySelectorAll(focusableSelectors)
     ) as HTMLElement[];
 
-    if (focusableElements.length === 0) return;
+    if (focusableElements.length === 0) return undefined;
 
     // Set initial focus
     if (initialFocus?.current) {
@@ -70,6 +70,8 @@ export const FocusManager: React.FC<FocusManagerProps> = ({
       container.addEventListener('keydown', handleKeyDown);
       return () => container.removeEventListener('keydown', handleKeyDown);
     }
+
+    return undefined;
   }, [trapFocus, initialFocus]);
 
   // Restore focus on unmount

@@ -65,13 +65,13 @@ export const api = {
   get: <T>(url: string, config?: AxiosRequestConfig) =>
     apiRequest<T>({ ...config, method: 'GET', url }),
   
-  post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+  post: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiRequest<T>({ ...config, method: 'POST', url, data }),
   
-  put: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+  put: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiRequest<T>({ ...config, method: 'PUT', url, data }),
   
-  patch: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+  patch: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiRequest<T>({ ...config, method: 'PATCH', url, data }),
   
   delete: <T>(url: string, config?: AxiosRequestConfig) =>

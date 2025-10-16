@@ -26,6 +26,7 @@ export const ToastAnimation: React.FC<ToastAnimationProps> = ({
       const timer = setTimeout(onClose, duration);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isVisible, autoClose, duration, onClose]);
 
   return (

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, Noto_Sans_JP } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "../styles/globals.css";
 import { StoreInitializer } from "@/components/StoreInitializer";
 
-// Font configuration with Japanese support
+// Font configuration
 const inter = Inter({
 	variable: "--font-inter",
 	subsets: ["latin"],
@@ -16,13 +16,6 @@ const spaceGrotesk = Space_Grotesk({
 	subsets: ["latin"],
 	display: "swap",
 	weight: ["500", "700"],
-});
-
-const notoSansJp = Noto_Sans_JP({
-	variable: "--font-noto-sans-jp",
-	subsets: ["latin"],
-	display: "swap",
-	weight: ["400", "500", "700"],
 });
 
 // Enhanced metadata for Japanese learning platform
@@ -152,7 +145,7 @@ export default function RootLayout({
 				)}
 			</head>
 			<body
-				className={`${inter.variable} ${spaceGrotesk.variable} ${notoSansJp.variable} antialiased`}
+				className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
 				suppressHydrationWarning={true}
 			>
 				{/* Store initialization for global state */}

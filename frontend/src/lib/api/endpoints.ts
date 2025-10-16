@@ -76,7 +76,7 @@ export const API_ENDPOINTS = {
 } as const;
 
 // Helper function to build query strings
-export const buildQueryString = (params: Record<string, any>): string => {
+export const buildQueryString = (params: Record<string, unknown>): string => {
   const searchParams = new URLSearchParams();
   
   Object.entries(params).forEach(([key, value]) => {
@@ -92,7 +92,7 @@ export const buildQueryString = (params: Record<string, any>): string => {
 // Helper function to build full URL with query params
 export const buildUrl = (
   endpoint: string,
-  params?: Record<string, any>
+  params?: Record<string, unknown>
 ): string => {
   const queryString = params ? buildQueryString(params) : '';
   return `${endpoint}${queryString}`;

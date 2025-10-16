@@ -1,142 +1,289 @@
 "use client";
 
-import { 
-  AppShell, 
-  Sidebar, 
-  MainContentArea, 
-  Section,
-  SidebarIcons,
-  type SidebarSection 
-} from '@/components/layout';
-import { Breadcrumb, type TopNavigationItem, type BreadcrumbItem } from '@/components/layout';
-import { DiscussionList, StudyGroups } from '@/components/community';
-import { useRouter } from 'next/navigation';
-
-const navigation: TopNavigationItem[] = [
-  { id: 'learn', label: 'Learn', href: '/learn' },
-  { id: 'progress', label: 'Progress', href: '/progress' },
-  { id: 'community', label: 'Community', href: '/community', active: true },
-  { id: 'profile', label: 'Profile', href: '/profile' },
-];
-
-const breadcrumbs: BreadcrumbItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Community', current: true },
-];
-
-const sidebarSections: SidebarSection[] = [
-  {
-    id: 'community',
-    title: 'Community',
-    items: [
-      { id: 'discussions', label: 'Discussions', href: '/community', icon: SidebarIcons.learn, active: true },
-      { id: 'groups', label: 'Study Groups', href: '/community#groups', icon: SidebarIcons.learn },
-    ],
-  },
-];
-
-const sampleDiscussions = [
-  { id: 'p1', title: 'Best mnemonics for Kanji radicals?', author: 'Aiko', timestamp: '2h', replies: 12, tags: [{ id: 't1', label: 'Kanji' }, { id: 't2', label: 'Tips' }] },
-  { id: 'p2', title: 'Daily writing routine thread', author: 'Kenji', timestamp: '5h', replies: 34, tags: [{ id: 't3', label: 'Practice' }] },
-  { id: 'p3', title: 'Share your favorite pens/paper', author: 'Mina', timestamp: '1d', replies: 8, tags: [{ id: 't4', label: 'Gear' }] },
-];
-
-const sampleGroups = [
-  { 
-    id: 'g1', 
-    name: 'JLPT N4 Sprint', 
-    description: 'Study group for JLPT N4 preparation',
-    category: 'exam',
-    difficulty: 'intermediate' as const,
-    maxMembers: 200,
-    currentMembers: 128,
-    isPublic: true,
-    createdBy: { id: 'u1', name: 'Aiko', avatar: '' },
-    createdAt: '2024-01-01',
-    updatedAt: '3 new posts today',
-    joined: false 
-  },
-  { 
-    id: 'g2', 
-    name: 'Kanji 500 Club', 
-    description: 'Master 500 essential Kanji characters',
-    category: 'kanji',
-    difficulty: 'advanced' as const,
-    maxMembers: 300,
-    currentMembers: 256,
-    isPublic: true,
-    createdBy: { id: 'u2', name: 'Kenji', avatar: '' },
-    createdAt: '2024-01-01',
-    updatedAt: 'Last practice session 2h ago',
-    joined: true 
-  },
-  { 
-    id: 'g3', 
-    name: 'Handwriting Masters', 
-    description: 'Perfect your Japanese handwriting',
-    category: 'practice',
-    difficulty: 'beginner' as const,
-    maxMembers: 100,
-    currentMembers: 89,
-    isPublic: true,
-    createdBy: { id: 'u3', name: 'Mina', avatar: '' },
-    createdAt: '2024-01-01',
-    updatedAt: 'Planning Saturday meetup',
-    joined: false 
-  },
-  { 
-    id: 'g4', 
-    name: 'Beginner Writers', 
-    description: 'Start your Japanese writing journey',
-    category: 'beginner',
-    difficulty: 'beginner' as const,
-    maxMembers: 500,
-    currentMembers: 342,
-    isPublic: true,
-    createdBy: { id: 'u4', name: 'Sato', avatar: '' },
-    createdAt: '2024-01-01',
-    updatedAt: 'Welcome new members!',
-    joined: false 
-  },
-];
+import React, { useState } from 'react';
+import { CleanAppShell, CleanPageLayout, CleanCard, CleanButton } from '@/components/layout';
+import { MessageSquare, Users, Trophy, Zap, PlusCircle, Heart, Share2, Star, TrendingUp } from 'lucide-react';
 
 export default function CommunityPage() {
-  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'discussions' | 'groups' | 'leaderboard' | 'activity'>('discussions');
+
+  const breadcrumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Community', href: '/community' }
+  ];
+
+  const communityStats = [
+    { label: 'Active Members', value: '2,847', icon: <Users className="w-5 h-5 text-gray-700" /> },
+    { label: 'Discussions', value: '156', icon: <MessageSquare className="w-5 h-5 text-green-600" /> },
+    { label: 'Study Groups', value: '23', icon: <Users className="w-5 h-5 text-purple-600" /> },
+    { label: 'Your Rank', value: '#47', icon: <Trophy className="w-5 h-5 text-gray-700" /> }
+  ];
+
+  const recentDiscussions = [
+    {
+      id: 1,
+      title: 'Best way to memorize Kanji radicals?',
+      author: 'Alex Chen',
+      replies: 12,
+      views: 89,
+      lastActivity: '2 hours ago',
+      category: 'Learning Tips',
+      tags: ['kanji', 'memorization', 'radicals']
+    },
+    {
+      id: 2,
+      title: 'Japanese pronunciation help needed',
+      author: 'Maria Santos',
+      replies: 8,
+      views: 45,
+      lastActivity: '4 hours ago',
+      category: 'Pronunciation',
+      tags: ['pronunciation', 'help', 'beginner']
+    },
+    {
+      id: 3,
+      title: 'Study group for JLPT N3 preparation',
+      author: 'John Smith',
+      replies: 15,
+      views: 123,
+      lastActivity: '1 day ago',
+      category: 'Study Groups',
+      tags: ['jlpt', 'n3', 'study-group']
+    }
+  ];
+
+  const studyGroups = [
+    {
+      id: 1,
+      name: 'Hiragana Beginners',
+      members: 24,
+      description: 'Perfect for absolute beginners starting with Hiragana',
+      level: 'Beginner',
+      activity: 'Very Active'
+    },
+    {
+      id: 2,
+      name: 'Kanji Masters',
+      members: 18,
+      description: 'Advanced Kanji study and practice group',
+      level: 'Advanced',
+      activity: 'Active'
+    },
+    {
+      id: 3,
+      name: 'Conversation Practice',
+      members: 31,
+      description: 'Practice speaking Japanese with native speakers',
+      level: 'Intermediate',
+      activity: 'Very Active'
+    }
+  ];
+
+  const leaderboard = [
+    { rank: 1, name: 'Alex Chen', xp: 25847, streak: 45, avatar: 'AC' },
+    { rank: 2, name: 'Maria Santos', xp: 23156, streak: 38, avatar: 'MS' },
+    { rank: 3, name: 'John Smith', xp: 22890, streak: 42, avatar: 'JS' },
+    { rank: 4, name: 'You', xp: 18234, streak: 12, avatar: 'YO' },
+    { rank: 5, name: 'Lisa Wang', xp: 17891, streak: 28, avatar: 'LW' }
+  ];
+
+  const recentActivity = [
+    { id: 1, user: 'Alex Chen', action: 'completed Hiragana lesson', time: '5 minutes ago', icon: <Star className="w-4 h-4 text-gray-700" /> },
+    { id: 2, user: 'Maria Santos', action: 'joined Study Group', time: '15 minutes ago', icon: <Users className="w-4 h-4 text-purple-600" /> },
+    { id: 3, user: 'John Smith', action: 'earned achievement', time: '1 hour ago', icon: <Trophy className="w-4 h-4 text-purple-600" /> },
+    { id: 4, user: 'Lisa Wang', action: 'started new discussion', time: '2 hours ago', icon: <MessageSquare className="w-4 h-4 text-green-600" /> }
+  ];
+
+  const tabs = [
+    { id: 'discussions', label: 'Discussions', icon: <MessageSquare className="w-4 h-4" /> },
+    { id: 'groups', label: 'Study Groups', icon: <Users className="w-4 h-4" /> },
+    { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy className="w-4 h-4" /> },
+    { id: 'activity', label: 'Activity', icon: <Zap className="w-4 h-4" /> }
+  ];
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'discussions':
+        return (
+          <div className="space-y-4">
+            {recentDiscussions.map((discussion) => (
+              <div key={discussion.id} className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 mb-1">{discussion.title}</h4>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                      <span>by {discussion.author}</span>
+                      <span>{discussion.replies} replies</span>
+                      <span>{discussion.views} views</span>
+                      <span>{discussion.lastActivity}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">
+                        {discussion.category}
+                      </span>
+                      {discussion.tags.map((tag, index) => (
+                        <span key={index} className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 ml-4">
+                    <CleanButton variant="ghost" size="sm">
+                      <Heart className="w-4 h-4" />
+                    </CleanButton>
+                    <CleanButton variant="ghost" size="sm">
+                      <Share2 className="w-4 h-4" />
+                    </CleanButton>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'groups':
+        return (
+          <div className="space-y-4">
+            {studyGroups.map((group) => (
+              <div key={group.id} className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 mb-1">{group.name}</h4>
+                    <p className="text-sm text-gray-600 mb-2">{group.description}</p>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span>{group.members} members</span>
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
+                        {group.activity}
+                      </span>
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                        {group.level}
+                      </span>
+                    </div>
+                  </div>
+                  <CleanButton variant="primary" size="sm">
+                    Join Group
+                  </CleanButton>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'leaderboard':
+        return (
+          <div className="space-y-3">
+            {leaderboard.map((user) => (
+              <div key={user.rank} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    {user.avatar}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">{user.name}</div>
+                    <div className="text-sm text-gray-600">
+                      {user.xp.toLocaleString()} XP • {user.streak} day streak
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-900">#{user.rank}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'activity':
+        return (
+          <div className="space-y-3">
+            {recentActivity.map((activity) => (
+              <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="flex-shrink-0">
+                  {activity.icon}
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium text-gray-900">{activity.user}</span>
+                  <span className="text-gray-600"> {activity.action}</span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {activity.time}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <AppShell 
-      navigation={navigation}
-      user={{ streak: 4, notifications: 1 }}
-    >
-      <div className="flex">
-        <Sidebar sections={sidebarSections} />
-        
-        <MainContentArea hasSidebar>
-          <Section>
-            <div className="space-y-8">
-              <Breadcrumb items={breadcrumbs} />
+    <CleanAppShell currentPage="community" user={{ streak: 12, notifications: 3 }}>
+      <CleanPageLayout
+        title="Community Hub"
+        description="Connect with fellow learners and share your journey"
+        breadcrumbs={breadcrumbs}
+        actions={
+          <div className="flex items-center space-x-3">
+            <CleanButton variant="outline" size="sm">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              New Discussion
+            </CleanButton>
+            <CleanButton variant="primary" size="sm">
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Create Group
+            </CleanButton>
+          </div>
+        }
+      >
+        <div className="p-6 space-y-6">
+          {/* Community Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {communityStats.map((stat, index) => (
+              <CleanCard key={index} padding="sm" className="text-center">
+                <div className="flex items-center justify-center mb-2">
+                  {stat.icon}
+                </div>
+                <div className="text-2xl font-bold text-gray-900 mb-1">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {stat.label}
+                </div>
+              </CleanCard>
+            ))}
+          </div>
 
-              {/* Discussion List */}
-              <div>
-                <div className="body text-base font-medium mb-4">Discussions</div>
-                <DiscussionList 
-                  items={sampleDiscussions}
-                  onNavigate={(id) => router.push(`/community/${id}`)}
-                />
-              </div>
+          {/* Tab Navigation */}
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as 'discussions' | 'groups' | 'leaderboard' | 'activity')}
+                  className={`
+                    ${activeTab === tab.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                    whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2
+                  `}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
 
-              {/* Study Groups */}
-              <div id="groups">
-                <div className="body text-base font-medium mb-4">Study Groups</div>
-                <StudyGroups 
-                  groups={sampleGroups}
-                  onJoin={async () => new Promise((res) => setTimeout(res, 500))}
-                />
-              </div>
-            </div>
-          </Section>
-        </MainContentArea>
-      </div>
-    </AppShell>
+          {/* Tab Content */}
+          <CleanCard>
+            {renderTabContent()}
+          </CleanCard>
+
+        </div>
+      </CleanPageLayout>
+    </CleanAppShell>
   );
 }

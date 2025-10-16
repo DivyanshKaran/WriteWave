@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AccessibleButton } from '@/components/accessibility';
+import { Play, Volume2, VolumeX, RotateCcw, CheckCircle, Star, Target, Clock, Zap } from 'lucide-react';
 
 interface CharacterTutorialProps {
   onComplete: () => void;
@@ -16,6 +17,9 @@ interface TutorialStep {
   action: string;
   character: string;
   strokeOrder: number[];
+  audioUrl?: string;
+  hints: string[];
+  tips: string[];
 }
 
 export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete, className = '' }) => {
@@ -24,7 +28,14 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
   const [drawingComplete, setDrawingComplete] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState<'success' | 'error' | 'info'>('info');
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [showHints, setShowHints] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [score, setScore] = useState(0);
+  const [timeSpent, setTimeSpent] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const tutorialSteps: TutorialStep[] = [
     {
@@ -34,6 +45,9 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
       action: 'Click to hear pronunciation',
       character: 'あ',
       strokeOrder: [1, 2, 3],
+      audioUrl: '/audio/hiragana-a.mp3',
+      hints: ['This character has 3 strokes', 'Start from the top', 'It looks like a house with a roof'],
+      tips: ['あ is used in many common words', 'Practice the stroke order slowly', 'Focus on the shape and proportions']
     },
     {
       id: 'trace',
@@ -42,6 +56,8 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
       action: 'Trace following the guide',
       character: 'あ',
       strokeOrder: [1, 2, 3],
+      hints: ['Follow the numbered strokes', 'Start with stroke 1', 'Keep your lines smooth'],
+      tips: ['Use your finger or mouse to trace', 'Go slowly and carefully', 'Try to match the guide exactly']
     },
     {
       id: 'memory',
@@ -50,6 +66,8 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
       action: 'Write from memory',
       character: 'あ',
       strokeOrder: [1, 2, 3],
+      hints: ['Remember the 3 strokes', 'Think about the shape', 'Start from the top'],
+      tips: ['Take your time', 'Don\'t worry if it\'s not perfect', 'Practice makes perfect']
     },
     {
       id: 'recognize',
@@ -58,10 +76,21 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
       action: 'Select the correct character',
       character: 'あ',
       strokeOrder: [1, 2, 3],
+      hints: ['Look for the character we just learned', 'It has 3 strokes', 'It sounds like "ah"'],
+      tips: ['Take your time to look carefully', 'Remember what we practiced', 'Trust your instincts']
     },
   ];
 
   const currentStepData = tutorialSteps[currentStep];
+
+  // Timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeSpent(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (currentStep === 1 || currentStep === 2) {
@@ -70,21 +99,46 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
       if (canvas) {
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 3;
+          ctx.strokeStyle = '#0066ff';
+          ctx.lineWidth = 4;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
     }
   }, [currentStep]);
+
+  const playAudio = () => {
+    if (audioRef.current && currentStepData.audioUrl) {
+      setIsAudioPlaying(true);
+      audioRef.current.play();
+      audioRef.current.onended = () => setIsAudioPlaying(false);
+    }
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setDrawingComplete(false);
+      }
+    }
+  };
 
   const handleNext = () => {
     if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(prev => prev + 1);
       setDrawingComplete(false);
       setShowFeedback(false);
+      setShowHints(false);
+      setAttempts(0);
     } else {
+      // Calculate final score
+      const finalScore = Math.max(0, 100 - (attempts * 10) - Math.floor(timeSpent / 10));
+      setScore(finalScore);
       onComplete();
     }
   };
@@ -120,22 +174,37 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
     setIsDrawing(false);
     setDrawingComplete(true);
     setShowFeedback(true);
+    setFeedbackType('success');
     setFeedback('Great job! You\'ve traced あ correctly.');
+    setScore(prev => prev + 25);
   };
 
   const handleCharacterSelect = (selectedChar: string) => {
+    setAttempts(prev => prev + 1);
+    
     if (selectedChar === 'あ') {
       setShowFeedback(true);
+      setFeedbackType('success');
       setFeedback('Excellent! You\'ve learned あ');
+      setScore(prev => prev + 50);
       setTimeout(() => {
         handleNext();
       }, 1500);
     } else {
       setShowFeedback(true);
+      setFeedbackType('error');
       setFeedback('Not quite. Try again!');
       setTimeout(() => {
         setShowFeedback(false);
       }, 1500);
+    }
+  };
+
+  const getFeedbackColor = () => {
+    switch (feedbackType) {
+      case 'success': return 'bg-green-50 border-green-200 text-green-800';
+      case 'error': return 'bg-red-50 border-red-200 text-red-800';
+      default: return 'bg-blue-50 border-blue-200 text-blue-800';
     }
   };
 
@@ -264,72 +333,193 @@ export const CharacterTutorial: React.FC<CharacterTutorialProps> = ({ onComplete
   };
 
   return (
-    <div className={`min-h-screen bg-white flex items-center justify-center p-4 ${className}`}>
-      <div className="max-w-2xl w-full space-y-8">
+    <div className={`min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 ${className}`}>
+      <div className="max-w-4xl w-full space-y-8">
         {/* Progress */}
         <div className="text-center">
-          <p className="text-sm text-gray-500">Interactive Tutorial</p>
-          <div className="w-full bg-gray-200 h-2 mt-2">
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+            <span>Step {currentStep + 1} of {tutorialSteps.length}</span>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                <Star className="w-4 h-4 text-yellow-500" />
+                <span>{score} points</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Clock className="w-4 h-4" />
+                <span>{Math.floor(timeSpent / 60)}:{(timeSpent % 60).toString().padStart(2, '0')}</span>
+              </div>
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 h-2 rounded-full">
             <div 
-              className="bg-black h-2 transition-all duration-300"
+              className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
             />
           </div>
         </div>
 
         {/* Step Content */}
-        <div className="text-center space-y-6">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="heading text-2xl font-bold">{currentStepData.title}</h2>
-            <p className="body text-base text-gray-600 mt-2">
-              {currentStepData.description}
-            </p>
-          </motion.div>
-
-          {renderStepContent()}
-
-          {/* Feedback */}
-          <AnimatePresence>
-            {showFeedback && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-green-50 border-base p-4 rounded-sm"
-              >
-                <p className="text-sm text-green-800">{feedback}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Actions */}
-        <div className="space-y-4">
-          {(currentStep === 0 || drawingComplete || currentStep === 3) && (
-            <AccessibleButton
-              onClick={handleNext}
-              variant="primary"
-              size="lg"
-              className="w-full"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center space-y-6"
             >
-              {currentStep === tutorialSteps.length - 1 ? 'Complete Tutorial' : 'Next Step'}
-            </AccessibleButton>
-          )}
-          
-          <div className="text-center">
-            <button
-              onClick={onComplete}
-              className="text-sm text-gray-500 hover:text-gray-700 underline"
-            >
-              Skip tutorial
-            </button>
+              <div>
+                <h2 className="heading text-3xl font-bold text-gray-900">{currentStepData.title}</h2>
+                <p className="body text-lg text-gray-600 mt-2">
+                  {currentStepData.description}
+                </p>
+              </div>
+
+              {renderStepContent()}
+
+              {/* Feedback */}
+              <AnimatePresence>
+                {showFeedback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className={`border rounded-lg p-4 ${getFeedbackColor()}`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      {feedbackType === 'success' && <CheckCircle className="w-5 h-5" />}
+                      <p className="text-sm font-medium">{feedback}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Actions */}
+            <div className="space-y-4">
+              {(currentStep === 0 || drawingComplete || currentStep === 3) && (
+                <AccessibleButton
+                  onClick={handleNext}
+                  variant="primary"
+                  size="lg"
+                  className="w-full px-8 py-4 text-lg font-semibold"
+                >
+                  {currentStep === tutorialSteps.length - 1 ? 'Complete Tutorial' : 'Next Step'}
+                </AccessibleButton>
+              )}
+              
+              <div className="text-center">
+                <button
+                  onClick={onComplete}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+                >
+                  Skip tutorial
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Character Info */}
+            <div className="bg-white border-base rounded-lg p-6 shadow-sm">
+              <div className="text-center space-y-4">
+                <div className="text-6xl font-bold text-primary">{currentStepData.character}</div>
+                <div>
+                  <h3 className="font-semibold text-lg">Hiragana あ</h3>
+                  <p className="text-sm text-gray-600">Pronunciation: "ah"</p>
+                </div>
+                
+                {currentStepData.audioUrl && (
+                  <button
+                    onClick={playAudio}
+                    className="flex items-center space-x-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                  >
+                    {isAudioPlaying ? (
+                      <VolumeX className="w-4 h-4" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                    <span className="text-sm font-medium">Listen</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Hints & Tips */}
+            <div className="bg-white border-base rounded-lg p-6 shadow-sm">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Hints & Tips</h3>
+                  <button
+                    onClick={() => setShowHints(!showHints)}
+                    className="text-sm text-primary hover:text-primary-dark transition-colors"
+                  >
+                    {showHints ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                
+                <AnimatePresence>
+                  {showHints && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-3"
+                    >
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-700 mb-2">Hints:</h4>
+                        <ul className="space-y-1">
+                          {currentStepData.hints.map((hint, index) => (
+                            <li key={index} className="text-xs text-gray-600 flex items-start space-x-2">
+                              <Target className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
+                              <span>{hint}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-700 mb-2">Tips:</h4>
+                        <ul className="space-y-1">
+                          {currentStepData.tips.map((tip, index) => (
+                            <li key={index} className="text-xs text-gray-600 flex items-start space-x-2">
+                              <Zap className="w-3 h-3 text-yellow-500 mt-0.5 flex-shrink-0" />
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Progress Stats */}
+            <div className="bg-white border-base rounded-lg p-6 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4">Your Progress</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Score</span>
+                  <span className="font-medium">{score} points</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Attempts</span>
+                  <span className="font-medium">{attempts}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Time</span>
+                  <span className="font-medium">{Math.floor(timeSpent / 60)}:{(timeSpent % 60).toString().padStart(2, '0')}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Audio Element */}
+        <audio ref={audioRef} src={currentStepData.audioUrl} />
       </div>
     </div>
   );

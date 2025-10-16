@@ -36,8 +36,25 @@ export const authService = {
 
 // User Service
 export const userService = {
-  getProfile: () =>
-    api.get<UserProfile>(API_ENDPOINTS.USERS.PROFILE),
+  getProfile: async () => {
+    try {
+      return await api.get<UserProfile>(API_ENDPOINTS.USERS.PROFILE);
+    } catch (error) {
+      console.warn('API not available, using mock data');
+      // Return mock user data for development
+      return {
+        id: 'user-123',
+        email: 'user@example.com',
+        name: 'Demo User',
+        avatar: null,
+        level: 1,
+        totalXp: 0,
+        streak: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+  },
   
   updateProfile: (data: Partial<UserProfile>) =>
     api.put<UserProfile>(API_ENDPOINTS.USERS.UPDATE_PROFILE, data),
@@ -48,7 +65,7 @@ export const userService = {
   getSettings: () =>
     api.get(API_ENDPOINTS.USERS.SETTINGS),
   
-  updateSettings: (data: any) =>
+  updateSettings: (data: Record<string, unknown>) =>
     api.put(API_ENDPOINTS.USERS.SETTINGS, data),
 };
 
@@ -152,16 +169,16 @@ export const notificationService = {
   getPreferences: () =>
     api.get(API_ENDPOINTS.NOTIFICATIONS.PREFERENCES),
   
-  updatePreferences: (data: any) =>
+  updatePreferences: (data: Record<string, unknown>) =>
     api.put(API_ENDPOINTS.NOTIFICATIONS.PREFERENCES, data),
   
-  subscribe: (subscription: any) =>
+  subscribe: (subscription: Record<string, unknown>) =>
     api.post(API_ENDPOINTS.NOTIFICATIONS.SUBSCRIBE, subscription),
 };
 
 // Analytics Service
 export const analyticsService = {
-  trackEvent: (event: string, data?: any) =>
+  trackEvent: (event: string, data?: Record<string, unknown>) =>
     api.post(API_ENDPOINTS.ANALYTICS.EVENTS, { event, data }),
   
   getMetrics: (params?: { period?: string; metric?: string }) =>

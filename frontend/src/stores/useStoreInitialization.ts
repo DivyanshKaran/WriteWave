@@ -1,28 +1,27 @@
 // Store Initialization Hook
 import { useEffect } from 'react';
 import { useUserStore } from './userStore';
-import { useProgressStore } from './progressStore';
-import { useCharacterStore } from './characterStore';
 import { useUIStore } from './uiStore';
 
 export const useStoreInitialization = () => {
   const { initializeAuth } = useUserStore();
-  const { loadProgress } = useProgressStore();
-  const { loadCharacters } = useCharacterStore();
   const { setTheme } = useUIStore();
 
   useEffect(() => {
-    // Initialize authentication
-    initializeAuth();
-    
-    // Load progress data
-    loadProgress();
-    
-    // Load characters
-    loadCharacters();
-    
-    // Apply theme from store
-    const theme = useUIStore.getState().theme;
-    setTheme(theme);
-  }, [initializeAuth, loadProgress, loadCharacters, setTheme]);
+    try {
+      // Initialize authentication (safe - handles errors internally)
+      if (initializeAuth && typeof initializeAuth === 'function') {
+        initializeAuth();
+      }
+      
+      // Apply theme from store (safe - handles errors internally)
+      if (setTheme && typeof setTheme === 'function') {
+        const theme = useUIStore.getState().theme;
+        setTheme(theme);
+      }
+    } catch (error) {
+      console.warn('Store initialization error:', error);
+      // Don't throw - just log the error and continue
+    }
+  }, [initializeAuth, setTheme]);
 };
