@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { logger } from '@/config/logger';
-import { config } from '@/config';
+import { logger } from '../config/logger';
+import { config } from '../config';
 import { 
   XpTransaction, 
   XpTransactionInput, 
@@ -8,8 +8,8 @@ import {
   XpCalculation,
   LevelInfo,
   UserProgress
-} from '@/types';
-import { cacheGet, cacheSet, cacheDel } from '@/config/redis';
+} from '../types';
+import { cacheGet, cacheSet, cacheDel } from '../config/redis';
 
 export class XpService {
   private prisma: PrismaClient;
@@ -477,4 +477,4 @@ export class XpService {
 }
 
 // Export singleton instance
-export const xpService = new XpService(require('@/config/database').default);
+export const xpService = new XpService(require('../config/database').default);

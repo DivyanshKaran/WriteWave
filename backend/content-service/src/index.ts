@@ -2,21 +2,23 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { config } from '@/config';
-import { logger } from '@/config/logger';
-import { apiRoutes } from '@/routes';
-import { connectDatabase } from '@/config/database';
-import { connectRedis } from '@/config/redis';
+import { config } from './config';
+import { logger } from './config/logger';
+import { apiRoutes } from './routes';
+import { ensureUploadDir } from './middleware/uploads';
+import { connectDatabase } from './config/database';
+import { connectRedis } from './config/redis';
 
 // Create Express app
 const app = express();
+ensureUploadDir();
 
 // Security middleware
 app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: config.CORS_ORIGIN || '*',
+  origin: config.cors?.origin || '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -41,6 +43,13 @@ app.use(limiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request ID middleware
+app.use((req: any, res, next) => {
+  req.id = Math.random().toString(36).substr(2, 9);
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -103,15 +112,20 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
 });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`${signal} received, shutting down gracefully`);
+  try {
+    const { disconnectKafka } = await import('../../shared/utils/kafka');
+    await disconnectKafka();
+    logger.info('Kafka connections closed');
+  } catch (error) {
+    logger.warn('Error disconnecting Kafka (non-fatal)', { error: (error as any).message });
+  }
   process.exit(0);
-});
+};
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Start server
 const startServer = async () => {
@@ -124,12 +138,23 @@ const startServer = async () => {
     await connectRedis();
     logger.info('Redis connected successfully');
 
+    // Initialize Kafka producer if enabled
+    if (process.env.ENABLE_KAFKA === 'true') {
+      try {
+        const { getProducer } = await import('../../shared/utils/kafka');
+        await getProducer();
+        logger.info('Kafka producer connected');
+      } catch (error) {
+        logger.warn('Failed to connect Kafka producer (non-fatal)', { error: (error as any).message });
+      }
+    }
+
     // Start server
-    const PORT = config.PORT || 8002;
+    const PORT = config.port || 8002;
     app.listen(PORT, () => {
       logger.info(`Content Service running on port ${PORT}`, {
         port: PORT,
-        environment: config.NODE_ENV,
+        environment: config.nodeEnv,
         timestamp: new Date().toISOString()
       });
     });

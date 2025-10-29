@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const user_controller_1 = require("../controllers/user.controller");
+const validation_1 = require("../middleware/validation");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.use(auth_1.authenticateToken);
+router.get('/profile', user_controller_1.userController.getUserProfile);
+router.put('/profile', (0, validation_1.validate)(validation_1.validationSchemas.userProfileUpdate), user_controller_1.userController.updateUserProfile);
+router.get('/settings', user_controller_1.userController.getUserSettings);
+router.put('/settings', (0, validation_1.validate)(validation_1.validationSchemas.userSettingsUpdate), user_controller_1.userController.updateUserSettings);
+router.get('/sessions', user_controller_1.userController.getUserSessions);
+router.post('/deactivate', user_controller_1.userController.deactivateUser);
+router.post('/reactivate', user_controller_1.userController.reactivateUser);
+router.delete('/account', user_controller_1.userController.deleteUser);
+router.get('/stats', user_controller_1.userController.getUserStats);
+router.put('/avatar', user_controller_1.userController.updateUserAvatar);
+router.get('/search', (0, validation_1.validateQuery)(validation_1.validationSchemas.searchQuery), user_controller_1.userController.searchUsers);
+router.get('/admin/users', auth_1.requireAdmin, (0, validation_1.validateQuery)(validation_1.validationSchemas.paginationQuery), user_controller_1.userController.getAllUsers);
+router.get('/admin/users/:userId', auth_1.requireAdmin, (0, validation_1.validateParams)(validation_1.validationSchemas.userIdParam), user_controller_1.userController.getUserById);
+exports.default = router;
+//# sourceMappingURL=user.routes.js.map

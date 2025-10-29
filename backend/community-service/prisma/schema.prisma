@@ -11,17 +11,23 @@ datasource db {
 }
 
 // User model (references external user service)
+// Note: This model stores denormalized readonly fields for performance.
+// Authoritative user data (email, bio, etc.) is managed by user-service.
+// Denormalized fields are synced via Kafka user.updated events.
 model User {
   id                String   @id @default(cuid())
-  externalUserId    String   @unique // Reference to user service
-  username          String   @unique
-  email             String   @unique
-  displayName       String?
-  avatar            String?
-  bio               String?
+  externalUserId    String   @unique // Reference to user-service ID (authoritative)
+  
+  // Denormalized readonly fields (synced from user-service via Kafka)
+  // DO NOT update these directly - they are managed by user-sync service
+  username          String   @unique // Cached from user-service
+  displayName       String?  // Computed from user-service firstName/lastName
+  avatar            String?  // Cached from user-service UserProfile.avatar
+  
+  // Service-specific fields (authoritative in this service)
   reputation        Int      @default(0)
-  isModerator       Boolean  @default(false)
-  isBanned          Boolean  @default(false)
+  isModerator       Boolean  @default(false) // Can be synced from user-service if global moderation roles exist
+  isBanned          Boolean  @default(false) // Community-specific ban status
   banReason         String?
   banExpiresAt      DateTime?
   lastActiveAt      DateTime @default(now())

@@ -1,0 +1,1741 @@
+{
+	"info": {
+		"_postman_id": "content-service-api",
+		"name": "WriteWave Content Service API",
+		"description": "Comprehensive API collection for WriteWave Content Service. Includes all endpoints for characters, vocabulary, lessons, and media management.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "writewave-content-service"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"health"
+							]
+						},
+						"description": "Check the health status of the Content Service including database and Redis connections"
+					},
+					"response": []
+				},
+				{
+					"name": "API Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Get API information and available endpoints"
+					},
+					"response": []
+				}
+			],
+			"description": "Health check and API information endpoints"
+		},
+		{
+			"name": "Characters",
+			"item": [
+				{
+					"name": "Get All Characters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters?page=1&limit=20&sortBy=learningOrder&sortOrder=asc&type=KANJI&jlptLevel=N5&difficultyLevel=BEGINNER",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								},
+								{
+									"key": "sortBy",
+									"value": "learningOrder",
+									"description": "Field to sort by (learningOrder, createdAt, etc.)"
+								},
+								{
+									"key": "sortOrder",
+									"value": "asc",
+									"description": "Sort order: asc or desc"
+								},
+								{
+									"key": "type",
+									"value": "KANJI",
+									"description": "Filter by type: HIRAGANA, KATAKANA, KANJI",
+									"disabled": true
+								},
+								{
+									"key": "jlptLevel",
+									"value": "N5",
+									"description": "Filter by JLPT level: N5, N4, N3, N2, N1",
+									"disabled": true
+								},
+								{
+									"key": "difficultyLevel",
+									"value": "BEGINNER",
+									"description": "Filter by difficulty: BEGINNER, INTERMEDIATE, ADVANCED, EXPERT",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all characters with optional pagination and filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Hiragana Characters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/hiragana",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								"hiragana"
+							]
+						},
+						"description": "Get all Hiragana characters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Katakana Characters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/katakana",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								"katakana"
+							]
+						},
+						"description": "Get all Katakana characters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Kanji by JLPT Level",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/kanji/:level",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								"kanji",
+								":level"
+							],
+							"variable": [
+								{
+									"key": "level",
+									"value": "N5",
+									"description": "JLPT Level: N5, N4, N3, N2, N1"
+								}
+							]
+						},
+						"description": "Get Kanji characters by JLPT level"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Character by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here",
+									"description": "Character ID"
+								}
+							]
+						},
+						"description": "Get a specific character by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Character Stroke Order",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id/stroke-order",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id",
+								"stroke-order"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here"
+								}
+							]
+						},
+						"description": "Get stroke order data for a character"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Character Examples",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id/examples",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id",
+								"examples"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here"
+								}
+							]
+						},
+						"description": "Get example words/phrases using the character"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Character Radicals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id/radicals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id",
+								"radicals"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here"
+								}
+							]
+						},
+						"description": "Get radical information for a Kanji character"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Character Compounds",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id/compounds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id",
+								"compounds"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here"
+								}
+							]
+						},
+						"description": "Get compound words containing the character"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Characters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/search?query=水&type=KANJI&jlptLevel=N5&page=1&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "水",
+									"description": "Search query (character, meaning, pronunciation, etc.)"
+								},
+								{
+									"key": "type",
+									"value": "KANJI",
+									"description": "Filter by type: HIRAGANA, KATAKANA, KANJI",
+									"disabled": true
+								},
+								{
+									"key": "jlptLevel",
+									"value": "N5",
+									"description": "Filter by JLPT level",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page"
+								}
+							]
+						},
+						"description": "Search characters by query string with optional filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Character Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								"statistics"
+							]
+						},
+						"description": "Get statistics about characters (counts by type, level, etc.)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Random Characters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/random?count=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								"random"
+							],
+							"query": [
+								{
+									"key": "count",
+									"value": "5",
+									"description": "Number of random characters to return"
+								}
+							]
+						},
+						"description": "Get random characters"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Character",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"character\": \"水\",\n  \"type\": \"KANJI\",\n  \"jlptLevel\": \"N5\",\n  \"difficultyLevel\": \"BEGINNER\",\n  \"meaning\": \"water\",\n  \"pronunciation\": \"みず\",\n  \"romanization\": \"mizu\",\n  \"strokeCount\": 4,\n  \"kunyomi\": [\"みず\", \"すい\"],\n  \"onyomi\": [\"スイ\"],\n  \"radical\": \"水\",\n  \"radicalMeaning\": \"water\",\n  \"examples\": [\n    {\n      \"japanese\": \"水を飲む\",\n      \"english\": \"drink water\"\n    }\n  ],\n  \"usageNotes\": \"Common character for water-related words\",\n  \"learningOrder\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters"
+							]
+						},
+						"description": "Create a new character (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Character",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"meaning\": \"water, liquid\",\n  \"usageNotes\": \"Updated usage notes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here"
+								}
+							]
+						},
+						"description": "Update a character (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Character",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/characters/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"characters",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "char_id_here"
+								}
+							]
+						},
+						"description": "Delete a character (Admin only - requires authentication). Actually soft-deletes by setting isActive=false"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing Japanese characters (Hiragana, Katakana, Kanji)"
+		},
+		{
+			"name": "Vocabulary",
+			"item": [
+				{
+					"name": "Get All Vocabulary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary?page=1&limit=20&sortBy=createdAt&sortOrder=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"description": "Field to sort by"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc",
+									"description": "Sort order: asc or desc"
+								}
+							]
+						},
+						"description": "Get all vocabulary words with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vocabulary by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/:vocabularyId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								":vocabularyId"
+							],
+							"variable": [
+								{
+									"key": "vocabularyId",
+									"value": "vocab_id_here",
+									"description": "Vocabulary word ID"
+								}
+							]
+						},
+						"description": "Get a specific vocabulary word by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Vocabulary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/search?query=水&category=OTHER&jlptLevel=N5&page=1&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "水",
+									"description": "Search query (Japanese, English, romanization, pronunciation)"
+								},
+								{
+									"key": "category",
+									"value": "OTHER",
+									"description": "Filter by category",
+									"disabled": true
+								},
+								{
+									"key": "jlptLevel",
+									"value": "N5",
+									"description": "Filter by JLPT level",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Search vocabulary words"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vocabulary Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"statistics"
+							]
+						},
+						"description": "Get vocabulary statistics"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Random Vocabulary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/random?count=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"random"
+							],
+							"query": [
+								{
+									"key": "count",
+									"value": "5",
+									"description": "Number of random vocabulary words to return"
+								}
+							]
+						},
+						"description": "Get random vocabulary words"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vocabulary by Frequency",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/frequency?minFrequency=1&maxFrequency=1000&page=1&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"frequency"
+							],
+							"query": [
+								{
+									"key": "minFrequency",
+									"value": "1",
+									"description": "Minimum frequency value"
+								},
+								{
+									"key": "maxFrequency",
+									"value": "1000",
+									"description": "Maximum frequency value"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Get vocabulary words by frequency range"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vocabulary by Part of Speech",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/part-of-speech/:partOfSpeech",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"part-of-speech",
+								":partOfSpeech"
+							],
+							"variable": [
+								{
+									"key": "partOfSpeech",
+									"value": "noun",
+									"description": "Part of speech (noun, verb, adjective, etc.)"
+								}
+							]
+						},
+						"description": "Get vocabulary words by part of speech"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vocabulary by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/category/:category",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"category",
+								":category"
+							],
+							"variable": [
+								{
+									"key": "category",
+									"value": "FOOD",
+									"description": "Category: FOOD, TRAVEL, FAMILY, WORK, EDUCATION, HEALTH, SPORTS, ENTERTAINMENT, TECHNOLOGY, NATURE, CLOTHING, COLORS, NUMBERS, TIME, WEATHER, EMOTIONS, ACTIONS, ADJECTIVES, VERBS, NOUNS, OTHER"
+								}
+							]
+						},
+						"description": "Get vocabulary words by category"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vocabulary by JLPT Level",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/jlpt/:level",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								"jlpt",
+								":level"
+							],
+							"variable": [
+								{
+									"key": "level",
+									"value": "N5",
+									"description": "JLPT Level: N5, N4, N3, N2, N1"
+								}
+							]
+						},
+						"description": "Get vocabulary words by JLPT level"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Vocabulary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"japanese\": \"水\",\n  \"romanization\": \"mizu\",\n  \"english\": \"water\",\n  \"category\": \"OTHER\",\n  \"jlptLevel\": \"N5\",\n  \"difficultyLevel\": \"BEGINNER\",\n  \"partOfSpeech\": \"noun\",\n  \"pronunciation\": \"みず\",\n  \"audioUrl\": \"https://example.com/audio/mizu.mp3\",\n  \"exampleSentences\": [\n    {\n      \"japanese\": \"水を飲みます\",\n      \"romanization\": \"mizu wo nomimasu\",\n      \"english\": \"I drink water\"\n    }\n  ],\n  \"usageNotes\": \"Common word for water\",\n  \"culturalNotes\": \"Important for daily life in Japan\",\n  \"frequency\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary"
+							]
+						},
+						"description": "Create a new vocabulary word (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vocabulary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"english\": \"water, liquid\",\n  \"usageNotes\": \"Updated usage notes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/:vocabularyId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								":vocabularyId"
+							],
+							"variable": [
+								{
+									"key": "vocabularyId",
+									"value": "vocab_id_here"
+								}
+							]
+						},
+						"description": "Update a vocabulary word (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Vocabulary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/vocabulary/:vocabularyId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"vocabulary",
+								":vocabularyId"
+							],
+							"variable": [
+								{
+									"key": "vocabularyId",
+									"value": "vocab_id_here"
+								}
+							]
+						},
+						"description": "Delete a vocabulary word (Admin only - requires authentication). Actually soft-deletes by setting isActive=false"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing vocabulary words"
+		},
+		{
+			"name": "Lessons",
+			"item": [
+				{
+					"name": "Get All Lessons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons?page=1&limit=20&sortBy=learningOrder&=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								},
+								{
+									"key": "sortBy",
+									"value": "learningOrder",
+									"description": "Field to sort by"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc",
+									"description": "Sort order: asc or desc"
+								}
+							]
+						},
+						"description": "Get all lessons with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/:lessonId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								":lessonId"
+							],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "lesson_id_here",
+									"description": "Lesson ID"
+								}
+							]
+						},
+						"description": "Get a specific lesson by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson Steps",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/:lessonId/steps",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								":lessonId",
+								"steps"
+							],
+							"variable": [
+									{
+									"key": "lessonId",
+									"value": "lesson_id_here"
+								}
+							]
+						},
+						"description": "Get lesson steps/content structure"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson Prerequisites",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/:lessonId/prerequisites",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								":lessonId",
+								"prerequisites"
+							],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "lesson_id_here"
+								}
+							]
+						},
+						"description": "Get prerequisites for a lesson"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson Progression Path",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/:lessonId/progression",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								":lessonId",
+								"progression"
+							],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "lesson_id_here"
+								}
+							]
+						},
+						"description": "Get lesson progression path (prerequisites, next lessons, related lessons)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lessons by JLPT Level",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/level/:level",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								"level",
+								":level"
+							],
+							"variable": [
+								{
+									"key": "level",
+									"value": "N5",
+									"description": "JLPT Level: N5, N4, N3, N2, N1"
+								}
+							]
+						},
+						"description": "Get lessons by JLPT level"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lessons by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/category/:category",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								"category",
+								":category"
+							],
+							"variable": [
+								{
+									"key": "category",
+									"value": "CHARACTER_LEARNING",
+									"description": "Category: CHARACTER_LEARNING, VOCABULARY_LEARNING, GRAMMAR_LEARNING, READING_PRACTICE, LISTENING_PRACTICE, WRITING_PRACTICE"
+								}
+							]
+						},
+						"description": "Get lessons by category/type"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								"statistics"
+							]
+						},
+						"description": "Get lesson statistics"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lesson",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Introduction to Hiragana\",\n  \"description\": \"Learn the basics of Hiragana characters\",\n  \"type\": \"CHARACTER_LEARNING\",\n  \"jlptLevel\": \"N5\",\n  \"difficultyLevel\": \"BEGINNER\",\n  \"content\": {\n    \"sections\": [\n      {\n        \"type\": \"text\",\n        \"content\": \"Hiragana is one of the three Japanese writing systems\",\n        \"order\": 1\n      }\n    ]\n  },\n  \"objectives\": [\n    \"Learn all 46 basic Hiragana characters\",\n    \"Understand pronunciation and stroke order\"\n  ],\n  \"prerequisites\": [],\n  \"estimatedTime\": 30,\n  \"learningOrder\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons"
+							]
+						},
+						"description": "Create a new lesson (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Lesson",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"Updated description\",\n  \"estimatedTime\": 45\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/:lessonId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								":lessonId"
+							],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "lesson_id_here"
+								}
+							]
+						},
+						"description": "Update a lesson (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Lesson",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/lessons/:lessonId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"lessons",
+								":lessonId"
+							],
+							"variable": [
+								{
+									"key": "lessonId",
+									"value": "lesson_id_here"
+								}
+							]
+						},
+						"description": "Delete a lesson (Admin only - requires authentication). Actually soft-deletes by setting isActive=false"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing lessons"
+		},
+		{
+			"name": "Media",
+			"item": [
+				{
+					"name": "Get All Media Assets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media?page=1&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Get all media assets with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Media Asset by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/:mediaId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								":mediaId"
+							],
+							"variable": [
+								{
+									"key": "mediaId",
+									"value": "media_id_here",
+									"description": "Media asset ID"
+								}
+							]
+						},
+						"description": "Get a specific media asset by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Media Asset File",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/:mediaId/file",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								":mediaId",
+								"file"
+							],
+							"variable": [
+								{
+									"key": "mediaId",
+									"value": "media_id_here"
+								}
+							]
+						},
+						"description": "Get the actual media file (returns file stream)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Media Asset Thumbnail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/:mediaId/thumbnail",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								":mediaId",
+								"thumbnail"
+							],
+							"variable": [
+								{
+									"key": "mediaId",
+									"value": "media_id_here"
+								}
+							]
+						},
+						"description": "Get thumbnail for a media asset (for images/videos)"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Media Assets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/search?query=image&page=1&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "image",
+									"description": "Search query"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Search media assets"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Media by Type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/type/:type",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								"type",
+								":type"
+							],
+							"variable": [
+								{
+									"key": "type",
+									"value": "IMAGE",
+									"description": "Media type: IMAGE, AUDIO, VIDEO, ANIMATION"
+								}
+							]
+						},
+						"description": "Get media assets by type"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Media Statistics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								"statistics"
+							]
+						},
+						"description": "Get media asset statistics"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Media Asset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Media file to upload (images, audio, video, documents)"
+								},
+								{
+									"key": "type",
+									"value": "IMAGE",
+									"description": "Media type: IMAGE, AUDIO, VIDEO, ANIMATION",
+									"type": "text"
+								},
+								{
+									"key": "altText",
+									"value": "Image description",
+									"description": "Alt text for accessibility",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "Media asset description",
+									"description": "Description of the media asset",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "characterId",
+									"value": "",
+									"description": "Optional: Associate with character",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "vocabularyWordId",
+									"value": "",
+									"description": "Optional: Associate with vocabulary word",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "lessonId",
+									"value": "",
+									"description": "Optional: Associate with lesson",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/upload",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								"upload"
+							]
+						},
+						"description": "Upload a media asset (Admin only - requires authentication). Supports: images (jpeg, jpg, png, gif), audio (mp3, wav), video (mp4, avi, mov), documents (pdf, doc, docx). Max file size: 10MB"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Media Asset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"altText\": \"Updated alt text\",\n  \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/:mediaId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								":mediaId"
+							],
+							"variable": [
+								{
+									"key": "mediaId",
+									"value": "media_id_here"
+								}
+							]
+						},
+						"description": "Update a media asset (Admin only - requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Media Asset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/media/:mediaId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"media",
+								":mediaId"
+							],
+							"variable": [
+								{
+									"key": "mediaId",
+									"value": "media_id_here"
+								}
+							]
+						},
+						"description": "Delete a media asset (Admin only - requires authentication)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing media assets (images, audio, video)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8002",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

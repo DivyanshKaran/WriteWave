@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '@/types';
-import { jwtService } from '@/utils/jwt';
-import { prisma } from '@/config/database';
-import { logger, authLogger } from '@/config/logger';
+import { AuthenticatedRequest } from '../types';
+import { jwtService } from '../utils/jwt';
+import { prisma } from '../config/database';
+import { logger, authLogger } from '../config/logger';
 
 // Authentication middleware
 export const authenticateToken = async (
@@ -430,10 +430,8 @@ export const requestId = (req: Request, res: Response, next: NextFunction): void
 // Health check middleware
 export const healthCheck = (req: Request, res: Response): void => {
   res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+    status: 'ok',
     version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
   });
 };

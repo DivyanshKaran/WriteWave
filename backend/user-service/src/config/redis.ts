@@ -47,6 +47,14 @@ export const connectRedis = async (): Promise<RedisClientType> => {
     await redisClient.connect();
     return redisClient;
   } catch (error) {
+    if (process.env.OPTIONAL_REDIS === 'true') {
+      logger.warn('Redis optional: proceeding without Redis', { error: (error as any)?.message });
+      // Return a client instance without connecting to avoid null access
+      if (!redisClient) {
+        redisClient = createClient(redisConfig);
+      }
+      return redisClient;
+    }
     logger.error('Redis connection failed', { error });
     throw error;
   }
@@ -283,7 +291,7 @@ export class CacheService {
   async sIsMember(key: string, member: string): Promise<boolean> {
     try {
       const result = await this.client.sIsMember(key, member);
-      return result === 1;
+      return Boolean(result);
     } catch (error) {
       logger.error('Cache sIsMember failed', { key, member, error });
       return false;
@@ -355,8 +363,14 @@ export class CacheService {
   }
 }
 
-// Export cache service instance
-export const cacheService = new CacheService();
+// Export cache service instance (lazy initialization)
+let _cacheService: CacheService | null = null;
+export const getCacheService = (): CacheService => {
+  if (!_cacheService) {
+    _cacheService = new CacheService();
+  }
+  return _cacheService;
+};
 
 // Session management with Redis
 export class SessionService {
@@ -458,5 +472,11 @@ export class SessionService {
   }
 }
 
-// Export session service instance
-export const sessionService = new SessionService();
+// Export session service instance (lazy initialization)
+let _sessionService: SessionService | null = null;
+export const getSessionService = (): SessionService => {
+  if (!_sessionService) {
+    _sessionService = new SessionService();
+  }
+  return _sessionService;
+};

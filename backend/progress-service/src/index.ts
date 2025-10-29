@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { config } from '@/config';
-import { logger } from '@/config/logger';
-import { apiRoutes } from '@/routes';
-import { connectDatabase } from '@/config/database';
-import { connectRedis } from '@/config/redis';
+import { config } from './config';
+import { logger } from './config/logger';
+import apiRoutes from './routes';
+import { connectDatabase } from './config/database';
+import { connectRedis } from './config/redis';
 
 // Create Express app
 const app = express();
@@ -16,8 +16,8 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: config.CORS_ORIGIN || '*',
-  credentials: true,
+  origin: (config.CORS_ORIGIN || '*').split(','),
+  credentials: config.CORS_CREDENTIALS,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
@@ -100,15 +100,20 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
 });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`${signal} received, shutting down gracefully`);
+  try {
+    const { disconnectKafka } = await import('../../shared/utils/kafka');
+    await disconnectKafka();
+    logger.info('Kafka connections closed');
+  } catch (error) {
+    logger.warn('Error disconnecting Kafka (non-fatal)', { error: (error as any).message });
+  }
   process.exit(0);
-});
+};
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Start server
 const startServer = async () => {
@@ -120,6 +125,17 @@ const startServer = async () => {
     // Connect to Redis
     await connectRedis();
     logger.info('Redis connected successfully');
+
+    // Initialize Kafka producer if enabled
+    if (process.env.ENABLE_KAFKA === 'true') {
+      try {
+        const { getProducer } = await import('../../shared/utils/kafka');
+        await getProducer();
+        logger.info('Kafka producer connected');
+      } catch (error) {
+        logger.warn('Failed to connect Kafka producer (non-fatal)', { error: (error as any).message });
+      }
+    }
 
     // Start server
     const PORT = config.PORT || 8003;

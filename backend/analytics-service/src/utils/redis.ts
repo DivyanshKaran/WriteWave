@@ -7,14 +7,11 @@ export class RedisClient {
 
   constructor() {
     this.client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-      retryDelayOnFailover: 100,
       enableReadyCheck: false,
-      maxLoadingTimeout: 1000,
       lazyConnect: true,
-      retryDelayOnClusterDown: 300,
       enableOfflineQueue: false,
       maxRetriesPerRequest: 3,
-    });
+    } as any);
 
     this.setupEventHandlers();
     this.connect();

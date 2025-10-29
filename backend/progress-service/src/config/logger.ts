@@ -48,7 +48,7 @@ const jsonFormat = winston.format.combine(
 );
 
 // Transports
-const transports = [
+const transports: winston.transport[] = [
   // Console transport
   new winston.transports.Console({
     level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',

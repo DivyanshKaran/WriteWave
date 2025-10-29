@@ -1,0 +1,366 @@
+_format_version: "3.0"
+
+# Simplified Kong Configuration for WriteWave Microservices
+# This configuration uses only bundled plugins
+
+services:
+  # User Service (Port 8001)
+  - name: user-service
+    url: http://host.docker.internal:8001
+    routes:
+      - name: user-service-v1
+        paths:
+          - /api/v1/users
+          - /api/v1/auth
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+  # Content Service (Port 8002)
+  - name: content-service
+    url: http://host.docker.internal:8002
+    routes:
+      - name: content-service-v1
+        paths:
+          - /api/v1/content
+          - /api/v1/characters
+          - /api/v1/kanji
+          - /api/v1/hiragana
+          - /api/v1/katakana
+          - /api/v1/epub
+          - /api/v1/vocabulary
+          - /api/v1/lessons
+          - /api/v1/media
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+  # Articles Service (Port 8002 - same as content service)
+  - name: articles-service
+    url: http://host.docker.internal:8002
+    routes:
+      - name: articles-service-v1
+        paths:
+          - /api/articles
+          - /api/v1/articles
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+  # Progress Service (Port 8003)
+  - name: progress-service
+    url: http://host.docker.internal:8003
+    routes:
+      - name: progress-service-v1
+        paths:
+          - /api/v1/progress
+          - /api/v1/achievements
+          - /api/v1/stats
+          - /api/v1/xp
+          - /api/v1/streaks
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+  # Community Service (Port 8004)
+  - name: community-service
+    url: http://host.docker.internal:8004
+    routes:
+      - name: community-service-v1
+        paths:
+          - /api/v1/community
+          - /api/v1/discussions
+          - /api/v1/groups
+          - /api/v1/leaderboard
+          - /api/v1/social
+          - /api/v1/forum
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+  # Notification Service (Port 8005)
+  - name: notification-service
+    url: http://host.docker.internal:8005
+    routes:
+      - name: notification-service-v1
+        paths:
+          - /api/v1/notifications
+          - /api/v1/websocket
+          - /api/v1/preferences
+          - /api/v1/subscriptions
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+  # Analytics Service (Port 8006)
+  - name: analytics-service
+    url: http://host.docker.internal:8006
+    routes:
+      - name: analytics-service-v1
+        paths:
+          - /api/v1/analytics
+          - /api/v1/metrics
+          - /api/v1/reports
+          - /api/v1/events
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+
+# Health check endpoints
+  - name: health-check-service
+    url: http://host.docker.internal:8007
+    routes:
+      - name: health-check-route
+        paths:
+          - /health
+          - /health/users
+          - /health/content
+          - /health/progress
+          - /health/community
+          - /health/notifications
+          - /health/analytics
+        methods:
+          - GET
+          - OPTIONS
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - OPTIONS
+              headers:
+                - Accept
+                - Content-Type
+              credentials: true
+              max_age: 3600

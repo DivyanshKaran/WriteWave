@@ -1,4 +1,4 @@
-import { prisma } from '@/models';
+import { prisma } from '../models';
 import { 
   Post, 
   Comment, 
@@ -10,10 +10,11 @@ import {
   VoteType,
   PaginationQuery,
   SearchQuery
-} from '@/types';
-import { AppError } from '@/utils/errors';
-import { createSlug } from '@/utils/helpers';
-import { contentModeration } from '@/utils/moderation';
+} from '../types';
+import { AppError } from '../utils/errors';
+import { createSlug } from '../utils/helpers';
+import { contentModeration } from '../utils/moderation';
+import { publish, Topics } from '../../../shared/utils/kafka';
 
 export class ForumService {
   // Categories
@@ -137,6 +138,9 @@ export class ForumService {
         metadata: { postId: post.id, categoryId: post.categoryId }
       }
     });
+
+    // Emit post.created
+    try { await publish(Topics.COMMUNITY_EVENTS, post.id, { type: 'post.created', id: post.id, authorId, categoryId: post.categoryId, occurredAt: new Date().toISOString() }); } catch {}
 
     return post;
   }
@@ -333,6 +337,9 @@ export class ForumService {
         metadata: { postId: data.postId, commentId: comment.id }
       }
     });
+
+    // Emit comment.created
+    try { await publish(Topics.COMMUNITY_EVENTS, comment.id, { type: 'comment.created', id: comment.id, commentId: comment.id, postId: data.postId, postAuthorId: post.authorId, authorId, parentId: data.parentId, occurredAt: new Date().toISOString() }); } catch {}
 
     return comment;
   }

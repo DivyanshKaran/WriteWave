@@ -1,4 +1,5 @@
-import { prisma } from '@/models';
+import { prisma } from '../models';
+import { User as PrismaUser } from '@prisma/client';
 import { 
   Report, 
   CreateReportRequest, 
@@ -11,9 +12,9 @@ import {
   ModerationResult,
   ContentFilter,
   PaginationQuery
-} from '@/types';
-import { AppError } from '@/utils/errors';
-import { contentModeration } from '@/utils/moderation';
+} from '../types';
+import { AppError } from '../utils/errors';
+import { contentModeration } from '../utils/moderation';
 
 export class ModerationService {
   // Reports
@@ -385,7 +386,7 @@ export class ModerationService {
   }
 
   // User Management
-  async suspendUser(userId: string, reason: string, duration: number, moderatorId: string): Promise<User> {
+  async suspendUser(userId: string, reason: string, duration: number, moderatorId: string): Promise<PrismaUser> {
     const moderator = await prisma.user.findUnique({ where: { id: moderatorId } });
     if (!moderator?.isModerator) {
       throw new AppError('Not authorized to suspend users', 403);
@@ -414,7 +415,7 @@ export class ModerationService {
     return user;
   }
 
-  async unsuspendUser(userId: string, moderatorId: string): Promise<User> {
+  async unsuspendUser(userId: string, moderatorId: string): Promise<PrismaUser> {
     const moderator = await prisma.user.findUnique({ where: { id: moderatorId } });
     if (!moderator?.isModerator) {
       throw new AppError('Not authorized to unsuspend users', 403);
@@ -443,7 +444,7 @@ export class ModerationService {
     return user;
   }
 
-  async promoteToModerator(userId: string, promoterId: string): Promise<User> {
+  async promoteToModerator(userId: string, promoterId: string): Promise<PrismaUser> {
     const promoter = await prisma.user.findUnique({ where: { id: promoterId } });
     if (!promoter?.isModerator) {
       throw new AppError('Not authorized to promote users', 403);
@@ -468,7 +469,7 @@ export class ModerationService {
     return user;
   }
 
-  async demoteFromModerator(userId: string, demoterId: string): Promise<User> {
+  async demoteFromModerator(userId: string, demoterId: string): Promise<PrismaUser> {
     const demoter = await prisma.user.findUnique({ where: { id: demoterId } });
     if (!demoter?.isModerator) {
       throw new AppError('Not authorized to demote users', 403);

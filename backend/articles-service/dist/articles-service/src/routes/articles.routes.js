@@ -1,0 +1,25 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.articlesRoutes = void 0;
+const express_1 = require("express");
+const articles_controller_1 = require("../controllers/articles.controller");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+exports.articlesRoutes = router;
+router.get('/', articles_controller_1.getArticles);
+router.get('/trending', articles_controller_1.getTrendingArticles);
+router.get('/featured', articles_controller_1.getFeaturedArticles);
+router.get('/tags/popular', articles_controller_1.getPopularTags);
+router.get('/stats', articles_controller_1.getArticleStats);
+router.get('/:id', articles_controller_1.getArticleById);
+router.get('/:id/comments', articles_controller_1.getComments);
+router.get('/user/:userId', articles_controller_1.getUserArticles);
+router.get('/user/:userId/stats', articles_controller_1.getUserArticleStats);
+router.post('/', auth_1.authenticate, articles_controller_1.createArticle);
+router.put('/:id', auth_1.authenticate, articles_controller_1.updateArticle);
+router.delete('/:id', auth_1.authenticate, articles_controller_1.deleteArticle);
+router.post('/:id/like', auth_1.authenticate, articles_controller_1.toggleLike);
+router.post('/:id/bookmark', auth_1.authenticate, articles_controller_1.toggleBookmark);
+router.post('/:id/comments', auth_1.authenticate, articles_controller_1.addComment);
+router.use(articles_controller_1.errorHandler);
+//# sourceMappingURL=articles.routes.js.map

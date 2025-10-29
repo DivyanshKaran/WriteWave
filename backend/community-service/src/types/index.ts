@@ -1,4 +1,39 @@
 // Core Types and Interfaces for Community Service
+import { 
+  VoteType as PrismaVoteType,
+  GroupRole as PrismaGroupRole,
+  ChallengeType as PrismaChallengeType,
+  FriendRequestStatus as PrismaFriendRequestStatus,
+  ReportReason as PrismaReportReason,
+  ReportStatus as PrismaReportStatus,
+  ActivityType as PrismaActivityType,
+  AchievementType as PrismaAchievementType,
+  LeaderboardType as PrismaLeaderboardType,
+  MentorshipStatus as PrismaMentorshipStatus
+} from '@prisma/client';
+
+// Re-export Prisma enums as both types and values
+export const VoteType = PrismaVoteType;
+export const GroupRole = PrismaGroupRole;
+export const ChallengeType = PrismaChallengeType;
+export const FriendRequestStatus = PrismaFriendRequestStatus;
+export const ReportReason = PrismaReportReason;
+export const ReportStatus = PrismaReportStatus;
+export const ActivityType = PrismaActivityType;
+export const AchievementType = PrismaAchievementType;
+export const LeaderboardType = PrismaLeaderboardType;
+export const MentorshipStatus = PrismaMentorshipStatus;
+
+export type VoteType = PrismaVoteType;
+export type GroupRole = PrismaGroupRole;
+export type ChallengeType = PrismaChallengeType;
+export type FriendRequestStatus = PrismaFriendRequestStatus;
+export type ReportReason = PrismaReportReason;
+export type ReportStatus = PrismaReportStatus;
+export type ActivityType = PrismaActivityType;
+export type AchievementType = PrismaAchievementType;
+export type LeaderboardType = PrismaLeaderboardType;
+export type MentorshipStatus = PrismaMentorshipStatus;
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -30,17 +65,27 @@ export interface User {
   externalUserId: string;
   username: string;
   email: string;
-  displayName?: string;
-  avatar?: string;
-  bio?: string;
+  displayName: string | null;
+  avatar: string | null;
+  bio: string | null;
   reputation: number;
   isModerator: boolean;
   isBanned: boolean;
-  banReason?: string;
-  banExpiresAt?: Date;
+  banReason: string | null;
+  banExpiresAt: Date | null;
   lastActiveAt: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Simplified user profile for Prisma queries that don't include all fields
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatar?: string | null;
+  reputation?: number;
+  lastActiveAt?: Date;
 }
 
 export interface CreateUserRequest {
@@ -62,10 +107,10 @@ export interface UpdateUserRequest {
 export interface ForumCategory {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   slug: string;
-  icon?: string;
-  color?: string;
+  icon: string | null;
+  color: string | null;
   order: number;
   isActive: boolean;
   createdAt: Date;
@@ -91,7 +136,7 @@ export interface Post {
   createdAt: Date;
   updatedAt: Date;
   category?: ForumCategory;
-  author?: User;
+  author?: UserProfile;
   comments?: Comment[];
   userVote?: VoteType;
 }
@@ -115,13 +160,13 @@ export interface Comment {
   content: string;
   postId: string;
   authorId: string;
-  parentId?: string;
+  parentId: string | null;
   isDeleted: boolean;
   upvotes: number;
   downvotes: number;
   createdAt: Date;
   updatedAt: Date;
-  author?: User;
+  author?: UserProfile;
   replies?: Comment[];
   userVote?: VoteType;
 }
@@ -136,16 +181,11 @@ export interface UpdateCommentRequest {
   content: string;
 }
 
-export enum VoteType {
-  UPVOTE = 'UPVOTE',
-  DOWNVOTE = 'DOWNVOTE'
-}
-
 // Study Group Types
 export interface StudyGroup {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   slug: string;
   ownerId: string;
   isPublic: boolean;
@@ -153,7 +193,7 @@ export interface StudyGroup {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  owner?: User;
+  owner?: UserProfile;
   members?: StudyGroupMember[];
   memberCount?: number;
   userRole?: GroupRole;
@@ -161,12 +201,12 @@ export interface StudyGroup {
 
 export interface StudyGroupMember {
   id: string;
-  groupId: string;
+  groupId?: string;
   userId: string;
   role: GroupRole;
   joinedAt: Date;
-  isActive: boolean;
-  user?: User;
+  isActive?: boolean;
+  user?: UserProfile;
 }
 
 export interface CreateStudyGroupRequest {
@@ -204,31 +244,17 @@ export interface CreateChallengeRequest {
   endDate: Date;
 }
 
-export enum GroupRole {
-  OWNER = 'OWNER',
-  ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR',
-  MEMBER = 'MEMBER'
-}
-
-export enum ChallengeType {
-  DAILY_STREAK = 'DAILY_STREAK',
-  WEEKLY_GOAL = 'WEEKLY_GOAL',
-  MONTHLY_CHALLENGE = 'MONTHLY_CHALLENGE',
-  CUSTOM = 'CUSTOM'
-}
-
 // Social Features Types
 export interface FriendRequest {
   id: string;
   senderId: string;
   receiverId: string;
   status: FriendRequestStatus;
-  message?: string;
+  message: string | null;
   createdAt: Date;
   updatedAt: Date;
-  sender?: User;
-  receiver?: User;
+  sender?: UserProfile;
+  receiver?: UserProfile;
 }
 
 export interface CreateFriendRequestRequest {
@@ -245,8 +271,8 @@ export interface Friendship {
   userId: string;
   friendId: string;
   createdAt: Date;
-  user?: User;
-  friend?: User;
+  user?: UserProfile;
+  friend?: UserProfile;
 }
 
 export interface Follow {
@@ -254,8 +280,15 @@ export interface Follow {
   followerId: string;
   followingId: string;
   createdAt: Date;
-  follower?: User;
-  following?: User;
+  follower?: UserProfile;
+  following?: UserProfile;
+}
+
+// Simplified study group for Prisma queries that don't include all fields
+export interface StudyGroupProfile {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export interface Activity {
@@ -263,12 +296,12 @@ export interface Activity {
   userId: string;
   type: ActivityType;
   title: string;
-  description?: string;
+  description: string | null;
   metadata?: any;
-  groupId?: string;
+  groupId: string | null;
   createdAt: Date;
-  user?: User;
-  group?: StudyGroup;
+  user?: UserProfile;
+  group?: StudyGroupProfile | null;
 }
 
 export interface UserAchievement {
@@ -277,7 +310,7 @@ export interface UserAchievement {
   achievementType: AchievementType;
   title: string;
   description: string;
-  icon?: string;
+  icon: string | null;
   points: number;
   unlockedAt: Date;
 }
@@ -286,53 +319,17 @@ export interface MentorshipRequest {
   id: string;
   mentorId: string;
   menteeId: string;
-  message?: string;
+  message: string | null;
   status: MentorshipStatus;
   createdAt: Date;
   updatedAt: Date;
-  mentor?: User;
-  mentee?: User;
+  mentor?: UserProfile;
+  mentee?: UserProfile;
 }
 
 export interface CreateMentorshipRequestRequest {
   mentorId: string;
   message?: string;
-}
-
-export enum FriendRequestStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  DECLINED = 'DECLINED',
-  CANCELLED = 'CANCELLED'
-}
-
-export enum ActivityType {
-  POST_CREATED = 'POST_CREATED',
-  COMMENT_ADDED = 'COMMENT_ADDED',
-  ACHIEVEMENT_UNLOCKED = 'ACHIEVEMENT_UNLOCKED',
-  FRIEND_ADDED = 'FRIEND_ADDED',
-  GROUP_JOINED = 'GROUP_JOINED',
-  CHALLENGE_COMPLETED = 'CHALLENGE_COMPLETED',
-  MILESTONE_REACHED = 'MILESTONE_REACHED'
-}
-
-export enum AchievementType {
-  FIRST_POST = 'FIRST_POST',
-  HELPFUL_MEMBER = 'HELPFUL_MEMBER',
-  ACTIVE_PARTICIPANT = 'ACTIVE_PARTICIPANT',
-  STUDY_GROUP_LEADER = 'STUDY_GROUP_LEADER',
-  MENTOR = 'MENTOR',
-  STREAK_MASTER = 'STREAK_MASTER',
-  KNOWLEDGE_SHARER = 'KNOWLEDGE_SHARER',
-  COMMUNITY_BUILDER = 'COMMUNITY_BUILDER'
-}
-
-export enum MentorshipStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  DECLINED = 'DECLINED',
-  CANCELLED = 'CANCELLED',
-  COMPLETED = 'COMPLETED'
 }
 
 // Leaderboard Types
@@ -341,11 +338,11 @@ export interface LeaderboardEntry {
   userId: string;
   type: LeaderboardType;
   score: number;
-  rank?: number;
-  period?: string;
-  category?: string;
+  rank: number | null;
+  period: string | null;
+  category: string | null;
   updatedAt: Date;
-  user?: User;
+  user?: UserProfile;
 }
 
 export interface LeaderboardQuery {
@@ -355,34 +352,40 @@ export interface LeaderboardQuery {
   limit?: number;
 }
 
-export enum LeaderboardType {
-  REPUTATION = 'REPUTATION',
-  POSTS_COUNT = 'POSTS_COUNT',
-  COMMENTS_COUNT = 'COMMENTS_COUNT',
-  STUDY_STREAK = 'STUDY_STREAK',
-  CHARACTERS_LEARNED = 'CHARACTERS_LEARNED',
-  GROUPS_JOINED = 'GROUPS_JOINED',
-  ACHIEVEMENTS_COUNT = 'ACHIEVEMENTS_COUNT'
+// Moderation Types
+// Simplified post for Prisma queries that don't include all fields
+export interface PostProfile {
+  id: string;
+  slug: string;
+  title: string;
+  content?: string;
+  author?: UserProfile;
 }
 
-// Moderation Types
+// Simplified comment for Prisma queries that don't include all fields
+export interface CommentProfile {
+  id: string;
+  content: string;
+  author?: UserProfile;
+}
+
 export interface Report {
   id: string;
   reporterId: string;
-  reportedId?: string;
-  postId?: string;
-  commentId?: string;
+  reportedId: string | null;
+  postId: string | null;
+  commentId: string | null;
   reason: ReportReason;
-  description?: string;
+  description: string | null;
   status: ReportStatus;
-  moderatorId?: string;
-  moderatorNotes?: string;
+  moderatorId: string | null;
+  moderatorNotes: string | null;
   createdAt: Date;
   updatedAt: Date;
-  reporter?: User;
-  reported?: User;
-  post?: Post;
-  comment?: Comment;
+  reporter?: UserProfile;
+  reported?: UserProfile | null;
+  post?: PostProfile | null;
+  comment?: CommentProfile | null;
 }
 
 export interface CreateReportRequest {
@@ -396,22 +399,6 @@ export interface CreateReportRequest {
 export interface UpdateReportRequest {
   status: ReportStatus;
   moderatorNotes?: string;
-}
-
-export enum ReportReason {
-  SPAM = 'SPAM',
-  HARASSMENT = 'HARASSMENT',
-  INAPPROPRIATE_CONTENT = 'INAPPROPRIATE_CONTENT',
-  HATE_SPEECH = 'HATE_SPEECH',
-  COPYRIGHT_VIOLATION = 'COPYRIGHT_VIOLATION',
-  OTHER = 'OTHER'
-}
-
-export enum ReportStatus {
-  PENDING = 'PENDING',
-  UNDER_REVIEW = 'UNDER_REVIEW',
-  RESOLVED = 'RESOLVED',
-  DISMISSED = 'DISMISSED'
 }
 
 // Search Types

@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.characterRoutes = void 0;
+const express_1 = require("express");
+const character_controller_1 = require("../controllers/character.controller");
+const router = (0, express_1.Router)();
+exports.characterRoutes = router;
+router.get('/hiragana', character_controller_1.characterController.getHiraganaCharacters);
+router.get('/katakana', character_controller_1.characterController.getKatakanaCharacters);
+router.get('/kanji/:level', character_controller_1.characterController.getKanjiCharacters);
+router.get('/:id', character_controller_1.characterController.getCharacterById);
+router.get('/:id/stroke-order', character_controller_1.characterController.getCharacterStrokeOrder);
+router.get('/:id/pronunciation', character_controller_1.characterController.getCharacterStrokeOrder);
+router.get('/:id/examples', character_controller_1.characterController.getCharacterRelationships);
+router.get('/:id/radicals', character_controller_1.characterController.getCharacterRelationships);
+router.get('/:id/compounds', character_controller_1.characterController.getCharacterRelationships);
+router.get('/search', character_controller_1.characterController.searchCharacters);
+router.get('/statistics', character_controller_1.characterController.getCharacterStatistics);
+router.get('/random', character_controller_1.characterController.getCharacters);
+router.post('/', character_controller_1.characterController.createCharacter);
+router.put('/:id', character_controller_1.characterController.updateCharacter);
+router.delete('/:id', character_controller_1.characterController.deleteCharacter);
+//# sourceMappingURL=character.routes.js.map

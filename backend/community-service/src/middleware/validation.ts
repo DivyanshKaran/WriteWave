@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-import { ValidationError } from '@/types';
+import { ValidationError } from '../types';
 
 // Validation schemas
 export const createPostSchema = Joi.object({

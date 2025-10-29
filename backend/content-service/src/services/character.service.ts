@@ -1,6 +1,6 @@
-import { prisma } from '@/config/database';
-import { contentCacheService } from '@/config/redis';
-import { logger, characterLogger } from '@/config/logger';
+import { prisma } from '../config/database';
+import { contentCacheService } from '../config/redis';
+import { logger, characterLogger } from '../config/logger';
 import { 
   CharacterData, 
   CharacterWithRelations, 
@@ -11,7 +11,7 @@ import {
   CharacterType,
   JLPTLevel,
   DifficultyLevel
-} from '@/types';
+} from '../types';
 
 // Character service class
 export class CharacterService {
@@ -163,7 +163,7 @@ export class CharacterService {
       if (cachedCharacters) {
         return {
           success: true,
-          data: cachedCharacters,
+          data: cachedCharacters as SearchResult<any>,
           message: 'Characters retrieved successfully'
         };
       }
@@ -198,7 +198,7 @@ export class CharacterService {
       if (cachedCharacters) {
         return {
           success: true,
-          data: cachedCharacters,
+          data: cachedCharacters as SearchResult<any>,
           message: 'Characters retrieved successfully'
         };
       }
@@ -442,9 +442,21 @@ export class CharacterService {
       const cacheKey = `search_${Buffer.from(query).toString('base64')}_${JSON.stringify(filters)}_${pagination.page || 1}_${pagination.limit || 20}`;
       const cachedResults = await contentCacheService.getCachedSearchResults(cacheKey);
       if (cachedResults) {
+        const { page = 1, limit = 20 } = pagination;
+        const total = cachedResults.length;
+        const totalPages = Math.ceil(total / limit);
+        
         return {
           success: true,
-          data: cachedResults,
+          data: {
+            data: cachedResults,
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
           message: 'Search results retrieved successfully'
         };
       }
@@ -502,7 +514,7 @@ export class CharacterService {
       };
 
       // Cache the results
-      await contentCacheService.cacheSearchResults(cacheKey, searchResults);
+      await contentCacheService.cacheSearchResults(cacheKey, result);
 
       characterLogger('characters_searched', undefined, {
         query,
@@ -597,6 +609,89 @@ export class CharacterService {
         success: false,
         error: 'Get relationships failed',
         message: 'An error occurred while retrieving character relationships'
+      };
+    }
+  }
+
+  // Get character by character text
+  async getCharacterByCharacter(character: string): Promise<any> {
+    try {
+      const result = await prisma.character.findUnique({
+        where: { character },
+        include: {
+          mediaAssets: true,
+          characterRelations: {
+            include: {
+              relatedCharacter: true,
+            },
+          },
+        },
+      });
+
+      return result;
+    } catch (error) {
+      logger.error('Get character by character failed', { error: error.message, character });
+      return null;
+    }
+  }
+
+  // Get character statistics
+  async getCharacterStats(): Promise<any> {
+    try {
+      const stats = await prisma.$transaction(async (tx) => {
+        const totalCharacters = await tx.character.count({
+          where: { isActive: true }
+        });
+
+        const totalKanji = await tx.character.count({
+          where: { 
+            isActive: true,
+            type: 'KANJI'
+          }
+        });
+
+        const kanjiByLevel = await tx.character.groupBy({
+          by: ['jlptLevel'],
+          where: {
+            isActive: true,
+            type: 'KANJI',
+            jlptLevel: { not: null }
+          },
+          _count: {
+            id: true
+          }
+        });
+
+        const recentExtractions = await tx.character.findMany({
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: {
+            character: true,
+            type: true,
+            createdAt: true
+          }
+        });
+
+        return {
+          totalCharacters,
+          totalKanji,
+          kanjiByLevel: kanjiByLevel.reduce((acc, item) => {
+            acc[item.jlptLevel || 'Unknown'] = item._count.id;
+            return acc;
+          }, {}),
+          recentExtractions
+        };
+      });
+
+      return stats;
+    } catch (error) {
+      logger.error('Get character stats failed', { error: error.message });
+      return {
+        totalCharacters: 0,
+        totalKanji: 0,
+        kanjiByLevel: {},
+        recentExtractions: []
       };
     }
   }

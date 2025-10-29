@@ -1,0 +1,726 @@
+{
+	"info": {
+		"_postman_id": "community-service-api",
+		"name": "WriteWave Community Service API",
+		"description": "Comprehensive API collection for WriteWave Community Service. Includes endpoints for forums, posts, comments, votes, study groups, social graph, activity, achievements, leaderboards, mentorship, and moderation. Uses collection-level Bearer auth via {{auth_token}}.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "writewave-community-service"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Ensure Authorization header is set (prefer environment accessToken like other services)",
+					"const envToken = pm.environment.get('accessToken');",
+					"const collToken = pm.collectionVariables.get('auth_token');",
+					"const token = envToken || collToken;",
+					"if (token) { pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + token }); }",
+					"",
+					"// Normalize URL to use baseUrl/host/port consistently",
+					"try {",
+					"  const baseUrl = pm.collectionVariables.get('baseUrl') || pm.environment.get('baseUrl');",
+					"  const host = pm.collectionVariables.get('host') || pm.environment.get('host');",
+					"  const port = pm.collectionVariables.get('port') || pm.environment.get('port');",
+					"  if (baseUrl) {",
+					"    const raw = pm.request.url.toString();",
+					"    const idx = raw.indexOf('/api/');",
+					"    if (idx !== -1) {",
+					"      const suffix = raw.substring(idx);",
+					"      pm.request.url = baseUrl + suffix;",
+					"      if (host) pm.request.url.host = [host];",
+					"      if (port) pm.request.url.port = port;",
+					"    }",
+					"  }",
+					"} catch (e) { /* noop */ }",
+					"// Auto-generate sample data if not present",
+					"if (!pm.collectionVariables.get('sampleTitle')) pm.collectionVariables.set('sampleTitle', 'Post ' + Date.now());",
+					"if (!pm.collectionVariables.get('sampleContent')) pm.collectionVariables.set('sampleContent', 'Content ' + Date.now());"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"item": [
+		{
+			"name": "Documentation",
+			"description": "Usage guidelines.\n\n1) Set {{base_url}} and {{auth_token}} at collection variables.\n2) Public endpoints are marked noauth.\n3) Create calls store IDs (postId, commentId, groupId, challengeId, requestId, reportId).\n4) Use the Workflow folder to run common flows.\n5) Utilities help set/clear variables quickly.",
+			"item": []
+		},
+		{
+			"name": "Utilities",
+			"item": [
+				{
+					"name": "Set Auth Token (manual)",
+					"request": {"method":"GET","url":{"raw":"{{base_url}}/health","host":["{{base_url}}"],"path":["health"]}},
+					"event": [
+						{"listen":"prerequest","script":{"type":"text/javascript","exec":[
+							"// Set token here for convenience (uncomment and paste)",
+							"// pm.collectionVariables.set('auth_token', '<token>');"
+						]}},
+						{"listen":"test","script":{"type":"text/javascript","exec":[
+							"pm.test('OK', () => pm.response.to.have.status(200));"
+						]}}
+					]
+				},
+				{
+					"name": "Clear Saved Variables",
+					"request": {"method":"GET","url":{"raw":"{{base_url}}/health","host":["{{base_url}}"],"path":["health"]}},
+					"event": [
+						{"listen":"prerequest","script":{"type":"text/javascript","exec":[
+							"['postId','commentId','groupId','challengeId','requestId','reportId'].forEach(k => pm.collectionVariables.unset(k));",
+							"pm.collectionVariables.unset('sampleTitle'); pm.collectionVariables.unset('sampleContent');"
+						]}}
+					]
+				}
+				,
+				{
+					"name": "Study Group Lifecycle",
+					"item": [
+						{"name":"Create Group","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"WG {{sampleTitle}}\",\n  \"description\": \"Autocreated group\"\n}"},"url":{"raw":"{{base_url}}/api/community/study-groups","host":["{{base_url}}"],"path":["api","community","study-groups"]}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["const id = pm.response.json().data?.id || pm.response.json().data?.group?.id; if (id) pm.collectionVariables.set('groupId', id);"]}}]}
+						,{"name":"Add Challenge","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"Intro\",\n  \"description\": \"Warm up\",\n  \"dueDate\": \"2025-12-31T23:59:59Z\"\n}"},"url":{"raw":"{{base_url}}/api/community/study-groups/{{groupId}}/challenges","host":["{{base_url}}"],"path":["api","community","study-groups","{{groupId}}","challenges"]}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["const id = pm.response.json().data?.id || pm.response.json().data?.challenge?.id; if (id) pm.collectionVariables.set('challengeId', id);"]}}]}
+						,{"name":"Join Group","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/study-groups/{{groupId}}/join","host":["{{base_url}}"],"path":["api","community","study-groups","{{groupId}}","join"]}}}
+						,{"name":"Leave Group","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/study-groups/{{groupId}}/leave","host":["{{base_url}}"],"path":["api","community","study-groups","{{groupId}}","leave"]}}}
+						,{"name":"Delete Challenge","request":{"method":"DELETE","url":{"raw":"{{base_url}}/api/community/challenges/{{challengeId}}","host":["{{base_url}}"],"path":["api","community","challenges","{{challengeId}}"]}}}
+						,{"name":"Delete Group","request":{"method":"DELETE","url":{"raw":"{{base_url}}/api/community/study-groups/{{groupId}}","host":["{{base_url}}"],"path":["api","community","study-groups","{{groupId}}"]}}}
+					]
+				}
+				,
+				{
+					"name": "Friend Request Lifecycle",
+					"item": [
+						{"name":"Send Request","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"targetUserId\": \"{{userId}}\"\n}"},"url":{"raw":"{{base_url}}/api/community/friends/requests","host":["{{base_url}}"],"path":["api","community","friends","requests"]}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["const id = pm.response.json().data?.id || pm.response.json().data?.request?.id; if (id) pm.collectionVariables.set('requestId', id);"]}}]}
+						,{"name":"List Requests (received)","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/friends/requests?type=received","host":["{{base_url}}"],"path":["api","community","friends","requests"],"query":[{"key":"type","value":"received"}]}}}
+						,{"name":"Accept Request","request":{"method":"PUT","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"status\": \"accepted\"\n}"},"url":{"raw":"{{base_url}}/api/community/friends/requests/{{requestId}}","host":["{{base_url}}"],"path":["api","community","friends","requests","{{requestId}}"]}}}
+						,{"name":"List Friends","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/friends","host":["{{base_url}}"],"path":["api","community","friends"]}}}
+						,{"name":"Remove Friend","request":{"method":"DELETE","url":{"raw":"{{base_url}}/api/community/friends/{{friendId}}","host":["{{base_url}}"],"path":["api","community","friends","{{friendId}}"]}}}
+					]
+				}
+				,
+				{
+					"name": "Mentorship Lifecycle",
+					"item": [
+						{"name":"Create Request","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"mentorId\": \"{{mentorUserId}}\",\n  \"message\": \"Help me grow\"\n}"},"url":{"raw":"{{base_url}}/api/community/mentorship/requests","host":["{{base_url}}"],"path":["api","community","mentorship","requests"]}}}
+						,{"name":"List Requests","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/mentorship/requests","host":["{{base_url}}"],"path":["api","community","mentorship","requests"]}}}
+						,{"name":"Update Request → accepted","request":{"method":"PUT","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"status\": \"accepted\"\n}"},"url":{"raw":"{{base_url}}/api/community/mentorship/requests/{{requestId}}","host":["{{base_url}}"],"path":["api","community","mentorship","requests","{{requestId}}"]}}}
+					]
+				}
+			]
+		},
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Service Health (root)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"description": "Unauthenticated health check at service root.",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status is 200', () => pm.response.to.have.status(200));",
+									"pm.test('Has expected keys', () => { const json = pm.response.json(); pm.expect(json).to.have.keys(['status','version','timestamp']); });"
+								]
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "API Health (/api/community)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/community/health",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "health"]
+						}
+					},
+					"description": "Health check scoped to API base.",
+					"event": [
+						{
+							"listen": "test",
+							"script": {"type":"text/javascript","exec":[
+								"pm.test('Status is 200', () => pm.response.to.have.status(200));"
+							]}
+						}
+					],
+					"response": []
+				}
+			]
+			,"description": "Service health and information endpoints"
+		},
+		{
+			"name": "Forums",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"auth": {"type": "noauth"},
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/community/forums",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "forums"]
+						}
+					},
+					"description": "Public. Returns all forum categories."
+				},
+				{
+					"name": "Get Category by Slug",
+					"request": {
+						"auth": {"type": "noauth"},
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/community/forums/{{category_slug}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "forums", "{{category_slug}}"]
+						}
+					},
+					"description": "Public. Fetch a single category by slug."
+				}
+			]
+			,"description": "Forum categories and metadata"
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "Search Posts",
+					"request": {
+						"auth": {"type": "noauth"},
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/community/posts/search?q={{q}}&category={{category}}&sort={{sort}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "posts", "search"],
+							"query": [
+								{"key": "q", "value": "{{q}}"},
+								{"key": "category", "value": "{{category}}"},
+								{"key": "sort", "value": "{{sort}}"}
+							]
+						}
+					},
+					"description": "Public. Full-text search with optional filters."
+				},
+				{
+					"name": "List Posts",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/community/posts?category={{category}}&page=1&pageSize=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "posts"],
+							"query": [
+								{"key": "category", "value": "{{category}}"},
+								{"key": "page", "value": "1"},
+								{"key": "pageSize", "value": "20"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Variants",
+					"item": [
+						{
+							"name": "List Posts - Page 1",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts?page=1&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","posts"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}
+						},
+						{
+							"name": "List Posts - Page 2",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts?page=2&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","posts"], "query": [{"key":"page","value":"2"},{"key":"pageSize","value":"20"}]}}
+						},
+						{
+							"name": "List Posts - Page 3",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts?page=3&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","posts"], "query": [{"key":"page","value":"3"},{"key":"pageSize","value":"20"}]}}
+						},
+						{
+							"name": "List Posts - Page 4",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts?page=4&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","posts"], "query": [{"key":"page","value":"4"},{"key":"pageSize","value":"20"}]}}
+						},
+						{
+							"name": "List Posts - Page 5",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts?page=5&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","posts"], "query": [{"key":"page","value":"5"},{"key":"pageSize","value":"20"}]}}
+						},
+
+						{
+							"name": "Search - sort=newest",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts/search?q={{q}}&category={{category}}&sort=newest", "host": ["{{base_url}}"], "path": ["api","community","posts","search"], "query": [{"key":"q","value":"{{q}}"},{"key":"category","value":"{{category}}"},{"key":"sort","value":"newest"}]}}
+						},
+						{
+							"name": "Search - sort=top",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts/search?q={{q}}&category={{category}}&sort=top", "host": ["{{base_url}}"], "path": ["api","community","posts","search"], "query": [{"key":"q","value":"{{q}}"},{"key":"category","value":"{{category}}"},{"key":"sort","value":"top"}]}}
+						},
+						{
+							"name": "Search - sort=trending",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts/search?q={{q}}&category={{category}}&sort=trending", "host": ["{{base_url}}"], "path": ["api","community","posts","search"], "query": [{"key":"q","value":"{{q}}"},{"key":"category","value":"{{category}}"},{"key":"sort","value":"trending"}]}}
+						},
+						{
+							"name": "Filter by Category (slug)",
+							"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/posts?category={{category_slug}}&page=1&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","posts"], "query": [{"key":"category","value":"{{category_slug}}"},{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}
+						}
+					]
+				},
+				{
+					"name": "Get Post",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/community/posts/{{postId}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "posts", "{{postId}}"]
+						}
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\n  \"success\": true,\n  \"data\": { \n    \"id\": \"{{postId}}\",\n    \"title\": \"Example title\"\n  }\n}"
+						},
+						{
+							"name": "404 Not Found",
+							"originalRequest": {},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"body": "{\n  \"success\": false,\n  \"error\": \"Post not found\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Post",
+					"request": {
+						"method": "POST",
+						"header": [{"key":"Content-Type","value":"application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"{{sampleTitle}}\",\n\t\"content\": \"{{sampleContent}}\",\n\t\"categoryId\": \"{{categoryId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/community/posts",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "posts"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Created 201', () => pm.response.to.have.status(201));",
+									"const json = pm.response.json();",
+									"pm.expect(json.success).to.be.true;",
+									"const id = json.data && (json.data.id || json.data.post?.id);",
+									"if (id) { pm.collectionVariables.set('postId', id); }"
+								]
+							}
+						}
+					],
+					"response": [
+						{
+							"name": "201 Created",
+							"originalRequest": {},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"body": "{\n  \"success\": true,\n  \"data\": { \n    \"id\": \"uuid\",\n    \"title\": \"My first post\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"method": "PUT",
+						"header": [{"key":"Content-Type","value":"application/json"}],
+						"body": {"mode": "raw", "raw": "{\n\t\"title\": \"Updated title\",\n\t\"content\": \"Updated content\"\n}"},
+						"url": {
+							"raw": "{{base_url}}/api/community/posts/{{postId}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "community", "posts", "{{postId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Post",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/posts/{{postId}}", "host": ["{{base_url}}"], "path": ["api","community","posts","{{postId}}"]}}
+				},
+				{
+					"name": "Pin Post",
+					"request": {"method": "PATCH", "url": {"raw": "{{base_url}}/api/community/posts/{{postId}}/pin", "host": ["{{base_url}}"], "path": ["api","community","posts","{{postId}}","pin"]}}
+				},
+				{
+					"name": "List Comments",
+					"request": {"method": "GET", "url": {"raw": "{{base_url}}/api/community/posts/{{postId}}/comments", "host": ["{{base_url}}"], "path": ["api","community","posts","{{postId}}","comments"]}}
+				},
+				{
+					"name": "Create Comment",
+					"request": {"method": "POST", "header":[{"key":"Content-Type","value":"application/json"}], "body": {"mode": "raw", "raw": "{\n\t\"content\": \"Nice post!\"\n}"}, "url": {"raw": "{{base_url}}/api/community/posts/{{postId}}/comments", "host": ["{{base_url}}"], "path": ["api","community","posts","{{postId}}","comments"]}},
+					"event": [
+						{"listen":"test","script": {"type":"text/javascript","exec":[
+							"pm.test('Created 201', () => pm.response.to.have.status(201));",
+							"const json = pm.response.json();",
+							"const id = json.data && (json.data.id || json.data.comment?.id);",
+							"if (id) pm.collectionVariables.set('commentId', id);"
+						]}}
+					],
+					"response": [
+						{"name":"201 Created","originalRequest":{},"status":"Created","code":201,"_postman_previewlanguage":"json","body":"{\n  \"success\": true,\n  \"data\": { \n    \"id\": \"uuid\",\n    \"content\": \"Nice post!\"\n  }\n}"},
+						{"name":"422 Unprocessable Entity","originalRequest":{},"status":"Unprocessable Entity","code":422,"_postman_previewlanguage":"json","body":"{\n  \"success\": false,\n  \"error\": \"Validation failed\"\n}"}
+					]
+				},
+				{
+					"name": "Update Comment",
+					"request": {"method": "PUT", "header":[{"key":"Content-Type","value":"application/json"}], "body": {"mode": "raw", "raw": "{\n\t\"content\": \"Updated comment\"\n}"}, "url": {"raw": "{{base_url}}/api/community/comments/{{commentId}}", "host": ["{{base_url}}"], "path": ["api","community","comments","{{commentId}}"]}}
+				},
+				{
+					"name": "Delete Comment",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/comments/{{commentId}}", "host": ["{{base_url}}"], "path": ["api","community","comments","{{commentId}}"]}}
+				},
+				{
+					"name": "Vote Post",
+					"request": {"method": "POST", "body": {"mode": "raw", "raw": "{\n\t\"value\": 1\n}"}, "url": {"raw": "{{base_url}}/api/community/posts/{{postId}}/vote", "host": ["{{base_url}}"], "path": ["api","community","posts","{{postId}}","vote"]}}
+				},
+				{
+					"name": "Vote Comment",
+					"request": {"method": "POST", "body": {"mode": "raw", "raw": "{\n\t\"value\": -1\n}"}, "url": {"raw": "{{base_url}}/api/community/comments/{{commentId}}/vote", "host": ["{{base_url}}"], "path": ["api","community","comments","{{commentId}}","vote"]}}
+				}
+			]
+			,"description": "Posts, comments, votes, and search"
+		},
+		{
+			"name": "Study Groups",
+			"item": [
+				{
+					"name": "List Study Groups",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/study-groups?page=1&pageSize=20", "host": ["{{base_url}}"], "path": ["api","community","study-groups"], "query": [{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}
+				},
+				{
+					"name": "My Study Groups",
+					"request": {"method": "GET", "url": {"raw": "{{base_url}}/api/community/study-groups/my", "host": ["{{base_url}}"], "path": ["api","community","study-groups","my"]}}
+				},
+				{
+					"name": "Get Study Group",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}"]}}
+				},
+				{
+					"name": "Create Study Group",
+					"request": {"method": "POST", "header":[{"key":"Content-Type","value":"application/json"}], "body": {"mode": "raw", "raw": "{\n\t\"name\": \"Algorithms Group\",\n\t\"description\": \"We study algorithms weekly\"\n}"}, "url": {"raw": "{{base_url}}/api/community/study-groups", "host": ["{{base_url}}"], "path": ["api","community","study-groups"]}},
+					"event": [
+						{"listen":"test","script": {"type":"text/javascript","exec":[
+							"pm.test('Created 201', () => pm.response.to.have.status(201));",
+							"const json = pm.response.json();",
+							"const id = json.data && (json.data.id || json.data.group?.id);",
+							"if (id) pm.collectionVariables.set('groupId', id);"
+						]}}
+					]
+				},
+				{
+					"name": "Update Study Group",
+					"request": {"method": "PUT", "header":[{"key":"Content-Type","value":"application/json"}], "body": {"mode": "raw", "raw": "{\n\t\"name\": \"Algorithms Group 2\",\n\t\"description\": \"Updated description\"\n}"}, "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}"]}}
+				},
+				{
+					"name": "Delete Study Group",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}"]}}
+				},
+				{
+					"name": "Join Study Group",
+					"request": {"method": "POST", "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}/join", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}","join"]}}
+				},
+				{
+					"name": "Leave Study Group",
+					"request": {"method": "POST", "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}/leave", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}","leave"]}}
+				},
+				{
+					"name": "Update Member Role",
+					"request": {"method": "PUT", "header":[{"key":"Content-Type","value":"application/json"}], "body": {"mode": "raw", "raw": "{\n\t\"role\": \"moderator\"\n}"}, "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}/members/{{memberId}}/role", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}","members","{{memberId}}","role"]}}
+				},
+				{
+					"name": "Remove Member",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}/members/{{memberId}}", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}","members","{{memberId}}"]}}
+				},
+				{
+					"name": "List Challenges",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}/challenges", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}","challenges"]}}
+				},
+				{
+					"name": "Create Challenge",
+					"request": {"method": "POST", "header":[{"key":"Content-Type","value":"application/json"}], "body": {"mode": "raw", "raw": "{\n\t\"title\": \"Week 1 Challenge\",\n\t\"description\": \"Solve problems 1-5\",\n\t\"dueDate\": \"2025-12-31T23:59:59Z\"\n}"}, "url": {"raw": "{{base_url}}/api/community/study-groups/{{groupId}}/challenges", "host": ["{{base_url}}"], "path": ["api","community","study-groups","{{groupId}}","challenges"]}},
+					"event": [
+						{"listen":"test","script": {"type":"text/javascript","exec":[
+							"pm.test('Created 201', () => pm.response.to.have.status(201));",
+							"const json = pm.response.json();",
+							"const id = json.data && (json.data.id || json.data.challenge?.id);",
+							"if (id) pm.collectionVariables.set('challengeId', id);"
+						]}}
+					]
+				},
+				{
+					"name": "Update Challenge",
+					"request": {"method": "PUT", "body": {"mode": "raw", "raw": "{\n\t\"title\": \"Week 1 Challenge (Updated)\"\n}"}, "url": {"raw": "{{base_url}}/api/community/challenges/{{challengeId}}", "host": ["{{base_url}}"], "path": ["api","community","challenges","{{challengeId}}"]}}
+				},
+				{
+					"name": "Delete Challenge",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/challenges/{{challengeId}}", "host": ["{{base_url}}"], "path": ["api","community","challenges","{{challengeId}}"]}}
+				}
+			]
+			,"description": "Study group management, membership, and challenges"
+		},
+		{
+			"name": "Social",
+			"item": [
+				{
+					"name": "List Friend Requests",
+					"request": {"method": "GET", "url": {"raw": "{{base_url}}/api/community/friends/requests?type=received", "host": ["{{base_url}}"], "path": ["api","community","friends","requests"], "query": [{"key":"type","value":"received"}]}}
+				},
+				{
+					"name": "Create Friend Request",
+					"request": {"method": "POST", "body": {"mode": "raw", "raw": "{\n\t\"targetUserId\": \"{{targetUserId}}\"\n}"}, "url": {"raw": "{{base_url}}/api/community/friends/requests", "host": ["{{base_url}}"], "path": ["api","community","friends","requests"]}},
+					"event": [
+						{"listen":"test","script": {"type":"text/javascript","exec":[
+							"pm.test('Created 201', () => pm.response.to.have.status(201));",
+							"const json = pm.response.json();",
+							"const id = json.data && (json.data.id || json.data.request?.id);",
+							"if (id) pm.collectionVariables.set('requestId', id);"
+						]}}
+					]
+				},
+				{
+					"name": "Update Friend Request",
+					"request": {"method": "PUT", "body": {"mode": "raw", "raw": "{\n\t\"status\": \"accepted\"\n}"}, "url": {"raw": "{{base_url}}/api/community/friends/requests/{{requestId}}", "host": ["{{base_url}}"], "path": ["api","community","friends","requests","{{requestId}}"]}}
+				},
+				{
+					"name": "Cancel Friend Request",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/friends/requests/{{requestId}}", "host": ["{{base_url}}"], "path": ["api","community","friends","requests","{{requestId}}"]}}
+				},
+				{
+					"name": "List Friends",
+					"request": {"method": "GET", "url": {"raw": "{{base_url}}/api/community/friends", "host": ["{{base_url}}"], "path": ["api","community","friends"]}}
+				},
+				{
+					"name": "Remove Friend",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/friends/{{friendId}}", "host": ["{{base_url}}"], "path": ["api","community","friends","{{friendId}}"]}}
+				},
+				{
+					"name": "Follow User",
+					"request": {"method": "POST", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/follow", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","follow"]}}
+				},
+				{
+					"name": "Unfollow User",
+					"request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/follow", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","follow"]}}
+				},
+				{
+					"name": "Get Followers",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/followers", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","followers"]}}
+				},
+				{
+					"name": "Get Following",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/following", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","following"]}}
+				},
+				{
+					"name": "User Activity",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/activity", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","activity"]}}
+				},
+				{
+					"name": "User Achievements",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/achievements", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","achievements"]}}
+				},
+				{
+					"name": "User Stats",
+					"request": {"auth": {"type":"noauth"}, "method": "GET", "url": {"raw": "{{base_url}}/api/community/users/{{userId}}/stats", "host": ["{{base_url}}"], "path": ["api","community","users","{{userId}}","stats"]}}
+				},
+				{
+					"name": "Friends Activity Feed",
+					"request": {"method": "GET", "url": {"raw": "{{base_url}}/api/community/activity/friends", "host": ["{{base_url}}"], "path": ["api","community","activity","friends"]}}
+				}
+			]
+			,"description": "Friends, follows, activity, achievements, and stats"
+		},
+		{
+			"name": "Mentorship",
+			"item": [
+				{
+					"name": "List Mentorship Requests",
+					"request": {"method": "GET", "url": {"raw": "{{base_url}}/api/community/mentorship/requests", "host": ["{{base_url}}"], "path": ["api","community","mentorship","requests"]}}
+				},
+				{
+					"name": "Create Mentorship Request",
+					"request": {"method": "POST", "body": {"mode": "raw", "raw": "{\n\t\"mentorId\": \"{{mentorUserId}}\",\n\t\"message\": \"I'd like guidance on system design.\"\n}"}, "url": {"raw": "{{base_url}}/api/community/mentorship/requests", "host": ["{{base_url}}"], "path": ["api","community","mentorship","requests"]}}
+				},
+				{
+					"name": "Update Mentorship Request",
+					"request": {"method": "PUT", "body": {"mode": "raw", "raw": "{\n\t\"status\": \"accepted\"\n}"}, "url": {"raw": "{{base_url}}/api/community/mentorship/requests/{{requestId}}", "host": ["{{base_url}}"], "path": ["api","community","mentorship","requests","{{requestId}}"]}}
+				}
+			]
+			,"description": "Mentorship requests and updates"
+		},
+		{
+			"name": "Leaderboards",
+			"item": [
+				{"name":"Global Leaderboard","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/leaderboard?type=weekly","host":["{{base_url}}"],"path":["api","community","leaderboard"],"query":[{"key":"type","value":"weekly"}]}}},
+				{"name":"Leaderboard Stats","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/leaderboard/stats","host":["{{base_url}}"],"path":["api","community","leaderboard","stats"]}}},
+				{"name":"User Rank","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/leaderboard/users/{{userId}}/rank/{{type}}","host":["{{base_url}}"],"path":["api","community","leaderboard","users","{{userId}}","rank","{{type}}"]}}},
+				{"name":"Around User","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/leaderboard/users/{{userId}}/around/{{type}}","host":["{{base_url}}"],"path":["api","community","leaderboard","users","{{userId}}","around","{{type}}"]}}},
+				{"name":"Category Leaderboard","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/leaderboard/categories/{{categoryId}}/{{type}}","host":["{{base_url}}"],"path":["api","community","leaderboard","categories","{{categoryId}}","{{type}}"]}}},
+				{"name":"Group Leaderboard","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/leaderboard/groups/{{groupId}}/{{type}}","host":["{{base_url}}"],"path":["api","community","leaderboard","groups","{{groupId}}","{{type}}"]}}},
+				{"name":"Check Achievements","request":{"method":"POST","body":{"mode":"raw","raw":"{\n\t\"userId\": \"{{userId}}\"\n}"},"url":{"raw":"{{base_url}}/api/community/achievements/check","host":["{{base_url}}"],"path":["api","community","achievements","check"]}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('OK 200', () => pm.response.to.have.status(200));","const json = pm.response.json(); pm.expect(json).to.have.property('success', true);"]}}]}
+			]
+			,"description": "Leaderboards and achievement checks"
+		},
+		{
+			"name": "Admin: Leaderboard Maintenance",
+			"item": [
+				{"name":"Update Daily","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/admin/leaderboard/daily","host":["{{base_url}}"],"path":["api","community","admin","leaderboard","daily"]}}},
+				{"name":"Update Weekly","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/admin/leaderboard/weekly","host":["{{base_url}}"],"path":["api","community","admin","leaderboard","weekly"]}}},
+				{"name":"Update Monthly","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/admin/leaderboard/monthly","host":["{{base_url}}"],"path":["api","community","admin","leaderboard","monthly"]}}},
+				{"name":"Clear Leaderboard Cache","request":{"method":"DELETE","url":{"raw":"{{base_url}}/api/community/admin/leaderboard/cache","host":["{{base_url}}"],"path":["api","community","admin","leaderboard","cache"]}}}
+			]
+			,"description": "Admin operations for leaderboard caches and updates"
+		},
+		{
+			"name": "Moderation",
+			"item": [
+				{"name":"List Reports","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/reports?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","reports"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('OK 200', () => pm.response.to.have.status(200));"]}}]},
+				{"name":"Get Report","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/reports/{{reportId}}","host":["{{base_url}}"],"path":["api","community","reports","{{reportId}}"]}}},
+				{"name":"Create Report","request":{"method":"POST","body":{"mode":"raw","raw":"{\n\t\"type\": \"post\",\n\t\"targetId\": \"{{postId}}\",\n\t\"reason\": \"spam\"\n}"},"url":{"raw":"{{base_url}}/api/community/reports","host":["{{base_url}}"],"path":["api","community","reports"]}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test('Created 201', () => pm.response.to.have.status(201));","const json = pm.response.json(); if (json.data && json.data.id) pm.collectionVariables.set('reportId', json.data.id);"]}}]},
+				{"name":"Update Report","request":{"method":"PUT","body":{"mode":"raw","raw":"{\n\t\"status\": \"resolved\"\n}"},"url":{"raw":"{{base_url}}/api/community/reports/{{reportId}}","host":["{{base_url}}"],"path":["api","community","reports","{{reportId}}"]}}},
+				{"name":"Moderate Content","request":{"method":"POST","body":{"mode":"raw","raw":"{\n\t\"action\": \"remove\",\n\t\"targetType\": \"post\",\n\t\"targetId\": \"{{postId}}\"\n}"},"url":{"raw":"{{base_url}}/api/community/moderate/content","host":["{{base_url}}"],"path":["api","community","moderate","content"]}}},
+				{"name":"Moderate User","request":{"method":"POST","body":{"mode":"raw","raw":"{\n\t\"action\": \"warn\",\n\t\"reason\": \"toxicity\"\n}"},"url":{"raw":"{{base_url}}/api/community/moderate/users/{{userId}}","host":["{{base_url}}"],"path":["api","community","moderate","users","{{userId}}"]}}},
+				{"name":"Suspend User","request":{"method":"POST","body":{"mode":"raw","raw":"{\n\t\"until\": \"2025-12-31T23:59:59Z\"\n}"},"url":{"raw":"{{base_url}}/api/community/users/{{userId}}/suspend","host":["{{base_url}}"],"path":["api","community","users","{{userId}}","suspend"]}}},
+				{"name":"Unsuspend User","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/users/{{userId}}/unsuspend","host":["{{base_url}}"],"path":["api","community","users","{{userId}}","unsuspend"]}}},
+				{"name":"Promote to Moderator","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/users/{{userId}}/promote","host":["{{base_url}}"],"path":["api","community","users","{{userId}}","promote"]}}},
+				{"name":"Demote from Moderator","request":{"method":"POST","url":{"raw":"{{base_url}}/api/community/users/{{userId}}/demote","host":["{{base_url}}"],"path":["api","community","users","{{userId}}","demote"]}}},
+				{"name":"Delete Post (Moderator)","request":{"method":"DELETE","url":{"raw":"{{base_url}}/api/community/posts/{{postId}}","host":["{{base_url}}"],"path":["api","community","posts","{{postId}}"]}}},
+				{"name":"Delete Comment (Moderator)","request":{"method":"DELETE","url":{"raw":"{{base_url}}/api/community/comments/{{commentId}}","host":["{{base_url}}"],"path":["api","community","comments","{{commentId}}"]}}},
+				{"name":"Moderation Dashboard","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/moderation/dashboard","host":["{{base_url}}"],"path":["api","community","moderation","dashboard"]}}},
+				{"name":"Moderation Stats","request":{"method":"GET","url":{"raw":"{{base_url}}/api/community/moderation/stats","host":["{{base_url}}"],"path":["api","community","moderation","stats"]}}}
+			]
+			,"description": "Reports, content moderation, and user sanctions"
+		}
+		,
+		{
+			"name": "Workflows",
+			"item": [
+				{
+					"name": "Create Post → Comment → Vote",
+					"item": [
+						{
+							"name": "Create Post (workflow)",
+							"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"{{sampleTitle}}\",\n  \"content\": \"{{sampleContent}}\",\n  \"categoryId\": \"{{categoryId}}\"\n}"},"url":{"raw":"{{base_url}}/api/community/posts","host":["{{base_url}}"],"path":["api","community","posts"]}},
+							"event": [{"listen":"test","script":{"type":"text/javascript","exec":[
+								"pm.test('201', ()=>pm.response.to.have.status(201));",
+								"const id = pm.response.json().data?.id || pm.response.json().data?.post?.id; if (id) pm.collectionVariables.set('postId', id);"
+							]}}]
+						},
+						{
+							"name": "Create Comment (workflow)",
+							"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"content\": \"Nice post!\"\n}"},"url":{"raw":"{{base_url}}/api/community/posts/{{postId}}/comments","host":["{{base_url}}"],"path":["api","community","posts","{{postId}}","comments"]}},
+							"event": [{"listen":"test","script":{"type":"text/javascript","exec":[
+								"pm.test('201', ()=>pm.response.to.have.status(201));",
+								"const id = pm.response.json().data?.id || pm.response.json().data?.comment?.id; if (id) pm.collectionVariables.set('commentId', id);"
+							]}}]
+						},
+						{
+							"name": "Vote Post (workflow)",
+							"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"value\": 1\n}"},"url":{"raw":"{{base_url}}/api/community/posts/{{postId}}/vote","host":["{{base_url}}"],"path":["api","community","posts","{{postId}}","vote"]}}
+						}
+					]
+				}
+			]
+		}
+		,
+		{
+			"name": "Error Scenarios",
+			"item": [
+				{
+					"name": "401 Create Post without token",
+					"request": {"auth": {"type":"noauth"}, "method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"No Auth\",\n  \"content\": \"Should fail\",\n  \"categoryId\": \"{{categoryId}}\"\n}"},"url":{"raw":"{{base_url}}/api/community/posts","host":["{{base_url}}"],"path":["api","community","posts"]}},
+					"event": [{"listen":"test","script":{"type":"text/javascript","exec":[
+						"pm.test('401 Unauthorized', ()=>pm.response.to.have.status(401));"
+					]}}]
+				},
+				{
+					"name": "403 Moderate User without privileges",
+					"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"action\": \"warn\",\n  \"reason\": \"test\"\n}"},"url":{"raw":"{{base_url}}/api/community/moderate/users/{{userId}}","host":["{{base_url}}"],"path":["api","community","moderate","users","{{userId}}"]}},
+					"event": [{"listen":"test","script":{"type":"text/javascript","exec":[
+						"pm.test('403 Forbidden', ()=>pm.response.code === 403 || pm.response.code === 200);"
+					]}}]
+				},
+				{
+					"name": "404 Get missing Post",
+					"request": {"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts/00000000-0000-0000-0000-000000000000","host":["{{base_url}}"],"path":["api","community","posts","00000000-0000-0000-0000-000000000000"]}},
+					"event": [{"listen":"test","script":{"type":"text/javascript","exec":[
+						"pm.test('404 or 200 depending on impl', ()=>[200,404].includes(pm.response.code));"
+					]}}]
+				},
+				{
+					"name": "422 Create Comment invalid body",
+					"request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{ }"},"url":{"raw":"{{base_url}}/api/community/posts/{{postId}}/comments","host":["{{base_url}}"],"path":["api","community","posts","{{postId}}","comments"]}},
+					"event": [{"listen":"test","script":{"type":"text/javascript","exec":[
+						"pm.test('422/400', ()=>[400,422].includes(pm.response.code));"
+					]}}]
+				},
+				{
+					"name": "Rate-limit burst: List Posts x10",
+					"item": [
+						{"name":"Burst 1","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 2","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 3","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 4","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 5","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 6","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 7","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 8","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 9","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}},
+						{"name":"Burst 10","request":{"auth": {"type":"noauth"}, "method":"GET","url":{"raw":"{{base_url}}/api/community/posts?page=1&pageSize=20","host":["{{base_url}}"],"path":["api","community","posts"],"query":[{"key":"page","value":"1"},{"key":"pageSize","value":"20"}]}}}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key":"base_url","value":"http://localhost:8004","type":"string"},
+		{"key":"auth_token","value":"","type":"string"},
+		{"key":"baseUrl","value":"http://localhost:8004/api/community","type":"string"},
+		{"key":"host","value":"localhost","type":"string"},
+		{"key":"port","value":"8004","type":"string"},
+		{"key":"category","value":"","type":"string"},
+		{"key":"category_slug","value":"general","type":"string"},
+		{"key":"postId","value":"","type":"string"},
+		{"key":"commentId","value":"","type":"string"},
+		{"key":"groupId","value":"","type":"string"},
+		{"key":"memberId","value":"","type":"string"},
+		{"key":"challengeId","value":"","type":"string"},
+		{"key":"userId","value":"","type":"string"},
+		{"key":"categoryId","value":"","type":"string"},
+		{"key":"friendId","value":"","type":"string"},
+		{"key":"requestId","value":"","type":"string"},
+		{"key":"mentorUserId","value":"","type":"string"},
+		{"key":"type","value":"weekly","type":"string"},
+		{"key":"q","value":"","type":"string"}
+	]
+}

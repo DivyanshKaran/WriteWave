@@ -6,7 +6,7 @@ export const generateId = (): string => {
 };
 
 export const generateShortId = (): string => {
-  return Math.random().toString(36).substr(2, 9);
+  return Math.random().toString(36).substring(2, 11);
 };
 
 export const sleep = (ms: number): Promise<void> => {
@@ -236,9 +236,9 @@ export const merge = <T extends Record<string, any>>(target: T, ...sources: Part
     for (const key in source) {
       if (source.hasOwnProperty(key)) {
         if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
-          result[key] = merge(result[key] || {}, source[key]);
+          result[key] = merge((result[key] || {}) as any, source[key] as any) as any;
         } else {
-          result[key] = source[key];
+          result[key] = source[key] as T[Extract<keyof T, string>];
         }
       }
     }

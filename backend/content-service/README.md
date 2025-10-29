@@ -1,370 +1,577 @@
-# Content Service
+# WriteWave Content Service
 
-A comprehensive microservice for managing Japanese character learning content including Hiragana, Katakana, Kanji, vocabulary, lessons, and media assets.
+A microservice for managing Japanese learning content including characters (Hiragana, Katakana, Kanji), vocabulary, lessons, and media assets in the WriteWave platform.
 
-## 🚀 Features
+## Features
 
-### Core Functionality
-- **Character Management**: Hiragana, Katakana, and Kanji characters with stroke orders, pronunciations, and examples
-- **Vocabulary System**: Japanese words with translations, audio, and categorization
-- **Lesson Content**: Structured learning paths with progression and prerequisites
-- **Media Assets**: Image, audio, and video file management with thumbnails
-- **Search & Filtering**: Advanced search capabilities across all content types
-- **Caching**: Redis-based caching for improved performance
-- **File Upload**: Secure media file upload with validation
+- 📚 **Character Management**: Hiragana, Katakana, and Kanji character data with stroke orders, readings, and meanings
+- 📖 **Vocabulary Management**: Comprehensive vocabulary database with categories, JLPT levels, and examples
+- 🎓 **Lesson Management**: Structured lessons with content, objectives, prerequisites, and progression paths
+- 🎨 **Media Assets**: Image, audio, and video asset management with thumbnail generation
+- 🔍 **Advanced Search**: Full-text search with filtering by type, level, and category
+- 💾 **Caching**: Redis-based caching for improved performance
+- 📊 **Statistics**: Content statistics and analytics
+- 🔄 **Event Publishing**: Kafka integration for content events (optional)
+- 🛡️ **Security**: Rate limiting, CORS protection, and input validation
 
-### Character Management
-- 46 Hiragana characters with stroke orders and pronunciations
-- 46 Katakana characters with stroke orders and pronunciations
-- Kanji characters organized by JLPT levels (N5-N1)
-- Character relationships (radicals, compounds)
-- Stroke order animations and reference images
-- Character examples and usage contexts
+## Prerequisites
 
-### Vocabulary System
-- Word entries with Japanese text and romanization
-- English translations and definitions
-- Audio file references for pronunciation
-- Example sentences and usage contexts
-- Vocabulary categorization (themes: food, travel, family, etc.)
-- JLPT level classification
-- Word frequency rankings
-- Part of speech classification
+- **Node.js**: v18.0.0 or higher
+- **npm**: v8.0.0 or higher
+- **PostgreSQL**: v13 or higher
+- **Redis**: v6 or higher (optional but recommended)
+- **Kafka**: v3.0 or higher (optional, for event streaming)
+- **Prisma**: Included as a dev dependency
+- **Docker & Docker Compose**: For running dependencies (optional but recommended)
 
-### Lesson Content
-- Structured learning paths for each character set
-- Lesson metadata (title, description, prerequisites, estimated time)
-- Practice exercises and challenges
-- Cultural context and background information
-- Lesson progression tracking
-- Difficulty level classification
+## Quick Start
 
-### Media Management
-- Image, audio, video, and document file support
-- Automatic thumbnail generation
-- File type validation and size limits
-- Secure file storage and retrieval
-- Media asset categorization
-- Search and filtering capabilities
+### 1. Clone and Navigate to Service
 
-## 🛠 Technology Stack
-
-- **Runtime**: Node.js 18
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL 15
-- **ORM**: Prisma
-- **Cache**: Redis 7
-- **File Upload**: Multer
-- **Validation**: Joi
-- **Logging**: Winston
-- **Security**: Helmet, CORS
-- **Rate Limiting**: express-rate-limit
-- **Containerization**: Docker
-
-## 📁 Project Structure
-
-```
-content-service/
-├── src/
-│   ├── config/           # Configuration files
-│   ├── controllers/      # API controllers
-│   ├── middleware/       # Express middleware
-│   ├── routes/          # API routes
-│   ├── services/        # Business logic
-│   ├── types/           # TypeScript types
-│   └── index.ts         # Application entry point
-├── prisma/              # Database schema and migrations
-├── uploads/             # Media file storage
-├── logs/                # Application logs
-├── docker-compose.yml   # Docker Compose configuration
-├── Dockerfile          # Docker image definition
-└── README.md           # This file
+```bash
+cd backend/content-service
 ```
 
-## 🚀 Quick Start
+### 2. Install Dependencies
 
-### Prerequisites
-- Node.js 18+
-- Docker and Docker Compose
-- PostgreSQL 15+
-- Redis 7+
-
-### Environment Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd content-service
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp env.example .env
-   # Edit .env with your configuration
-   ```
-
-4. **Start with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
-
-5. **Run database migrations**
-   ```bash
-   npx prisma migrate dev
-   ```
-
-6. **Seed the database (optional)**
-   ```bash
-   npx prisma db seed
-   ```
-
-### Development Setup
-
-1. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-2. **Run tests**
-   ```bash
-   npm test
-   ```
-
-3. **Build for production**
-   ```bash
-   npm run build
-   ```
-
-## 📚 API Documentation
-
-### Base URL
+```bash
+npm install
 ```
-http://localhost:8002/api/v1
+
+### 3. Environment Configuration
+
+Create a `.env` file by copying the example:
+
+```bash
+cp env.example .env
 ```
+
+Edit the `.env` file with your configuration. See [Environment Variables](#environment-variables) section for details.
+
+## Database Setup (PostgreSQL)
+
+### Using Docker Compose (Recommended)
+
+The service includes a `docker-compose.yml` file that sets up PostgreSQL and Redis:
+
+```bash
+# Start PostgreSQL and Redis
+docker compose up -d db redis
+
+# Wait for services to be ready (they will be available on ports 5433 and 6380)
+```
+
+### Manual PostgreSQL Setup
+
+1. **Install PostgreSQL** (if not using Docker)
+
+2. **Create Database**:
+```sql
+CREATE DATABASE writewave_content;
+CREATE USER content_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE writewave_content TO content_user;
+```
+
+3. **Update `.env` file**:
+```env
+DATABASE_URL="postgresql://content_user:your_password@localhost:5432/writewave_content?schema=public"
+```
+
+### Run Database Migrations
+
+After setting up the database, run Prisma migrations:
+
+```bash
+# Generate Prisma Client
+npm run prisma:generate
+
+# Run migrations (creates tables)
+npm run prisma:migrate
+
+# Or deploy migrations in production
+npm run prisma:deploy
+```
+
+### Prisma Studio (Database GUI)
+
+To view and manage data in the database:
+
+```bash
+npm run prisma:studio
+```
+
+This opens Prisma Studio at `http://localhost:5555`
+
+## Redis Setup
+
+### Using Docker Compose (Recommended)
+
+Redis is automatically started with the docker-compose setup:
+
+```bash
+docker compose up -d redis
+```
+
+Redis will be available at `localhost:6380` (mapped from container port 6379).
+
+### Manual Redis Setup
+
+1. **Install Redis** (if not using Docker):
+```bash
+# Ubuntu/Debian
+sudo apt-get install redis-server
+
+# macOS
+brew install redis
+
+# Start Redis
+redis-server
+```
+
+2. **Update `.env` file**:
+```env
+REDIS_URL="redis://localhost:6379"
+REDIS_PASSWORD=""  # Set if Redis requires authentication
+```
+
+### Redis Configuration
+
+Redis is used for:
+- **Caching**: Character, vocabulary, lesson, and search result caching
+- **Performance**: Reduces database load by caching frequently accessed data
+
+To make Redis optional (service will work without it, but without caching):
+
+```env
+OPTIONAL_REDIS=false  # Set to true to make Redis optional
+```
+
+## Kafka Setup (Optional)
+
+Kafka is optional and used for publishing content events to other services.
+
+### Using Docker Compillose (Recommended)
+
+The Kafka setup is in the infrastructure folder. Use the provided setup script:
+
+```bash
+# From the content-service directory
+./setup.sh
+```
+
+Or manually start Kafka:
+
+```bash
+# Navigate to infrastructure folder
+cd ../../infrastructure/message-queue/kafka
+
+# Start Kafka cluster
+docker compose up -d
+```
+
+This starts:
+- Zookeeper (port 2181)
+- Kafka Brokers (ports 9092, 9093, 9094)
+- Schema Registry (port 8081)
+- Kafka UI (port 8080) - http://localhost:8080
+
+### Manual Kafka Setup
+
+1. **Install Kafka**:
+```bash
+# Download Kafka from https://kafka.apache.org/downloads
+# Extract and start Zookeeper and Kafka
+```
+
+2. **Update `.env` file**:
+```env
+ENABLE_KAFKA=true
+KAFKA_BROKERS="localhost:9092,localhost:9093,localhost:9094"
+KAFKA_CLIENT_ID="content-service"
+```
+
+### Kafka Topics
+
+The service publishes to the following topics:
+- `content.events` - Content-related events (views, updates, etc.)
+
+Topics are automatically created when Kafka is running. You can also create them manually:
+
+```bash
+# List topics
+docker exec -it kafka-1 kafka-topics --list --bootstrap-server localhost:9092
+
+# Create content topic manually (if needed)
+docker exec -it kafka-1 kafka-topics --create \
+  --topic content.events \
+  --bootstrap-server localhost:9092 \
+  --partitions 3 \
+  --replication-factor 3
+```
+
+### Disable Kafka
+
+If you don't want to use Kafka:
+
+```env
+ENABLE_KAFKA=false
+OPTIONAL_KAFKA=true
+```
+
+The service will run normally without Kafka, but won't publish events.
+
+## Starting the Server
+
+### Development Mode
+
+Using nodemon for automatic reloading:
+
+```bash
+npm run dev
+```
+
+### Production Mode
+
+1. **Build the service**:
+```bash
+npm run build
+```
+
+2. **Start the server**:
+```bash
+npm start
+```
+
+The service will start on port `8002` (or the port specified in `.env`).
+
+### Using Docker
+
+Build and run with Docker:
+
+```bash
+# Build image
+npm run docker:build
+
+# Run container
+npm run docker:run
+```
+
+Or use Docker Compose:
+
+```bash
+# Start all services (PostgreSQL, Redis, Content Service)
+docker compose up -d
+
+# View logs
+docker compose logs -f content-service
+
+# Stop all services
+docker compose down
+```
+
+### Using Setup Script
+
+The `setup.sh` script automates the entire setup:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+This script will:
+1. Check for required tools (Docker, nc, etc.)
+2. Create `.env` file from `env.example` if it doesn't exist
+3. Start Kafka (if available)
+4. Start PostgreSQL and Redis
+5. Start the Content Service
+6. Wait for all services to be ready
+7. Display service URLs
+
+## Environment Variables
+
+Key environment variables (see `env.example` for complete list):
+
+### Required
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/writewave_content?schema=public"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+```
+
+### Optional
+
+```env
+# Server
+PORT=8002
+NODE_ENV="development"
+
+# Redis
+REDIS_PASSWORD=""
+OPTIONAL_REDIS=false
+
+# Kafka
+ENABLE_KAFKA=false
+OPTIONAL_KAFKA=false
+KAFKA_BROKERS="localhost:9092"
+KAFKA_CLIENT_ID="content-service"
+
+# File Uploads
+MAX_FILE_SIZE=10485760  # 10MB
+UPLOAD_PATH="./uploads"
+
+# Caching
+CACHE_TTL=3600  # 1 hour
+CACHE_PREFIX="writewave:content:"
+
+# Security
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100
+
+# CORS
+CORS_ORIGIN="http://localhost:3000,https://writewave.app"
+```
+
+## API Endpoints
 
 ### Health Check
-```http
-GET /health
+
+```bash
+GET /api/v1/health
 ```
 
-### Character Endpoints
+### Characters
 
-#### Get Hiragana Characters
-```http
-GET /characters/hiragana
+- `GET /api/v1/characters` - List characters with pagination
+- `GET /api/v1/characters/:id` - Get character by ID
+- `POST /api/v1/characters` - Create character
+- `PUT /api/v1/characters/:id` - Update character
+- `DELETE /api/v1/characters/:id` - Delete character
+- `GET /api/v1/characters/search` - Search characters
+
+### Vocabulary
+
+- `GET /api/v1/vocabulary` - List vocabulary with pagination
+- `GET /api/v1/vocabulary/:id` - Get vocabulary by ID
+- `POST /api/v1/vocabulary` - Create vocabulary
+- `PUT /api/v1/vocabulary/:id` - Update vocabulary
+- `DELETE /api/v1/vocabulary/:id` - Delete vocabulary
+- `GET /api/v1/vocabulary/search` - Search vocabulary
+
+### Lessons
+
+- `GET /api/v1/lessons` - List lessons with pagination
+- `GET /api/v1/lessons/:id` - Get lesson by ID
+- `POST /api/v1/lessons` - Create lesson
+- `PUT /api/v1/lessons/:id` - Update lesson
+- `DELETE /api/v1/lessons/:id` - Delete lesson
+- `GET /api/v1/lessons/search` - Search lessons
+
+### Media
+
+- `GET /api/v1/media` - List media assets
+- `GET /api/v1/media/:id` - Get media asset by ID
+- `POST /api/v1/media/upload` - Upload media file
+- `DELETE /api/v1/media/:id` - Delete media asset
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── config/          # Configuration (database, redis, logger)
+├── controllers/     # Request handlers
+├── middleware/      # Express middleware
+├── routes/          # API route definitions
+├── services/        # Business logic
+└── types/           # TypeScript types
 ```
 
-#### Get Katakana Characters
-```http
-GET /characters/katakana
-```
-
-#### Get Kanji by JLPT Level
-```http
-GET /characters/kanji/:level
-```
-
-#### Get Character by ID
-```http
-GET /characters/:id
-```
-
-#### Get Character Stroke Order
-```http
-GET /characters/:id/stroke-order
-```
-
-#### Search Characters
-```http
-GET /characters/search?q=query
-```
-
-### Vocabulary Endpoints
-
-#### Get Vocabulary Words
-```http
-GET /vocabulary
-```
-
-#### Search Vocabulary
-```http
-GET /vocabulary/search?q=query
-```
-
-#### Get Vocabulary by Category
-```http
-GET /vocabulary/category/:category
-```
-
-#### Get Vocabulary by JLPT Level
-```http
-GET /vocabulary/jlpt/:level
-```
-
-### Lesson Endpoints
-
-#### Get Lessons
-```http
-GET /lessons
-```
-
-#### Get Lessons by Level
-```http
-GET /lessons/level/:level
-```
-
-#### Get Lesson by ID
-```http
-GET /lessons/:lessonId
-```
-
-#### Get Lesson Steps
-```http
-GET /lessons/:lessonId/steps
-```
-
-### Media Endpoints
-
-#### Get Media Assets
-```http
-GET /media
-```
-
-#### Upload Media Asset
-```http
-POST /media/upload
-Content-Type: multipart/form-data
-```
-
-#### Get Media Asset File
-```http
-GET /media/:mediaId/file
-```
-
-#### Get Media Asset Thumbnail
-```http
-GET /media/:mediaId/thumbnail
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment | `development` |
-| `PORT` | Server port | `8002` |
-| `DATABASE_URL` | PostgreSQL connection string | - |
-| `REDIS_URL` | Redis connection string | - |
-| `MEDIA_STORAGE_PATH` | Media file storage path | `./uploads` |
-| `BASE_URL` | Base URL for the service | `http://localhost:8002` |
-
-### Database Schema
-
-The service uses Prisma ORM with the following main models:
-
-- **Character**: Hiragana, Katakana, and Kanji characters
-- **Vocabulary**: Japanese words with translations
-- **Lesson**: Learning content and progression
-- **MediaAsset**: File storage and metadata
-- **KanjiRadical**: Kanji radical information
-- **KanjiReading**: Kanji reading information
-- **VocabularyExample**: Example sentences for vocabulary
-- **LessonStep**: Individual lesson steps
-
-## 🔒 Security
-
-- **Input Validation**: Joi schemas for all endpoints
-- **File Upload Security**: Type and size validation
-- **Rate Limiting**: 100 requests per 15 minutes per IP
-- **CORS**: Configurable cross-origin resource sharing
-- **Helmet**: Security headers
-- **Authentication**: JWT token validation (when integrated)
-
-## 📊 Performance
-
-- **Redis Caching**: Frequently accessed data cached
-- **Database Indexing**: Optimized queries with proper indexes
-- **File Compression**: Automatic image compression
-- **Pagination**: Efficient data pagination
-- **Connection Pooling**: Database connection optimization
-
-## 🧪 Testing
+### Running Tests
 
 ```bash
 # Run all tests
 npm test
 
+# Run tests in watch mode
+npm run test:watch
+
 # Run tests with coverage
 npm run test:coverage
-
-# Run specific test file
-npm test -- --grep "Character Service"
 ```
 
-## 📝 Logging
+### Linting
 
-The service uses Winston for structured logging:
+```bash
+# Check for linting errors
+npm run lint
 
-- **Request Logging**: All incoming requests logged
-- **Error Logging**: Detailed error information
-- **Performance Logging**: Response times and metrics
-- **File Rotation**: Automatic log file rotation
+# Fix linting errors automatically
+npm run lint:fix
+```
 
-## 🚀 Deployment
+### Database Schema Changes
+
+When modifying the Prisma schema:
+
+1. **Edit** `prisma/schema.prisma`
+2. **Create migration**:
+```bash
+npm run prisma:migrate
+```
+3. **Generate Prisma Client**:
+```bash
+npm run prisma:generate
+```
+
+## Troubleshooting
+
+### Database Connection Issues
+
+1. Verify PostgreSQL is running:
+```bash
+docker compose ps db
+# or
+pg_isready -h localhost -p 5433
+```
+
+2. Check DATABASE_URL in `.env` matches your database configuration
+3. Ensure database exists and user has proper permissions
+
+### Redis Connection Issues
+
+1. Verify Redis is running:
+```bash
+docker compose ps redis
+# or
+redis-cli ping
+```
+
+2. Check REDIS_URL in `.env`
+3. If Redis is optional, set `OPTIONAL_REDIS=true`
+
+### Kafka Connection Issues
+
+1. Verify Kafka brokers are running:
+```bash
+docker compose ps  # Check kafka-1, kafka-2, kafka-3
+```
+
+2. Check Kafka is accessible:
+```bash
+docker exec -it kafka-1 kafka-topics --list --bootstrap-server localhost:9092
+```
+
+3. If Kafka is optional, set `ENABLE_KAFKA=false`
+
+### Port Already in Use
+
+If port 8002 is already in use:
+
+1. Change PORT in `.env`:
+```env
+PORT=8003
+```
+
+2. Or stop the service using the port:
+```bash
+# Find process using port 8002
+lsof -i :8002
+# Kill the process
+kill -9 <PID>
+```
+
+### Build Errors
+
+If you encounter TypeScript build errors:
+
+1. **Clean build**:
+```bash
+rm -rf dist node_modules
+npm install
+npm run build
+```
+
+2. **Check TypeScript version**:
+```bash
+npm list typescript
+```
+
+## Service Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Content Service | 8002 | Main API service |
+| PostgreSQL | 5433 | Database (mapped from 5432) |
+| Redis | 6380 | Cache (mapped from 6379) |
+| Kafka Broker 1 | 9092 | Message broker |
+| Kafka UI | 8080 | Kafka management UI |
+
+## Production Deployment
+
+### Environment Setup
+
+1. Set `NODE_ENV=production` in `.env`
+2. Use secure database credentials
+3. Enable Redis for caching
+4. Configure proper CORS origins
+5. Set up proper logging
+
+### Database Migrations
+
+In production, use:
+
+```bash
+npm run prisma:deploy
+```
+
+This applies migrations without creating new migration files.
 
 ### Docker Deployment
 
-1. **Build the image**
-   ```bash
-   docker build -t content-service .
-   ```
+Build and push Docker image:
 
-2. **Run with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
+```bash
+docker build -t writewave/content-service:latest .
+docker push writewave/content-service:latest
+```
 
-### Production Considerations
+### Health Checks
 
-- Set `NODE_ENV=production`
-- Configure proper database credentials
-- Set up Redis cluster for high availability
-- Configure file storage (S3, GCS, etc.)
-- Set up monitoring and alerting
-- Configure backup strategies
+Monitor service health:
 
-## 🤝 Contributing
+```bash
+curl http://localhost:8002/api/v1/health
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+Expected response:
+```json
+{
+  "success": true,
+  "status": "healthy",
+  "checks": {
+    "service": "healthy",
+    "database": "healthy",
+    "redis": "healthy"
+  }
+}
+```
 
-## 📄 License
+## Contributing
 
-This project is licensed under the MIT License.
+1. Create a feature branch
+2. Make your changes
+3. Run tests and linting
+4. Submit a pull request
 
-## 🆘 Support
+## License
 
-For support and questions:
-- Create an issue in the repository
-- Check the documentation
-- Review the API examples
+MIT
 
-## 🔄 Version History
+## Support
 
-- **v1.0.0**: Initial release with core functionality
-- Character management for Hiragana, Katakana, and Kanji
-- Vocabulary system with search and categorization
-- Lesson content with progression tracking
-- Media asset management with file upload
-- Redis caching and performance optimization
+For issues and questions, please contact the WriteWave development team.
+

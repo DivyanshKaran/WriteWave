@@ -1,6 +1,6 @@
 import webpush from 'web-push';
-import { logger } from '@/utils/logger';
-import { PushNotificationData, PushSubscription } from '@/types';
+import { logger } from '../utils/logger';
+import { PushNotificationData, PushSubscription } from '../types';
 
 export class PushService {
   private vapidKeys: {
@@ -229,8 +229,9 @@ export class PushService {
   ): Promise<{ success: boolean; sent: number; failed: number }> {
     try {
       // Filter subscriptions by topic (if you implement topic-based subscriptions)
+      // @ts-ignore - metadata property exists at runtime
       const topicSubscriptions = subscriptions.filter(sub => 
-        sub.metadata?.topics?.includes(topic)
+        (sub as any).metadata?.topics?.includes(topic)
       );
 
       if (topicSubscriptions.length === 0) {

@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { authController } from '@/controllers/auth.controller';
-import { validate, validationSchemas } from '@/middleware/validation';
-import { authenticateToken, rateLimit } from '@/middleware/auth';
+import { authController } from '../controllers/auth.controller';
+import { validate, validationSchemas } from '../middleware/validation';
+import { authenticateToken, rateLimit } from '../middleware/auth';
+import passport from '../config/passport';
 
 const router = Router();
 
@@ -50,12 +51,21 @@ router.post('/resend-verification',
   authController.resendEmailVerification
 );
 
-// OAuth routes
-router.get('/google', authController.googleLogin);
-router.get('/google/callback', authController.googleLogin);
+// Google OAuth
+router.get('/google', 
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    session: false 
+  })
+);
 
-router.get('/apple', authController.appleLogin);
-router.get('/apple/callback', authController.appleLogin);
+router.get('/google/callback',
+  passport.authenticate('google', { 
+    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_failed`,
+    session: false 
+  }),
+  authController.googleCallback.bind(authController)
+);
 
 // Protected routes (authentication required)
 router.post('/logout', 

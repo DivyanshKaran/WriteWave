@@ -9,8 +9,9 @@ import {
   DeliveryTracking,
   ScheduledNotification,
   User,
-  ABTest
-} from '@/types';
+  ABTest,
+  ScheduleStatus
+} from '../types';
 
 // In-memory storage (replace with actual database in production)
 class InMemoryStorage {
@@ -179,14 +180,37 @@ class InMemoryStorage {
     return this.scheduledNotifications.get(id) || null;
   }
 
-  async getScheduledNotificationsByUser(userId: string): Promise<ScheduledNotification[]> {
-    return Array.from(this.scheduledNotifications.values())
-      .filter(s => s.userId === userId);
+  async getScheduledNotificationsByUser(userId: string, limit: number = 50, offset: number = 0): Promise<ScheduledNotification[]> {
+    const userScheduled = Array.from(this.scheduledNotifications.values())
+      .filter(s => s.userId === userId)
+      .sort((a, b) => b.scheduledAt.getTime() - a.scheduledAt.getTime())
+      .slice(offset, offset + limit);
+    
+    return userScheduled;
   }
 
   async getScheduledNotificationsForTime(time: Date): Promise<ScheduledNotification[]> {
     return Array.from(this.scheduledNotifications.values())
-      .filter(s => s.status === 'ACTIVE' && s.scheduledAt <= time);
+      .filter(s => s.status === ScheduleStatus.PENDING && s.scheduledAt <= time);
+  }
+
+  async getDueScheduledNotifications(now: Date): Promise<ScheduledNotification[]> {
+    return Array.from(this.scheduledNotifications.values())
+      .filter(s => s.status === ScheduleStatus.PENDING && s.scheduledAt <= now);
+  }
+
+  async getScheduledStats(startDate: Date, endDate: Date): Promise<any> {
+    const scheduled = Array.from(this.scheduledNotifications.values())
+      .filter(s => s.createdAt >= startDate && s.createdAt <= endDate);
+
+    return {
+      totalScheduled: scheduled.length,
+      pending: scheduled.filter(s => s.status === ScheduleStatus.PENDING).length,
+      processing: scheduled.filter(s => s.status === ScheduleStatus.PROCESSING).length,
+      completed: scheduled.filter(s => s.status === ScheduleStatus.COMPLETED).length,
+      cancelled: scheduled.filter(s => s.status === ScheduleStatus.CANCELLED).length,
+      failed: scheduled.filter(s => s.status === ScheduleStatus.FAILED).length
+    };
   }
 
   async updateScheduledNotification(id: string, updates: Partial<ScheduledNotification>): Promise<ScheduledNotification | null> {

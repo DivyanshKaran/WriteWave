@@ -1,0 +1,1238 @@
+{
+	"info": {
+		"_postman_id": "writewave-user-service-api",
+		"name": "WriteWave User Service API",
+		"description": "Complete API collection for WriteWave User Service. This collection includes all authentication, user management, profile, settings, and admin endpoints.\n\n## Setup Instructions\n\n1. **Collection Variables**: The collection includes default variables:\n   - `baseUrl`: `http://localhost:8001/api/v1`\n   - `host`: `localhost`\n   - `port`: `8001`\n\n2. **Environment Variables** (optional): Create a Postman Environment with:\n   - `accessToken`: Auto-populated after login/register\n   - `refreshToken`: Auto-populated after login/register\n   - `userId`: Auto-populated after login/register\n   - `userEmail`: Auto-populated after login/register\n\n3. **Quick Start**:\n   - Start with **Health Check** to verify service\n   - Use **Register User** or **Login** to get tokens\n   - Tokens are automatically saved and used in protected endpoints\n\n## Features\n\n- ✅ Auto token extraction and storage\n- ✅ Comprehensive test scripts\n- ✅ Response validation\n- ✅ Error handling\n- ✅ Request/response examples",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success field', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"});",
+									"",
+									"pm.test('Response time is less than 500ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(500);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    console.log('Service Status:', jsonData.status);",
+									"    console.log('Database:', jsonData.db);",
+									"    console.log('Redis:', jsonData.redis);",
+									"    console.log('Latency:', jsonData.latencyMs + 'ms');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "health"]
+						},
+						"description": "Check the health status of the service, including database and Redis connections"
+					},
+					"response": []
+				}
+			],
+			"description": "Service health and information endpoints"
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique email and username for testing",
+									"const timestamp = Date.now();",
+									"pm.environment.set('testEmail', `test${timestamp}@example.com`);",
+									"pm.environment.set('testUsername', `testuser${timestamp}`);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has correct structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('accessToken');",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"});",
+									"",
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.accessToken) {",
+									"        pm.environment.set('accessToken', jsonData.data.accessToken);",
+									"        pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+									"        pm.environment.set('userId', jsonData.data.user.id);",
+									"        pm.environment.set('userEmail', jsonData.data.user.email);",
+									"        console.log('✅ Tokens saved to environment');",
+									"        console.log('User ID:', jsonData.data.user.id);",
+									"    }",
+									"}",
+									"",
+									"pm.test('Response time is acceptable', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"TestPassword123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"username\": \"{{testUsername}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "register"]
+						},
+						"description": "Register a new user account. Required fields: email, password. Optional: firstName, lastName, username.\n\nPassword requirements:\n- Minimum 8 characters\n- At least one uppercase letter\n- At least one lowercase letter\n- At least one number\n- At least one special character"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has correct structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('accessToken');",
+									"    pm.expect(jsonData.data).to.have.property('refreshToken');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.accessToken) {",
+									"        pm.environment.set('accessToken', jsonData.data.accessToken);",
+									"        pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+									"        pm.environment.set('userId', jsonData.data.user.id);",
+									"        pm.environment.set('userEmail', jsonData.data.user.email);",
+									"        console.log('✅ Login successful - Tokens saved');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Login failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"TestPassword123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "login"]
+						},
+						"description": "Login with email and password. Automatically saves tokens to environment variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.accessToken) {",
+									"        pm.environment.set('accessToken', jsonData.data.accessToken);",
+									"        pm.environment.set('refreshToken', jsonData.data.refreshToken);",
+									"        console.log('✅ Tokens refreshed successfully');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Token refresh failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-token",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "refresh-token"]
+						},
+						"description": "Refresh the access token using a valid refresh token. New tokens are automatically saved to environment."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains user data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "me"]
+						},
+						"description": "Get the currently authenticated user's information"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ Logout successful');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "logout"]
+						},
+						"description": "Logout the current user and invalidate the refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout All Devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ Logged out from all devices');",
+									"    pm.environment.unset('accessToken');",
+									"    pm.environment.unset('refreshToken');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout-all",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "logout-all"]
+						},
+						"description": "Logout from all devices and invalidate all refresh tokens for the current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response indicates success', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{userEmail}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/forgot-password",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "forgot-password"]
+						},
+						"description": "Request a password reset email. Always returns 200 to prevent email enumeration."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"your-reset-token-here\",\n  \"newPassword\": \"NewSecurePassword123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/reset-password",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "reset-password"]
+						},
+						"description": "Reset password using the token from forgot password email. Replace `your-reset-token-here` with the actual token."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"your-verification-token-here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/verify-email",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "verify-email"]
+						},
+						"description": "Verify email address using the token from verification email. Replace `your-verification-token-here` with the actual token."
+					},
+					"response": []
+				},
+				{
+					"name": "Resend Email Verification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{userEmail}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/resend-verification",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "resend-verification"]
+						},
+						"description": "Resend email verification link to the specified email address"
+					},
+					"response": []
+				},
+				{
+					"name": "Google OAuth - Initiate",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/google",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "auth", "google"]
+						},
+						"description": "Initiate Google OAuth flow. This will redirect to Google's authentication page. In Postman, this shows a redirect response."
+					},
+					"response": []
+				}
+			],
+			"description": "User authentication endpoints including registration, login, logout, and token management"
+		},
+		{
+			"name": "User Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains profile data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "profile"]
+						},
+						"description": "Get the authenticated user's complete profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains updated profile', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"bio\": \"Japanese language enthusiast\",\n  \"country\": \"United States\",\n  \"timezone\": \"America/New_York\",\n  \"language\": \"en\",\n  \"learningGoals\": [\"kanji\", \"hiragana\", \"katakana\"],\n  \"difficultyLevel\": \"intermediate\",\n  \"studyTime\": 30,\n  \"interests\": [\"anime\", \"manga\", \"culture\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "profile"]
+						},
+						"description": "Update user profile. All fields are optional.\n\nValid difficultyLevel values: beginner, intermediate, advanced"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Avatar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"avatarUrl\": \"https://example.com/avatar.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/avatar",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "avatar"]
+						},
+						"description": "Update the user's avatar by providing a URL to the avatar image"
+					},
+					"response": []
+				}
+			],
+			"description": "User profile management endpoints"
+		},
+		{
+			"name": "User Settings",
+			"item": [
+				{
+					"name": "Get Settings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains settings', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/settings",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "settings"]
+						},
+						"description": "Get the authenticated user's settings and preferences"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Settings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"emailNotifications\": true,\n  \"pushNotifications\": true,\n  \"dailyReminders\": true,\n  \"weeklyReports\": true,\n  \"achievementAlerts\": true,\n  \"profileVisibility\": \"public\",\n  \"showProgress\": true,\n  \"showAchievements\": true,\n  \"autoAdvance\": false,\n  \"showHints\": true,\n  \"soundEnabled\": true,\n  \"vibrationEnabled\": false,\n  \"theme\": \"dark\",\n  \"fontSize\": \"medium\",\n  \"animations\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/settings",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "settings"]
+						},
+						"description": "Update user settings. All fields are optional.\n\nValid values:\n- profileVisibility: public, friends, private\n- theme: light, dark, auto\n- fontSize: small, medium, large"
+					},
+					"response": []
+				}
+			],
+			"description": "User settings and preferences management"
+		},
+		{
+			"name": "User Sessions",
+			"item": [
+				{
+					"name": "Get Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains sessions array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/sessions",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "sessions"]
+						},
+						"description": "Get all active sessions for the authenticated user"
+					},
+					"response": []
+				}
+			],
+			"description": "Session management endpoints"
+		},
+		{
+			"name": "Account Management",
+			"item": [
+				{
+					"name": "Deactivate Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/deactivate",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "deactivate"]
+						},
+						"description": "Deactivate the authenticated user's account. This disables login but preserves account data."
+					},
+					"response": []
+				},
+				{
+					"name": "Reactivate Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/reactivate",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "reactivate"]
+						},
+						"description": "Reactivate a previously deactivated account"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset('accessToken');",
+									"    pm.environment.unset('refreshToken');",
+									"    pm.environment.unset('userId');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/account",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "account"]
+						},
+						"description": "⚠️ WARNING: Permanently delete the authenticated user's account and all associated data. This action cannot be undone."
+					},
+					"response": []
+				}
+			],
+			"description": "Account lifecycle management endpoints"
+		},
+		{
+			"name": "Statistics",
+			"item": [
+				{
+					"name": "Get User Stats",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains stats', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/stats",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "stats"]
+						},
+						"description": "Get statistics for the authenticated user including sessions, tokens, and security events"
+					},
+					"response": []
+				}
+			],
+			"description": "User statistics and analytics endpoints"
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains search results', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('pagination');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/search?q=test&page=1&limit=10",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "test",
+									"description": "Search query string (required)"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Results per page (default: 10, max: 100)"
+								}
+							]
+						},
+						"description": "Search for users by email, username, first name, or last name"
+					},
+					"response": []
+				}
+			],
+			"description": "User search endpoints"
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains paginated users', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('pagination');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/admin/users?page=1&limit=10",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "admin", "users"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Results per page (max: 100)"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"description": "Sort field",
+									"disabled": true
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc",
+									"description": "Sort order: asc or desc",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all users (admin only). Requires admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User By ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains user data', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/admin/users/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "v1", "users", "admin", "users", "{{userId}}"]
+						},
+						"description": "Get a specific user by ID (admin only). Requires admin role and valid user ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Admin-only endpoints for user management"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-construct baseUrl if not set",
+					"if (!pm.collectionVariables.get('baseUrl') && pm.collectionVariables.get('host') && pm.collectionVariables.get('port')) {",
+					"    const host = pm.collectionVariables.get('host');",
+					"    const port = pm.collectionVariables.get('port');",
+					"    pm.collectionVariables.set('baseUrl', `http://${host}:${port}/api/v1`);",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global response validation",
+					"if (pm.response.code >= 400) {",
+					"    console.log('❌ Error Response:', pm.response.json());",
+					"}",
+					"",
+					"// Log slow responses",
+					"if (pm.response.responseTime > 1000) {",
+					"    console.warn('⚠️ Slow response:', pm.response.responseTime + 'ms');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8001/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "port",
+			"value": "8001",
+			"type": "string"
+		}
+	]
+}
+

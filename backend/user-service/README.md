@@ -1,168 +1,70 @@
 # WriteWave User Service
 
-A comprehensive User Service microservice for the WriteWave application, built with Node.js, Express, TypeScript, PostgreSQL, and Redis. This service handles authentication, user management, profile management, and session management.
+A microservice for user authentication, user management, and profile features in the WriteWave platform.
 
-## 🚀 Features
+## Features
 
-### Authentication System
-- **JWT Authentication**: Secure token-based authentication with access and refresh tokens
-- **Password Security**: Bcrypt hashing with configurable rounds
-- **Email Verification**: Email verification workflow with secure tokens
-- **Password Reset**: Secure password reset functionality with time-limited tokens
-- **OAuth Integration**: Support for Google and Apple OAuth2 authentication
-- **Session Management**: Redis-based session storage with device tracking
+- 🔐 **Authentication**: JWT-based authentication with refresh tokens
+- 👤 **User Management**: Complete user CRUD operations
+- 📝 **User Profiles**: Rich user profiles with learning preferences
+- ⚙️ **User Settings**: Customizable user settings and preferences
+- 🔒 **Security**: Rate limiting, password hashing, email verification
+- 🔄 **OAuth**: Google OAuth 2.0 integration
+- 💾 **Session Management**: Active session tracking and management
+- 📊 **Statistics**: User activity and statistics tracking
 
-### User Management
-- **User Registration**: Complete user registration with validation
-- **Profile Management**: Comprehensive user profile CRUD operations
-- **Settings Management**: User preferences and application settings
-- **Account Management**: Account deactivation, reactivation, and deletion
-- **Avatar Upload**: Profile picture management with image optimization
-- **User Search**: Search functionality for finding other users
+## Prerequisites
 
-### Security Features
-- **Rate Limiting**: Configurable rate limiting for API endpoints
-- **Input Validation**: Comprehensive input validation with Joi
-- **CORS Protection**: Configurable CORS policies
-- **Security Headers**: Security headers for protection against common attacks
-- **Request Logging**: Comprehensive request and response logging
-- **Error Handling**: Structured error handling with proper HTTP status codes
+- **Node.js**: v18.0.0 or higher
+- **npm**: v8.0.0 or higher
+- **PostgreSQL**: v13 or higher
+- **Redis**: v6 or higher (optional, but recommended)
+- **Prisma**: Included as a dev dependency
 
-### Database Features
-- **Prisma ORM**: Type-safe database operations with Prisma
-- **PostgreSQL**: Robust relational database with proper indexing
-- **Redis Caching**: High-performance caching for frequently accessed data
-- **Database Migrations**: Automated database schema migrations
-- **Connection Pooling**: Efficient database connection management
+## Quick Start
 
-## 🏗️ Architecture
+### 1. Clone the Repository
 
-### Project Structure
-```
-src/
-├── config/           # Configuration files
-│   ├── database.ts   # Database configuration
-│   ├── redis.ts      # Redis configuration
-│   ├── logger.ts     # Logging configuration
-│   └── index.ts      # Main configuration
-├── controllers/      # Request handlers
-│   ├── auth.controller.ts
-│   └── user.controller.ts
-├── middleware/       # Express middleware
-│   ├── auth.ts       # Authentication middleware
-│   └── validation.ts # Input validation middleware
-├── routes/           # API routes
-│   ├── auth.routes.ts
-│   ├── user.routes.ts
-│   └── index.ts
-├── services/         # Business logic
-│   ├── auth.service.ts
-│   └── user.service.ts
-├── types/            # TypeScript type definitions
-│   └── index.ts
-├── utils/            # Utility functions
-│   ├── jwt.ts        # JWT utilities
-│   ├── password.ts   # Password utilities
-│   └── email.ts      # Email utilities
-└── index.ts          # Application entry point
-```
-
-### Database Schema
-- **Users**: Core user information and authentication data
-- **User Profiles**: Extended user profile information
-- **User Settings**: User preferences and application settings
-- **Sessions**: Active user sessions with device information
-- **Email Verifications**: Email verification tokens
-- **Password Resets**: Password reset tokens
-- **Refresh Tokens**: JWT refresh token management
-
-## 🛠️ Technology Stack
-
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL 15
-- **ORM**: Prisma
-- **Cache**: Redis 7
-- **Authentication**: JWT with refresh tokens
-- **Email**: Nodemailer with SMTP
-- **Validation**: Joi
-- **Logging**: Winston
-- **Security**: Helmet, CORS, Rate Limiting
-- **Containerization**: Docker & Docker Compose
-
-## 📋 Prerequisites
-
-- Node.js 18 or higher
-- npm 8 or higher
-- PostgreSQL 15 or higher
-- Redis 7 or higher
-- Docker and Docker Compose (optional)
-
-## 🚀 Quick Start
-
-### 1. Clone and Install Dependencies
 ```bash
 cd backend/user-service
+```
+
+### 2. Install Dependencies
+
+```bash
 npm install
 ```
 
-### 2. Environment Configuration
+### 3. Environment Configuration
+
+Create a `.env` file by copying the example:
+
 ```bash
 cp env.example .env
-# Edit .env with your configuration
 ```
 
-### 3. Database Setup
-```bash
-# Generate Prisma client
-npm run prisma:generate
+Edit the `.env` file with your configuration:
 
-# Run database migrations
-npm run prisma:migrate
-
-# Seed database (optional)
-npm run prisma:seed
-```
-
-### 4. Start Development Server
-```bash
-npm run dev
-```
-
-### 5. Using Docker (Alternative)
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f user-service
-
-# Stop services
-docker-compose down
-```
-
-## 🔧 Configuration
-
-### Environment Variables
 ```env
 # Database Configuration
-DATABASE_URL="postgresql://user:password@localhost:5432/writewave_users"
+DATABASE_URL="postgresql://user:password@localhost:5432/writewave_users?schema=public"
 
 # Redis Configuration
 REDIS_URL="redis://localhost:6379"
+REDIS_PASSWORD=""
 
 # JWT Configuration
-JWT_SECRET="your-super-secret-jwt-key"
-JWT_REFRESH_SECRET="your-super-secret-refresh-key"
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-in-production"
 JWT_EXPIRES_IN="15m"
 JWT_REFRESH_EXPIRES_IN="7d"
 
 # Server Configuration
 PORT=8001
 NODE_ENV="development"
+API_VERSION="v1"
 
-# Email Configuration
+# Email Configuration (for email verification and password reset)
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
 SMTP_USER="your-email@gmail.com"
@@ -170,31 +72,117 @@ SMTP_PASS="your-app-password"
 FROM_EMAIL="noreply@writewave.app"
 FROM_NAME="WriteWave"
 
-# OAuth Configuration
+# Google OAuth Configuration (optional)
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
-APPLE_CLIENT_ID="your-apple-client-id"
-APPLE_TEAM_ID="your-apple-team-id"
-APPLE_KEY_ID="your-apple-key-id"
-APPLE_PRIVATE_KEY="your-apple-private-key"
+GOOGLE_CALLBACK_URL="http://localhost:8001/api/v1/auth/google/callback"
 
-# Security Configuration
-BCRYPT_ROUNDS=12
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-
-# CORS Configuration
-CORS_ORIGIN="http://localhost:3000,https://writewave.app"
-CORS_CREDENTIALS=true
+# Frontend URLs
+FRONTEND_URL="http://localhost:3000"
 ```
 
-## 📚 API Documentation
+**Important**: Generate secure JWT secrets for production:
+
+```bash
+# Generate secure random secrets
+openssl rand -hex 32  # Use this for JWT_SECRET
+openssl rand -hex 32  # Use this for JWT_REFRESH_SECRET
+```
+
+### 4. Setup Database
+
+#### Option A: Using Docker (Recommended for Development)
+
+```bash
+# Start PostgreSQL
+docker run -d \
+  --name writewave-postgres \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=writewave_users \
+  -p 5432:5432 \
+  postgres:15
+
+# Start Redis
+docker run -d \
+  --name writewave-redis \
+  -p 6379:6379 \
+  redis:7-alpine
+```
+
+#### Option B: Local Installation
+
+Make sure PostgreSQL and Redis are installed and running on your system.
+
+### 5. Run Database Migrations
+
+```bash
+# Generate Prisma Client
+npm run prisma:generate
+
+# Run migrations
+npm run prisma:migrate
+
+# Or deploy migrations (for production)
+npm run prisma:deploy
+```
+
+### 6. Create Required Directories
+
+```bash
+mkdir -p logs uploads
+```
+
+### 7. Start the Service
+
+#### Development Mode (with hot reload)
+
+```bash
+npm run dev
+```
+
+#### Production Mode
+
+```bash
+# Build the project
+npm run build
+
+# Start the server
+npm start
+```
+
+The service will start on `http://localhost:8001` (or the port specified in your `.env` file).
+
+## Automated Setup Script
+
+For a complete automated setup, use the provided setup script:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+This script will:
+- ✅ Check Node.js and database installations
+- ✅ Install npm dependencies
+- ✅ Create `.env` file from `env.example`
+- ✅ Generate secure JWT secrets
+- ✅ Create required directories
+- ✅ Generate Prisma Client
+- ✅ Run database migrations
+
+## API Documentation
+
+### Base URL
+
+```
+http://localhost:8001/api/v1
+```
 
 ### Authentication Endpoints
 
 #### Register User
 ```http
-POST /api/v1/auth/register
+POST /auth/register
 Content-Type: application/json
 
 {
@@ -206,9 +194,9 @@ Content-Type: application/json
 }
 ```
 
-#### Login User
+#### Login
 ```http
-POST /api/v1/auth/login
+POST /auth/login
 Content-Type: application/json
 
 {
@@ -219,7 +207,7 @@ Content-Type: application/json
 
 #### Refresh Token
 ```http
-POST /api/v1/auth/refresh-token
+POST /auth/refresh-token
 Content-Type: application/json
 
 {
@@ -229,8 +217,8 @@ Content-Type: application/json
 
 #### Logout
 ```http
-POST /api/v1/auth/logout
-Authorization: Bearer your-access-token
+POST /auth/logout
+Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
@@ -238,49 +226,24 @@ Content-Type: application/json
 }
 ```
 
-#### Password Reset Request
+#### Get Current User
 ```http
-POST /api/v1/auth/forgot-password
-Content-Type: application/json
-
-{
-  "email": "user@example.com"
-}
+GET /auth/me
+Authorization: Bearer <access-token>
 ```
 
-#### Password Reset Confirm
-```http
-POST /api/v1/auth/reset-password
-Content-Type: application/json
+### User Profile Endpoints
 
-{
-  "token": "reset-token",
-  "newPassword": "NewSecurePassword123!"
-}
+#### Get Profile
+```http
+GET /users/profile
+Authorization: Bearer <access-token>
 ```
 
-#### Email Verification
+#### Update Profile
 ```http
-POST /api/v1/auth/verify-email
-Content-Type: application/json
-
-{
-  "token": "verification-token"
-}
-```
-
-### User Management Endpoints
-
-#### Get User Profile
-```http
-GET /api/v1/users/profile
-Authorization: Bearer your-access-token
-```
-
-#### Update User Profile
-```http
-PUT /api/v1/users/profile
-Authorization: Bearer your-access-token
+PUT /users/profile
+Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
@@ -290,227 +253,249 @@ Content-Type: application/json
   "country": "United States",
   "timezone": "America/New_York",
   "language": "en",
-  "learningGoals": ["kanji", "hiragana", "katakana"],
+  "learningGoals": ["kanji", "hiragana"],
   "difficultyLevel": "intermediate",
   "studyTime": 30,
-  "interests": ["anime", "manga", "culture"]
+  "interests": ["anime", "manga"]
 }
 ```
 
-#### Get User Settings
+### User Settings Endpoints
+
+#### Get Settings
 ```http
-GET /api/v1/users/settings
-Authorization: Bearer your-access-token
+GET /users/settings
+Authorization: Bearer <access-token>
 ```
 
-#### Update User Settings
+#### Update Settings
 ```http
-PUT /api/v1/users/settings
-Authorization: Bearer your-access-token
+PUT /users/settings
+Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
   "emailNotifications": true,
-  "pushNotifications": false,
-  "dailyReminders": true,
-  "weeklyReports": true,
-  "achievementAlerts": true,
-  "profileVisibility": "public",
-  "showProgress": true,
-  "showAchievements": true,
-  "autoAdvance": false,
-  "showHints": true,
-  "soundEnabled": true,
-  "vibrationEnabled": false,
+  "pushNotifications": true,
   "theme": "dark",
-  "fontSize": "medium",
-  "animations": true
+  "fontSize": "medium"
 }
 ```
 
-#### Get User Sessions
+### Health Check
+
 ```http
-GET /api/v1/users/sessions
-Authorization: Bearer your-access-token
+GET /health
 ```
 
-#### Deactivate Account
-```http
-POST /api/v1/users/deactivate
-Authorization: Bearer your-access-token
-```
+## Testing with Postman
 
-#### Delete Account
-```http
-DELETE /api/v1/users/account
-Authorization: Bearer your-access-token
-```
+1. Import the Postman collection:
+   - Open Postman
+   - Click **Import**
+   - Select `postman.json` from the project root
 
-#### Search Users
-```http
-GET /api/v1/users/search?q=john&page=1&limit=10
-Authorization: Bearer your-access-token
-```
+2. Create a Postman Environment (optional):
+   - Create a new environment
+   - Add variables:
+     - `baseUrl`: `http://localhost:8001/api/v1`
+     - `accessToken`: (will be auto-set after login/register)
+     - `refreshToken`: (will be auto-set after login/register)
 
-#### Get User Statistics
-```http
-GET /api/v1/users/stats
-Authorization: Bearer your-access-token
-```
+3. Test the API:
+   - Start with **Health Check** to verify the service is running
+   - Register a new user or login
+   - The `accessToken` and `refreshToken` will be automatically saved
+   - Use the protected endpoints with the saved tokens
 
-### Admin Endpoints
+## Database Schema
 
-#### Get All Users
-```http
-GET /api/v1/users/admin/users?page=1&limit=10&sortBy=createdAt&sortOrder=desc
-Authorization: Bearer admin-access-token
-```
+The service uses Prisma ORM. The schema is defined in `prisma/schema.prisma`.
 
-#### Get User by ID
-```http
-GET /api/v1/users/admin/users/:userId
-Authorization: Bearer admin-access-token
-```
+### Models
 
-### System Endpoints
+- **User**: Core user information -- email, username, password, OAuth IDs
+- **UserProfile**: Extended profile information -- bio, country, timezone, learning goals
+- **UserSettings**: User preferences -- notifications, theme, display settings
+- **Session**: Active user sessions
+- **RefreshToken**: Refresh tokens for JWT authentication
+- **EmailVerification**: Email verification tokens
+- **PasswordReset**: Password reset tokens
 
-#### Health Check
-```http
-GET /api/v1/health
-```
+### Prisma Studio
 
-#### API Information
-```http
-GET /api/v1/
-```
+View and edit your database using Prisma Studio:
 
-## 🧪 Testing
-
-### Run Tests
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
+npm run prisma:studio
 ```
 
-### Test Endpoints
-```bash
-# Test health endpoint
-curl http://localhost:8001/api/v1/health
+## Project Structure
 
-# Test user registration
-curl -X POST http://localhost:8001/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"TestPassword123!","firstName":"Test","lastName":"User"}'
-
-# Test user login
-curl -X POST http://localhost:8001/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"TestPassword123!"}'
+```
+user-service/
+├── src/
+│   ├── config/          # Configuration files (database, redis, logger, passport)
+│   ├── controllers/     # Request handlers
+│   ├── middleware/      # Express middleware (auth, validation)
+│   ├── routes/          # API route definitions
+│   ├── services/        # Business logic
+│   ├── types/           # TypeScript type definitions
+│   ├── utils/           # Utility functions (jwt, password, email, events)
+│   └── index.ts         # Application entry point
+├── prisma/
+│   └── schema.prisma    # Database schema
+├── logs/                # Application logs
+├── uploads/             # File uploads directory
+├── .env                 # Environment variables (not in git)
+├── env.example          # Environment variables template
+├── package.json         # Dependencies and scripts
+├── tsconfig.json        # TypeScript configuration
+├── postman.json         # Postman collection for API testing
+└── README.md            # This file
 ```
 
-## 📊 Monitoring
+## Available Scripts
 
-### Health Checks
-- **Endpoint**: `GET /api/v1/health`
-- **Checks**: Database connectivity, Redis connectivity, memory usage
-- **Response**: JSON with service status and metrics
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build the TypeScript project
+- `npm start` - Start production server
+- `npm test` - Run tests
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint errors
+- `npm run prisma:generate` - Generate Prisma Client
+- `npm run prisma:migrate` - Run database migrations (development)
+- `npm run prisma:deploy` - Deploy migrations (production)
+- `npm run prisma:studio` - Open Prisma Studio
+- `npm run docker:build` - Build Docker image
+- `npm run docker:run` - Run Docker container
 
-### Logging
-- **Levels**: error, warn, info, debug
-- **Format**: JSON with structured data
-- **Output**: Console and file logging
-- **Rotation**: Automatic log rotation with size limits
+## Environment Variables
 
-### Metrics
-- **Request Count**: Total requests per endpoint
-- **Response Time**: Average response time per endpoint
-- **Error Rate**: Error rate per endpoint
-- **Database Performance**: Query performance metrics
-- **Cache Performance**: Cache hit/miss ratios
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | - | ✅ |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6379` | ⚠️ |
+| `JWT_SECRET` | Secret for JWT access tokens | - | ✅ |
+| `JWT_REFRESH_SECRET` | Secret for JWT refresh tokens | - | ✅ |
+| `PORT` | Server port | `8001` | ❌ |
+| `NODE_ENV` | Environment (development/production) | `development` | ❌ |
+| `SMTP_HOST` | SMTP server host | - | ⚠️ |
+| `SMTP_PORT` | SMTP server port | `587` | ⚠️ |
+| `SMTP_USER` | SMTP username | - | ⚠️ |
+| `SMTP_PASS` | SMTP password | - | ⚠️ |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | - | ❌ |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | - | ❌ |
+| `FRONTEND_URL` | Frontend application URL | `http://localhost:3000` | ❌ |
 
-## 🔒 Security
+⚠️ = Required if using email features or Redis caching  
+❌ = Optional
 
-### Authentication
+## Security Features
+
+- **Password Hashing**: Uses bcrypt with configurable rounds (default: 12)
 - **JWT Tokens**: Secure token-based authentication
-- **Refresh Tokens**: Automatic token refresh mechanism
-- **Password Hashing**: Bcrypt with configurable rounds
-- **Session Management**: Redis-based session storage
+- **Rate Limiting**: Configurable rate limits on auth endpoints
+- **CORS**: Configurable Cross-Origin Resource Sharing
+- **Helmet**: Security headers middleware
+- **Input Validation**: Joi schema validation for all inputs
+- **Email Verification**: Required email verification for new users
+- **Password Reset**: Secure password reset flow with time-limited tokens
 
-### Authorization
-- **Role-Based Access**: Admin and user role separation
-- **Resource Protection**: Protected endpoints with authentication
-- **Rate Limiting**: Configurable rate limits per endpoint
-- **Input Validation**: Comprehensive input validation
+## Error Handling
 
-### Data Protection
-- **Encryption**: Password and sensitive data encryption
-- **CORS**: Configurable cross-origin resource sharing
-- **Security Headers**: Protection against common attacks
-- **Request Logging**: Audit trail for security events
+All API responses follow a consistent format:
 
-## 🚀 Deployment
+```json
+{
+  "success": true|false,
+  "message": "Human-readable message",
+  "data": {},
+  "error": "ERROR_CODE",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
 
-### Production Deployment
+## Logging
+
+Logs are written to:
+- Console (development)
+- `logs/combined.log` (all logs)
+- `logs/error.log` (error logs only)
+
+Log levels: `debug`, `info`, `warn`, `error`
+
+## Docker Deployment
+
+### Build Docker Image
+
 ```bash
-# Build production image
-docker build -t writewave/user-service:latest .
+docker build -t writewave/user-service .
+```
 
-# Run with production configuration
+### Run Docker Container
+
+```bash
 docker run -d \
   --name user-service \
   -p 8001:8001 \
-  -e NODE_ENV=production \
-  -e DATABASE_URL="postgresql://user:password@db:5432/writewave_users" \
-  -e REDIS_URL="redis://redis:6379" \
-  -e JWT_SECRET="your-production-jwt-secret" \
-  writewave/user-service:latest
+  --env-file .env \
+  writewave/user-service
 ```
 
-### Environment-Specific Configurations
-- **Development**: Debug logging, relaxed security
-- **Staging**: Production-like settings, enhanced monitoring
-- **Production**: Optimized performance, strict security
+### Docker Compose
 
-### Scaling Considerations
-- **Horizontal Scaling**: Stateless service design
-- **Database Scaling**: Connection pooling and read replicas
-- **Cache Scaling**: Redis clustering for high availability
-- **Load Balancing**: Multiple service instances behind load balancer
+See `docker-compose.yml` for a complete setup with PostgreSQL and Redis.
 
-## 🤝 Contributing
+## Troubleshooting
+
+### Database Connection Issues
+
+- Verify PostgreSQL is running: `pg_isready`
+- Check `DATABASE_URL` in `.env`
+- Ensure database exists: `CREATE DATABASE writewave_users;`
+
+### Redis Connection Issues
+
+- Verify Redis is running: `redis-cli ping`
+- Check `REDIS_URL` in `.env`
+- Service will work without Redis (caching disabled)
+
+### Migration Issues
+
+```bash
+# Reset database (WARNING: Deletes all data)
+npx prisma migrate reset
+
+# Check migration status
+npx prisma migrate status
+```
+
+### Port Already in Use
+
+```bash
+# Find process using port 8001
+lsof -i :8001
+
+# Kill the process or change PORT in .env
+```
+
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+4. Run tests and linting
+5. Submit a pull request
 
-### Development Guidelines
-- Follow TypeScript best practices
-- Write comprehensive tests
-- Use meaningful commit messages
-- Update documentation for new features
-- Follow the existing code style
+## License
 
-## 📄 License
+MIT License - see LICENSE file for details
 
-This project is part of the WriteWave application and follows the same license terms.
+## Support
 
-## 🆘 Support
+For issues and questions:
+- Check existing GitHub issues
+- Create a new issue with detailed information
+- Contact the WriteWave development team
 
-For support and questions:
-- Create an issue in the project repository
-- Check the troubleshooting section
-- Review the API documentation
-- Contact the development team
-
----
-
-**Note**: This User Service is designed specifically for the WriteWave application. Modify the configuration and endpoints according to your specific requirements.

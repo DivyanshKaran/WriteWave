@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '@/utils/logger';
-import { notificationService } from '@/services/notification.service';
-import { asyncHandler } from '@/utils/errors';
+import { logger } from '../utils/logger';
+import { notificationService } from '../services/notification.service';
+import { asyncHandler } from '../utils/errors';
 import { 
   CreateNotificationRequest, 
   UpdateNotificationRequest,
   NotificationStatus 
-} from '@/types';
+} from '../types';
 
 export class NotificationController {
   // Send notification
-  static sendNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static sendNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const notificationData: CreateNotificationRequest = req.body;
     
     logger.info('Sending notification', { 
@@ -22,10 +22,11 @@ export class NotificationController {
     const result = await notificationService.createNotification(notificationData);
     
     if (!result.success) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: result.error
       });
+      return;
     }
 
     res.status(201).json({
@@ -36,7 +37,7 @@ export class NotificationController {
   });
 
   // Send bulk notifications
-  static sendBulkNotifications = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static sendBulkNotifications = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { notifications } = req.body;
     
     logger.info('Sending bulk notifications', { count: notifications.length });
@@ -57,7 +58,7 @@ export class NotificationController {
   });
 
   // Send notification to multiple users
-  static sendToUsers = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static sendToUsers = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userIds, ...notificationData } = req.body;
     
     logger.info('Sending notification to users', { userIds: userIds.length });
@@ -78,7 +79,7 @@ export class NotificationController {
   });
 
   // Send notification to all users
-  static sendToAllUsers = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static sendToAllUsers = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const notificationData = req.body;
     
     logger.info('Sending notification to all users');
@@ -99,7 +100,7 @@ export class NotificationController {
   });
 
   // Send notification by type
-  static sendByType = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static sendByType = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { type, ...notificationData } = req.body;
     
     logger.info('Sending notification by type', { type });
@@ -121,16 +122,17 @@ export class NotificationController {
   });
 
   // Get notification by ID
-  static getNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     const notification = await notificationService.getNotification(id);
     
     if (!notification) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Notification not found'
       });
+      return;
     }
 
     res.json({
@@ -140,7 +142,7 @@ export class NotificationController {
   });
 
   // Update notification
-  static updateNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static updateNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     const updates: UpdateNotificationRequest = req.body;
     
@@ -149,10 +151,11 @@ export class NotificationController {
     const result = await notificationService.updateNotification(id, updates);
     
     if (!result.success) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: result.error
       });
+      return;
     }
 
     res.json({
@@ -163,7 +166,7 @@ export class NotificationController {
   });
 
   // Get user notifications
-  static getUserNotifications = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getUserNotifications = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     const { page = 1, limit = 50, status } = req.query;
     
@@ -191,7 +194,7 @@ export class NotificationController {
   });
 
   // Get notifications by status
-  static getNotificationsByStatus = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getNotificationsByStatus = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { status } = req.params;
     const { limit = 100 } = req.query;
     
@@ -208,7 +211,7 @@ export class NotificationController {
   });
 
   // Delete notification
-  static deleteNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static deleteNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     logger.info('Deleting notification', { id });
@@ -216,10 +219,11 @@ export class NotificationController {
     const success = await notificationService.deleteNotification(id);
     
     if (!success) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Notification not found'
       });
+      return;
     }
 
     res.json({
@@ -229,7 +233,7 @@ export class NotificationController {
   });
 
   // Retry failed notification
-  static retryNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static retryNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     logger.info('Retrying failed notification', { id });
@@ -237,10 +241,11 @@ export class NotificationController {
     const result = await notificationService.retryFailedNotification(id);
     
     if (!result.success) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: result.error
       });
+      return;
     }
 
     res.json({
@@ -250,7 +255,7 @@ export class NotificationController {
   });
 
   // Cancel scheduled notification
-  static cancelScheduledNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static cancelScheduledNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     logger.info('Cancelling scheduled notification', { id });
@@ -258,10 +263,11 @@ export class NotificationController {
     const result = await notificationService.cancelScheduledNotification(id);
     
     if (!result.success) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: result.error
       });
+      return;
     }
 
     res.json({
@@ -271,14 +277,15 @@ export class NotificationController {
   });
 
   // Get notification statistics
-  static getNotificationStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getNotificationStats = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { startDate, endDate } = req.query;
     
     if (!startDate || !endDate) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Start date and end date are required'
       });
+      return;
     }
 
     const stats = await notificationService.getNotificationStats(
@@ -293,7 +300,7 @@ export class NotificationController {
   });
 
   // Cleanup old notifications
-  static cleanupOldNotifications = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static cleanupOldNotifications = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { retentionDays = 30 } = req.body;
     
     logger.info('Cleaning up old notifications', { retentionDays });
@@ -308,7 +315,7 @@ export class NotificationController {
   });
 
   // Validate notification data
-  static validateNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static validateNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const notificationData: CreateNotificationRequest = req.body;
     
     const validation = await notificationService.validateNotificationData(notificationData);

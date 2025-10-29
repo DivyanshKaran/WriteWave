@@ -1,4 +1,4 @@
-import { prisma } from '@/models';
+import { prisma } from '../models';
 import { 
   StudyGroup, 
   StudyGroupMember, 
@@ -9,10 +9,10 @@ import {
   GroupRole,
   ChallengeType,
   PaginationQuery
-} from '@/types';
-import { AppError } from '@/utils/errors';
-import { createSlug } from '@/utils/helpers';
-import { contentModeration } from '@/utils/moderation';
+} from '../types';
+import { AppError } from '../utils/errors';
+import { createSlug } from '../utils/helpers';
+import { contentModeration } from '../utils/moderation';
 
 export class StudyGroupService {
   // Study Groups
@@ -57,10 +57,14 @@ export class StudyGroupService {
 
     // Add user role if userId provided
     if (userId) {
-      for (const group of groups) {
+      for (let i = 0; i < groups.length; i++) {
+        const group = groups[i];
         const userMember = group.members.find(member => member.userId === userId);
-        group.userRole = userMember?.role;
-        group.memberCount = group._count.members;
+        groups[i] = {
+          ...group,
+          userRole: userMember?.role,
+          memberCount: group._count.members,
+        } as any;
       }
     }
 
@@ -72,8 +76,11 @@ export class StudyGroupService {
     
     if (group && userId) {
       const userMember = group.members.find(member => member.userId === userId);
-      group.userRole = userMember?.role;
-      group.memberCount = group.members.length;
+      return {
+        ...group,
+        userRole: userMember?.role,
+        memberCount: group.members.length,
+      } as any;
     }
 
     return group;
@@ -163,7 +170,7 @@ export class StudyGroupService {
       where: { groupId_userId: { groupId, userId } }
     });
 
-    if (!member || ![GroupRole.OWNER, GroupRole.ADMIN].includes(member.role)) {
+    if (!member || (member.role !== GroupRole.OWNER && member.role !== GroupRole.ADMIN)) {
       throw new AppError('Not authorized to update this study group', 403);
     }
 
@@ -322,7 +329,7 @@ export class StudyGroupService {
       where: { groupId_userId: { groupId, userId } }
     });
 
-    if (!requesterMember || ![GroupRole.OWNER, GroupRole.ADMIN].includes(requesterMember.role)) {
+    if (!requesterMember || (requesterMember.role !== GroupRole.OWNER && requesterMember.role !== GroupRole.ADMIN)) {
       throw new AppError('Not authorized to update member roles', 403);
     }
 
@@ -356,7 +363,7 @@ export class StudyGroupService {
       where: { groupId_userId: { groupId, userId } }
     });
 
-    if (!requesterMember || ![GroupRole.OWNER, GroupRole.ADMIN].includes(requesterMember.role)) {
+    if (!requesterMember || (requesterMember.role !== GroupRole.OWNER && requesterMember.role !== GroupRole.ADMIN)) {
       throw new AppError('Not authorized to remove members', 403);
     }
 
@@ -408,7 +415,7 @@ export class StudyGroupService {
       where: { groupId_userId: { groupId, userId } }
     });
 
-    if (!member || ![GroupRole.OWNER, GroupRole.ADMIN].includes(member.role)) {
+    if (!member || (member.role !== GroupRole.OWNER && member.role !== GroupRole.ADMIN)) {
       throw new AppError('Not authorized to create challenges', 403);
     }
 
@@ -460,7 +467,7 @@ export class StudyGroupService {
       where: { groupId_userId: { groupId: challenge.groupId, userId } }
     });
 
-    if (!member || ![GroupRole.OWNER, GroupRole.ADMIN].includes(member.role)) {
+    if (!member || (member.role !== GroupRole.OWNER && member.role !== GroupRole.ADMIN)) {
       throw new AppError('Not authorized to update challenges', 403);
     }
 
@@ -495,7 +502,7 @@ export class StudyGroupService {
       where: { groupId_userId: { groupId: challenge.groupId, userId } }
     });
 
-    if (!member || ![GroupRole.OWNER, GroupRole.ADMIN].includes(member.role)) {
+    if (!member || (member.role !== GroupRole.OWNER && member.role !== GroupRole.ADMIN)) {
       throw new AppError('Not authorized to delete challenges', 403);
     }
 

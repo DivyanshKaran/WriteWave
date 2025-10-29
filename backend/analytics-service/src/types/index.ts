@@ -233,6 +233,7 @@ export interface TargetAudience {
 }
 
 export interface ABTestResult {
+  id?: string;
   testId: string;
   variantId: string;
   userId: string;
@@ -494,6 +495,7 @@ export enum AlertOperator {
 
 // User Analytics Types
 export interface UserInsights {
+  id?: string;
   userId: string;
   totalSessions: number;
   totalTimeSpent: number;
@@ -508,7 +510,8 @@ export interface UserInsights {
   churnRisk: ChurnRisk;
   recommendations: string[];
   lastActive: Date;
-  createdAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export enum ChurnRisk {
@@ -557,9 +560,16 @@ export interface FunnelStep {
 }
 
 // Error Types
-export interface AppError extends Error {
+export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
+
+  constructor(message: string, statusCode: number, isOperational: boolean = true) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = isOperational;
+    Object.setPrototypeOf(this, AppError.prototype);
+  }
 }
 
 export interface ValidationError {

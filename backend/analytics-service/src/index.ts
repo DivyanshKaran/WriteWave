@@ -5,9 +5,9 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import { logger } from '@/utils/logger';
-import { errorHandler } from '@/utils/errors';
-import routes from '@/routes';
+import { logger } from './utils/logger';
+import { errorHandler } from './utils/errors';
+import routes from './routes';
 
 // Load environment variables
 dotenv.config();
@@ -31,7 +31,7 @@ app.use(helmet({
 // CORS configuration
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
+  credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
 }));
@@ -72,22 +72,55 @@ if (process.env.NODE_ENV === 'development') {
 
 // Request ID middleware
 app.use((req, res, next) => {
-  req.id = Math.random().toString(36).substr(2, 9);
+  req.id = Math.random().toString(36).substring(2, 11);
   res.setHeader('X-Request-ID', req.id);
   next();
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Analytics Service is healthy',
-    timestamp: new Date().toISOString(),
+app.get('/health', async (_req, res) => {
+  const start = Date.now();
+  const checks: {
+    service: string;
+    clickhouse: string;
+    redis: string;
+    latencyMs?: number;
+  } = {
+    service: 'healthy',
+    clickhouse: 'unknown',
+    redis: 'unknown',
+  };
+
+  try {
+    // ClickHouse check
+    const { clickhouseClient } = await import('./models/clickhouse');
+    await clickhouseClient.ping();
+    checks.clickhouse = 'healthy';
+  } catch (error: any) {
+    checks.clickhouse = 'unhealthy';
+    logger.error('ClickHouse health check failed', { error: error.message });
+  }
+
+  try {
+    // Redis check
+    const { redisClient } = await import('./utils/redis');
+    const pingResult = await redisClient.ping();
+    checks.redis = pingResult === 'PONG' ? 'healthy' : 'unhealthy';
+  } catch (error: any) {
+    checks.redis = 'unhealthy';
+    logger.error('Redis health check failed', { error: error.message });
+  }
+
+  checks.latencyMs = Date.now() - start;
+  const isHealthy = checks.clickhouse === 'healthy' && checks.redis === 'healthy';
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    success: isHealthy,
+    status: isHealthy ? 'healthy' : 'degraded',
+    checks,
     version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    pid: process.pid
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -136,25 +169,38 @@ app.use('*', (req, res) => {
 });
 
 // Graceful shutdown
-const gracefulShutdown = (signal: string) => {
+const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}, shutting down gracefully...`);
   
-  server.close(() => {
-    logger.info('HTTP server closed');
-    
-    // Close database connections, queues, etc.
-    process.exit(0);
-  });
+  try {
+    // Close Kafka connections (consumer disconnection handled in service, but producer/admin cleanup)
+    try {
+      const { disconnectKafka } = await import('../../shared/utils/kafka');
+      await disconnectKafka();
+      logger.info('Kafka connections closed');
+    } catch (error) {
+      logger.warn('Error disconnecting Kafka (non-fatal)', { error: (error as any).message });
+    }
 
-  // Force close after 30 seconds
-  setTimeout(() => {
-    logger.error('Could not close connections in time, forcefully shutting down');
+    server.close(() => {
+      logger.info('HTTP server closed');
+      // Close database connections, queues, etc.
+      process.exit(0);
+    });
+
+    // Force close after 30 seconds
+    setTimeout(() => {
+      logger.error('Could not close connections in time, forcefully shutting down');
+      process.exit(1);
+    }, 30000);
+  } catch (error) {
+    logger.error('Error during graceful shutdown', { error: (error as any).message });
     process.exit(1);
-  }, 30000);
+  }
 };
 
 // Start server
-const server = app.listen(PORT, HOST, () => {
+const server = app.listen(parseInt(String(PORT)), HOST, () => {
   logger.info(`Analytics Service running on http://${HOST}:${PORT}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`Health check: http://${HOST}:${PORT}/health`);
@@ -174,7 +220,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Handle shutdown signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM').catch(err => logger.error('Shutdown error', err)));
+process.on('SIGINT', () => gracefulShutdown('SIGINT').catch(err => logger.error('Shutdown error', err)));
 
 export default app;

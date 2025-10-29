@@ -1,14 +1,29 @@
 import { Request, Response } from 'express';
-import { xpService } from '@/services/xp.service';
-import { characterMasteryService } from '@/services/character-mastery.service';
-import { achievementService } from '@/services/achievement.service';
-import { streakService } from '@/services/streak.service';
-import { analyticsService } from '@/services/analytics.service';
-import { leaderboardService } from '@/services/leaderboard.service';
-import { logger } from '@/config/logger';
+import { xpService } from '../services/xp.service';
+import { characterMasteryService } from '../services/character-mastery.service';
+import { achievementService } from '../services/achievement.service';
+import { streakService } from '../services/streak.service';
+import { analyticsService } from '../services/analytics.service';
+import { leaderboardService } from '../services/leaderboard.service';
+import { logger } from '../config/logger';
+import { XpSource, StreakType } from '../types';
+import { publish, Topics } from '../../../shared/utils/kafka';
+import { userServiceClient } from '../../../shared/utils/user-service-client';
 
 // Progress controller class
 export class ProgressController {
+  private async validateUserFromToken(req: Request, claimedUserId: string): Promise<boolean> {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : undefined;
+      if (!token) return false;
+      const remoteUser = await userServiceClient.getCurrentUser(token);
+      return !!remoteUser && (!!claimedUserId ? remoteUser.id === claimedUserId : true);
+    } catch (e) {
+      logger.warn('User validation against user-service failed', { error: (e as any).message });
+      return false;
+    }
+  }
   // Get user progress
   async getUserProgress(req: Request, res: Response): Promise<void> {
     try {
@@ -24,27 +39,23 @@ export class ProgressController {
         return;
       }
 
-      // Get user progress data
-      const [userProgress, levelInfo, masteryStats, achievementStats, streakStats, analyticsStats] = await Promise.all([
-        // User progress
+      // Get core progress data
+      const [levelInfo, masteryStats, achievementStats, streakStats] = await Promise.all([
         xpService.getUserLevel(userId),
-        // Character mastery statistics
         characterMasteryService.getMasteryStatistics(userId),
-        // Achievement statistics
         achievementService.getAchievementStatistics(userId),
-        // Streak statistics
-        streakService.getStreakStatistics(userId),
-        // Analytics statistics
-        analyticsService.getAnalyticsStatistics(userId)
+        streakService.getStreakStatistics(userId)
       ]);
+      
+      // Get analytics separately to avoid array length issues
+      const analyticsStats = await analyticsService.getAnalyticsStatistics(userId);
 
       const result = {
-        userProgress: userProgress.data,
         levelInfo: levelInfo.data,
         masteryStats: masteryStats.data,
         achievementStats: achievementStats.data,
         streakStats: streakStats.data,
-        analyticsStats: analyticsStats.data
+        analyticsStats: analyticsStats?.data
       };
 
       res.status(200).json({
@@ -79,6 +90,18 @@ export class ProgressController {
         return;
       }
 
+      // Validate user from user-service
+      const ok = await this.validateUserFromToken(req, userId);
+      if (!ok) {
+        res.status(401).json({
+          success: false,
+          message: 'User validation failed',
+          error: 'UNAUTHORIZED',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
       // Update character mastery
       const masteryResult = await characterMasteryService.updateCharacterMastery(
         userId,
@@ -102,7 +125,7 @@ export class ProgressController {
       }
 
       // Add XP for character practice
-      const xpResult = await xpService.addXp(userId, 'CHARACTER_PRACTICE', {
+      const xpResult = await xpService.addXp(userId, XpSource.CHARACTER_PRACTICE, {
         characterId,
         characterType,
         accuracy,
@@ -110,11 +133,21 @@ export class ProgressController {
         isPerfect
       });
 
+      // Emit xp.earned
+      try { await publish(Topics.PROGRESS_EVENTS, userId, { type: 'xp.earned', userId, source: XpSource.CHARACTER_PRACTICE, metadata: { characterId, characterType, accuracy, timeSpent, isPerfect }, occurredAt: new Date().toISOString() }); } catch {}
+
       // Update daily practice streak
-      const streakResult = await streakService.updateStreak(userId, 'DAILY_PRACTICE');
+      const streakResult = await streakService.updateStreak(userId, StreakType.DAILY_PRACTICE);
+
+      // Emit streak.updated
+      try { await publish(Topics.PROGRESS_EVENTS, userId, { type: 'streak.updated', userId, streakType: StreakType.DAILY_PRACTICE, occurredAt: new Date().toISOString() }); } catch {}
 
       // Check for achievements
       const achievementResult = await achievementService.checkAndUnlockAchievements(userId);
+
+      if (achievementResult.success && achievementResult.data?.count > 0) {
+        try { await publish(Topics.PROGRESS_EVENTS, userId, { type: 'achievement.unlocked', userId, count: achievementResult.data.count, occurredAt: new Date().toISOString() }); } catch {}
+      }
 
       res.status(200).json({
         success: true,
@@ -153,7 +186,21 @@ export class ProgressController {
         return;
       }
 
+      // Validate user from user-service
+      const ok = await this.validateUserFromToken(req, userId);
+      if (!ok) {
+        res.status(401).json({
+          success: false,
+          message: 'User validation failed',
+          error: 'UNAUTHORIZED',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
       const result = await xpService.addXp(userId, source, metadata);
+
+      try { await publish(Topics.PROGRESS_EVENTS, userId, { type: 'xp.earned', userId, source, metadata, occurredAt: new Date().toISOString() }); } catch {}
 
       if (!result.success) {
         res.status(400).json({
@@ -287,6 +334,18 @@ export class ProgressController {
           success: false,
           message: 'Required fields are missing',
           error: 'VALIDATION_ERROR',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      // Validate user from user-service
+      const ok = await this.validateUserFromToken(req, userId);
+      if (!ok) {
+        res.status(401).json({
+          success: false,
+          message: 'User validation failed',
+          error: 'UNAUTHORIZED',
           timestamp: new Date().toISOString(),
         });
         return;
@@ -577,6 +636,18 @@ export class ProgressController {
         return;
       }
 
+      // Validate user from user-service
+      const ok = await this.validateUserFromToken(req, userId);
+      if (!ok) {
+        res.status(401).json({
+          success: false,
+          message: 'User validation failed',
+          error: 'UNAUTHORIZED',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
       const result = await streakService.freezeStreak(userId, type);
 
       if (!result.success) {
@@ -595,6 +666,9 @@ export class ProgressController {
         data: result.data,
         timestamp: new Date().toISOString(),
       });
+
+      // Emit streak.updated
+      try { await publish(Topics.PROGRESS_EVENTS, userId, { type: 'streak.updated', userId, streakType: type, occurredAt: new Date().toISOString() }); } catch {}
     } catch (error) {
       logger.error('Freeze streak controller error', { error: error.message });
       res.status(500).json({

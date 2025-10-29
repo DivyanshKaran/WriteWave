@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
-import { AppConfig } from '@/types';
+import { AppConfig } from '../types';
+import { logger } from './logger';
 
 // Load environment variables
 dotenv.config();
@@ -55,13 +56,6 @@ export const config: AppConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
       callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:8001/auth/google/callback',
     },
-    apple: {
-      clientId: process.env.APPLE_CLIENT_ID || '',
-      teamId: process.env.APPLE_TEAM_ID || '',
-      keyId: process.env.APPLE_KEY_ID || '',
-      privateKey: process.env.APPLE_PRIVATE_KEY || '',
-      callbackUrl: process.env.APPLE_CALLBACK_URL || 'http://localhost:8001/auth/apple/callback',
-    },
   },
   
   upload: {
@@ -71,7 +65,14 @@ export const config: AppConfig = {
   },
   
   security: {
-    bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12', 10),
+    bcryptRounds: (() => {
+      const parsed = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
+      if (Number.isNaN(parsed) || parsed < 10 || parsed > 14) {
+        logger.warn('BCRYPT_ROUNDS out of range [10..14], defaulting to 12', { value: process.env.BCRYPT_ROUNDS });
+        return 12;
+      }
+      return parsed;
+    })(),
     rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
     rateLimitMaxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
   },

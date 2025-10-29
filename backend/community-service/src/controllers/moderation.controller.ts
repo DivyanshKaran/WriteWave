@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { moderationService } from '@/services/moderation.service';
-import { ApiResponse } from '@/types';
-import { validateRequest } from '@/middleware/validation';
-import { authenticate } from '@/middleware/auth';
+import { moderationService } from '../services/moderation.service';
+import { ApiResponse } from '../types';
+import { validateRequest } from '../middleware/validation';
+import { authenticate } from '../middleware/auth';
 
 export class ModerationController {
   // Reports

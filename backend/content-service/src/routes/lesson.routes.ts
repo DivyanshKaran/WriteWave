@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { lessonController } from '@/controllers/lesson.controller';
-import { validate } from '@/middleware/validation';
-import { authenticateJWT } from '@/middleware/auth';
+import { lessonController } from '../controllers/lesson.controller';
+import { validate, validationSchemas } from '../middleware/validation';
+import { authenticateJWT } from '../middleware/auth';
 
 const router = Router();
 
@@ -12,8 +12,8 @@ router.get('/', lessonController.getLessons);
 // GET /lessons/statistics - Get lesson statistics
 router.get('/statistics', lessonController.getLessonStatistics);
 
-// GET /lessons/progression - Get lesson progression path
-router.get('/progression', lessonController.getLessonProgressionPath);
+// GET /lessons/:lessonId/progression - Get lesson progression path
+router.get('/:lessonId/progression', lessonController.getLessonProgressionPath);
 
 // GET /lessons/level/:level - Get lessons by JLPT level
 router.get('/level/:level', lessonController.getLessonsByLevel);
@@ -31,10 +31,10 @@ router.get('/:lessonId/steps', lessonController.getLessonSteps);
 router.get('/:lessonId/prerequisites', lessonController.getLessonPrerequisites);
 
 // POST /lessons - Create lesson (admin only)
-router.post('/', authenticateJWT, validate('lesson'), lessonController.createLesson);
+router.post('/', authenticateJWT, validate(validationSchemas.lesson), lessonController.createLesson);
 
 // PUT /lessons/:lessonId - Update lesson (admin only)
-router.put('/:lessonId', authenticateJWT, validate('lesson'), lessonController.updateLesson);
+router.put('/:lessonId', authenticateJWT, validate(validationSchemas.lesson), lessonController.updateLesson);
 
 // DELETE /lessons/:lessonId - Delete lesson (admin only)
 router.delete('/:lessonId', authenticateJWT, lessonController.deleteLesson);

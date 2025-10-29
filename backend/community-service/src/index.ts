@@ -11,14 +11,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Import services and utilities
-import { prisma } from '@/models';
-import { redis } from '@/utils/redis';
-import { logger, stream } from '@/utils/logger';
-import { errorHandler, notFoundHandler } from '@/utils/errors';
-import { initializeWebSocket } from '@/services/websocket.service';
+import { prisma } from './models';
+import { redis } from './utils/redis';
+import { logger, stream } from './utils/logger';
+import { errorHandler, notFoundHandler } from './utils/errors';
+import { initializeWebSocket } from './services/websocket.service';
+import { userSyncService } from './services/user-sync.service';
 
 // Import routes
-import routes from '@/routes';
+import routes from './routes';
 
 // Create Express app
 const app = express();
@@ -45,8 +46,8 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true,
+  origin: (process.env.CORS_ORIGIN || 'http://localhost:3000').split(','),
+  credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
@@ -76,14 +77,47 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Community Service is running',
+app.get('/health', async (_req, res) => {
+  const start = Date.now();
+  const checks: {
+    service: string;
+    database: string;
+    redis: string;
+    latencyMs?: number;
+  } = {
+    service: 'healthy',
+    database: 'unknown',
+    redis: 'unknown',
+  };
+
+  try {
+    // Database check
+    await prisma.$queryRawUnsafe('SELECT 1');
+    checks.database = 'healthy';
+  } catch (error: any) {
+    checks.database = 'unhealthy';
+    logger.error('Database health check failed', { error: error.message });
+  }
+
+  try {
+    // Redis check
+    const pingResult = await redis.ping();
+    checks.redis = pingResult ? 'healthy' : 'unhealthy';
+  } catch (error: any) {
+    checks.redis = 'unhealthy';
+    logger.error('Redis health check failed', { error: error.message });
+  }
+
+  checks.latencyMs = Date.now() - start;
+  const isHealthy = checks.database === 'healthy' && checks.redis === 'healthy';
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    success: isHealthy,
+    status: isHealthy ? 'healthy' : 'degraded',
+    checks,
+    version: process.env.npm_package_version || '1.0.0',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV,
-    version: process.env.npm_package_version || '1.0.0'
   });
 });
 
@@ -109,6 +143,23 @@ const gracefulShutdown = async (signal: string) => {
     // Close WebSocket connections
     await webSocketService.cleanup();
     logger.info('WebSocket service cleaned up');
+
+    // Stop user sync service
+    try {
+      await userSyncService.stop();
+      logger.info('User sync service stopped');
+    } catch (error) {
+      logger.warn('Error stopping user sync service (non-fatal)', { error: (error as any).message });
+    }
+
+    // Close Kafka connections
+    try {
+      const { disconnectKafka } = await import('../../shared/utils/kafka');
+      await disconnectKafka();
+      logger.info('Kafka connections closed');
+    } catch (error) {
+      logger.warn('Error disconnecting Kafka (non-fatal)', { error: (error as any).message });
+    }
 
     // Close Redis connection
     await redis.disconnect();
@@ -143,18 +194,43 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 8004;
+const PORT = parseInt(process.env.PORT || '8004', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
 const startServer = async () => {
   try {
-    // Connect to Redis
-    await redis.connect();
-    logger.info('Connected to Redis');
+    // Connect to Redis (optional gating)
+    try {
+      await redis.connect();
+      logger.info('Connected to Redis');
+    } catch (err: any) {
+      if (process.env.OPTIONAL_REDIS === 'true') {
+        logger.warn('Redis optional: proceeding without Redis', { error: err?.message });
+      } else {
+        throw err;
+      }
+    }
 
     // Test database connection
     await prisma.$connect();
     logger.info('Connected to database');
+
+    // Initialize user sync service (Kafka consumer) if enabled
+    if (process.env.ENABLE_KAFKA === 'true') {
+      logger.info('User sync service will be initialized (Kafka consumer)');
+      // User sync service initializes itself via constructor
+    }
+
+    // Initialize Kafka producer if enabled
+    if (process.env.ENABLE_KAFKA === 'true') {
+      try {
+        const { getProducer } = await import('../../shared/utils/kafka');
+        await getProducer();
+        logger.info('Kafka producer connected');
+      } catch (error) {
+        logger.warn('Failed to connect Kafka producer (non-fatal)', { error: (error as any).message });
+      }
+    }
 
     // Start HTTP server
     server.listen(PORT, HOST, () => {

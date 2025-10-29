@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-import { logger } from '@/utils/logger';
-import { ValidationError } from '@/utils/errors';
+import { logger } from '../utils/logger';
+import { ValidationError } from '../utils/errors';
 
 // Validation middleware factory
 export const validate = (schema: Joi.ObjectSchema) => {

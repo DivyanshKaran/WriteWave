@@ -1,24 +1,43 @@
 import { Request } from 'express';
-import { 
-  Character, 
-  CharacterType, 
-  JLPTLevel, 
-  DifficultyLevel, 
-  MediaType, 
-  LessonType, 
-  VocabularyCategory,
+// Import Prisma-generated enums and types
+import {
+  CharacterType as PrismaCharacterType,
+  JLPTLevel as PrismaJLPTLevel,
+  DifficultyLevel as PrismaDifficultyLevel,
+  MediaType as PrismaMediaType,
+  LessonType as PrismaLessonType,
+  VocabularyCategory as PrismaVocabularyCategory,
+  Character,
   VocabularyWord,
   Lesson,
   MediaAsset,
   CharacterRelation
 } from '@prisma/client';
 
+// Re-export Prisma enums as both types and values
+export const CharacterType = PrismaCharacterType;
+export const JLPTLevel = PrismaJLPTLevel;
+export const DifficultyLevel = PrismaDifficultyLevel;
+export const MediaType = PrismaMediaType;
+export const LessonType = PrismaLessonType;
+export const VocabularyCategory = PrismaVocabularyCategory;
+
+export type CharacterType = PrismaCharacterType;
+export type JLPTLevel = PrismaJLPTLevel;
+export type DifficultyLevel = PrismaDifficultyLevel;
+export type MediaType = PrismaMediaType;
+export type LessonType = PrismaLessonType;
+export type VocabularyCategory = PrismaVocabularyCategory;
+
+// Re-export Prisma models
+export { Character, VocabularyWord, Lesson, MediaAsset, CharacterRelation };
+
 // Extended Request interface
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     email: string;
-    role?: string;
+    role: string;
   };
 }
 

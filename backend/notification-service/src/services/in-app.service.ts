@@ -1,6 +1,6 @@
-import { logger } from '@/utils/logger';
-import { storage } from '@/models';
-import { Notification, NotificationStatus } from '@/types';
+import { logger } from '../utils/logger';
+import { storage } from '../models';
+import { Notification, NotificationStatus } from '../types';
 
 export class InAppService {
   constructor() {

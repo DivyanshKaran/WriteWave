@@ -1,4 +1,4 @@
-import { prisma } from '@/models';
+import { prisma } from '../models';
 import { 
   FriendRequest, 
   Friendship, 
@@ -14,9 +14,9 @@ import {
   ActivityType,
   AchievementType,
   PaginationQuery
-} from '@/types';
-import { AppError } from '@/utils/errors';
-import { contentModeration } from '@/utils/moderation';
+} from '../types';
+import { AppError } from '../utils/errors';
+import { contentModeration } from '../utils/moderation';
 
 export class SocialService {
   // Friend Requests
@@ -208,7 +208,7 @@ export class SocialService {
             userId: friendRequest.senderId,
             type: ActivityType.FRIEND_ADDED,
             title: 'Friend request accepted',
-            description: `${friendRequest.receiver.username} accepted your friend request`,
+            description: `${updatedRequest.receiver.username} accepted your friend request`,
             metadata: { friendId: friendRequest.receiverId }
           }
         }),
@@ -217,7 +217,7 @@ export class SocialService {
             userId: friendRequest.receiverId,
             type: ActivityType.FRIEND_ADDED,
             title: 'New friend added',
-            description: `You are now friends with ${friendRequest.sender.username}`,
+            description: `You are now friends with ${updatedRequest.sender.username}`,
             metadata: { friendId: friendRequest.senderId }
           }
         })
@@ -691,7 +691,7 @@ export class SocialService {
             userId: mentorshipRequest.mentorId,
             type: ActivityType.ACHIEVEMENT_UNLOCKED, // Could add MENTORSHIP type
             title: 'Mentorship accepted',
-            description: `Accepted mentorship request from ${mentorshipRequest.mentee.username}`,
+            description: `Accepted mentorship request from ${updatedRequest.mentee.username}`,
             metadata: { menteeId: mentorshipRequest.menteeId }
           }
         }),
@@ -700,7 +700,7 @@ export class SocialService {
             userId: mentorshipRequest.menteeId,
             type: ActivityType.ACHIEVEMENT_UNLOCKED,
             title: 'Mentorship started',
-            description: `Started mentorship with ${mentorshipRequest.mentor.username}`,
+            description: `Started mentorship with ${updatedRequest.mentor.username}`,
             metadata: { mentorId: mentorshipRequest.mentorId }
           }
         })

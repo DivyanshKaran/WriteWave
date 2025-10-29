@@ -1,0 +1,1823 @@
+{
+	"info": {
+		"_postman_id": "writewave-notification-service-api",
+		"name": "WriteWave Notification Service API",
+		"description": "Complete API collection for WriteWave Notification Service. This collection includes all notification, preferences, subscriptions, scheduled notifications, and analytics endpoints.\n\n## Setup Instructions\n\n1. **Collection Variables**: The collection includes default variables:\n   - `baseUrl`: `http://localhost:8005/api`\n   - `host`: `localhost`\n   - `port`: `8005`\n\n2. **Environment Variables** (optional): Create a Postman Environment with:\n   - `accessToken`: JWT token for authentication (Bearer token)\n   - `userId`: User ID for testing user-specific endpoints\n   - `notificationId`: Notification ID for testing specific notification endpoints\n   - `subscriptionId`: Subscription ID for testing subscription endpoints\n   - `scheduledId`: Scheduled notification ID\n\n3. **Quick Start**:\n   - Start with **Health Check** to verify service\n   - Use authentication token in Authorization header for protected endpoints\n   - Test notification sending endpoints with sample data\n\n## Features\n\n- ✅ Comprehensive endpoint coverage\n- ✅ Test scripts for validation\n- ✅ Request/response examples\n- ✅ Error handling\n- ✅ Organized by functional categories",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has status field', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    console.log('Service Status:', jsonData.status);",
+									"    console.log('Version:', jsonData.version);",
+									"    console.log('Timestamp:', jsonData.timestamp);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "health"]
+						},
+						"description": "Check the health status of the notification service"
+					},
+					"response": []
+				},
+				{
+					"name": "API Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/docs",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "docs"]
+						},
+						"description": "Get API documentation with all available endpoints"
+					},
+					"response": []
+				}
+			],
+			"description": "Service health and information endpoints"
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Send Notification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has correct structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('notificationId', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"type\": \"LEARNING_REMINDER\",\n  \"channel\": \"EMAIL\",\n  \"title\": \"Daily Learning Reminder\",\n  \"content\": \"Don't forget to complete your daily learning goal today!\",\n  \"priority\": \"NORMAL\",\n  \"data\": {\n    \"link\": \"https://writewave.com/learn\",\n    \"action\": \"start_learning\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/send",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "send"]
+						},
+						"description": "Send a single notification to a user. Supported channels: EMAIL, PUSH, SMS, IN_APP"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Bulk Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST\to",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notifications\": [\n    {\n      \"userId\": \"user1\",\n      \"type\": \"SYSTEM_UPDATE\",\n      \"channel\": \"EMAIL\",\n      \"title\": \"System Maintenance\",\n      \"content\": \"Scheduled maintenance tonight at 2 AM\"\n    },\n    {\n      \"userId\": \"user2\",\n      \"type\": \"FEATURE_ANNOUNCEMENT\",\n      \"channel\": \"IN_APP\",\n      \"title\": \"New Feature Available\",\n      \"content\": \"Check out our new writing assistant feature!\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/bulk",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "bulk"]
+						},
+						"description": "Send multiple notifications in a single request. Requires admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Send to Multiple Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"user1\", \"user2\", \"user3\"],\n  \"type\": \"MARKETING_CAMPAIGN\",\n  \"channel\": \"EMAIL\",\n  \"title\": \"Special Offer\",\n  \"content\": \"Get 20% off on premium subscription this week!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/users",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "users"]
+						},
+						"description": "Send notification to multiple specific users. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Send to All Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"MAINTENANCE_NOTICE\",\n  \"channel\": \"IN_APP\",\n  \"title\": \"Scheduled Maintenance\",\n  \"content\": \"We'll be performing scheduled maintenance on Saturday at 2 AM EST\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/all",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "all"]
+						},
+						"description": "Send notification to all users in the system. Requires admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Send by Notification Type",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"ACHIEVEMENT_UNLOCKED\",\n  \"channel\": \"IN_APP\",\n  \"title\": \"Achievement Unlocked!\",\n  \"content\": \"Congratulations! You've unlocked the 'Writer of the Month' achievement!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/type",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "type"]
+						},
+						"description": "Send notification to all users subscribed to a specific notification type. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "{{notificationId}}"]
+						},
+						"description": "Get a specific notification by its ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"SENT\",\nn  \"errorMessage\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "{{notificationId}}"]
+						},
+						"description": "Update a notification (status, error message, etc.)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "{{notificationId}}"]
+						},
+						"description": "Delete a notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/user/{{userId}}?page=1&limit=20&sortBy=createdAt&sortOrder=desc",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "user", "{{userId}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						},
+						"description": "Get all notifications for a specific user with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notifications by Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/status/PENDING?page=1&limit=20",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "status", "PENDING"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Get notifications by status (PENDING, SENT, DELIVERED, FAILED, etc.). Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Retry Failed Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}/retry",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "{{notificationId}}", "retry"]
+						},
+						"description": "Retry sending a failed notification. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Scheduled Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}/cancel",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "{{notificationId}}", "cancel"]
+						},
+						"description": "Cancel a scheduled notification before it's sent"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/stats?startDate=2024-01-01&endDate=2024-12-31",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "stats"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31"
+								}
+							]
+						},
+						"description": "Get notification statistics for a date range. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Cleanup Old Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"daysOld\": 90\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/cleanup",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "cleanup"]
+						},
+						"description": "Clean up old notifications. Requires admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"type\": \"LEARNING_REMINDER\",\n  \"channel\": \"EMAIL\",\n  \"title\": \"Test Notification\",\n  \"content\": \"This is a test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/notifications/validate",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "notifications", "validate"]
+						},
+						"description": "Validate notification data without sending it"
+					},
+					"response": []
+				}
+			],
+			"description": "Notification management endpoints"
+		},
+		{
+			"name": "Preferences",
+			"item": [
+				{
+					"name": "Get User Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/preferences/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "{{userId}}"]
+						},
+						"description": "Get notification preferences for a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"emailEnabled\": true,\n  \"pushEnabled\": true,\n  \"smsEnabled\": false,\n  \"inAppEnabled\": true,\n  \"learningReminders\": true,\n  \"streakWarnings\": true,\n  \"achievements\": true,\n  \"socialNotifications\": true,\n  \"systemUpdates\": true,\n  \"marketingEmails\": false,\n  \"weeklyDigest\": true,\n  \"monthlyRoundup\": true,\n  \"preferredTime\": \"09:00\",\n  \"timezone\": \"America/New_York\",\n  \"language\": \"en\",\n  \"quietHoursStart\": \"22:00\",\n  \"quietHoursEnd\": \"08:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/preferences/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "{{userId}}"]
+						},
+						"description": "Update notification preferences for a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset User Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/preferences/{{userId}}/reset",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "{{userId}}", "reset"]
+						},
+						"description": "Reset user preferences to default values"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/preferences/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "{{userId}}"]
+						},
+						"description": "Delete user preferences. Requires admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bulk Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"user1\", \"user2\", \"user3\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/preferences/bulk",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "bulk"]
+						},
+						"description": "Get preferences for multiple users. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Bulk Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"user1\", \"user2\"],\n  \"updates\": {\n    \"marketingEmails\": false,\n    \"weeklyDigest\": true\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/preferences/bulk",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "bulk"]
+						},
+						"description": "Update preferences for multiple users. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Preferences Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/preferences/stats",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "stats"]
+						},
+						"description": "Get statistics about user preferences. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"user1\", \"user2\"],\n  \"format\": \"json\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/preferences/export",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "export"]
+						},
+						"description": "Export preferences for users. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Import Preferences",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"preferences\": [\n    {\n      \"userId\": \"user1\",\n      \"emailEnabled\": true,\n      \"pushEnabled\": false\n    },\n    {\n      \"userId\": \"user2\",\n      \"emailEnabled\": false,\n      \"pushEnabled\": true\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/preferences/import",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "preferences", "import"]
+						},
+						"description": "Import preferences for users. Requires admin role."
+					},
+					"response": []
+				}
+			],
+			"description": "User notification preferences management"
+		},
+		{
+			"name": "Subscriptions",
+			"item": [
+				{
+					"name": "Create Push Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('subscriptionId', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"endpoint\": \"https://fcm.googleapis.com/fcm/send/example-endpoint\",\n  \"p256dh\": \"BGg...example-key...\",\n  \"auth\": \"example-auth-key\",\n  \"userAgent\": \"Mozilla/5.0...\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{userId}}"]
+						},
+						"description": "Create a push notification subscription for a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{userId}}"]
+						},
+						"description": "Get all push subscriptions for a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{subscriptionId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{subscriptionId}}"]
+						},
+						"description": "Get a specific subscription by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{subscriptionId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{subscriptionId}}"]
+						},
+						"description": "Update a subscription"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscription",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{subscriptionId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{subscriptionId}}"]
+						},
+						"description": "Delete a subscription"
+					},
+					"response": []
+				},
+				{
+					"name": "Unsubscribe User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{userId}}/unsubscribe",
+							"host": [" executionshost}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{userId}}", "unsubscribe"]
+						},
+						"description": "Unsubscribe a user from all push notifications"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Subscription",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{subscriptionId}}/validate",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{subscriptionId}}", "validate"]
+						},
+						"description": "Validate if a subscription is still active and reachable"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Test Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/{{subscriptionId}}/test",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "{{subscriptionId}}", "test"]
+						},
+						"description": "Send a test notification to a subscription"
+					},
+					"response": []
+				},
+				{
+					"name": "Get VAPID Public Key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/vapid-key",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "vapid-key"]
+						},
+						"description": "Get the VAPID public key for push notifications (no auth required)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/stats",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "stats"]
+						},
+						"description": "Get statistics about push subscriptions. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Cleanup Expired Subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/cleanup",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "cleanup"]
+						},
+						"description": "Clean up expired/invalid subscriptions. Requires admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Update Subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subscriptionIds\": [\"sub1\", \"sub2\"],\n  \"updates\": {\n    \"isActive\": false\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/bulk",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "bulk"]
+						},
+						"description": "Update multiple subscriptions at once. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Delete Subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subscriptionIds\": [\"sub1\", \"sub2\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/bulk",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "subscriptions", "bulk"]
+						},
+						"description": "Delete multiple subscriptions at once. Requires admin role."
+					},
+					"response": []
+				}
+			],
+			"description": "Push notification subscription management"
+		},
+		{
+			"name": "Scheduled Notifications",
+			"item": [
+				{
+					"name": "Create Scheduled Notification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('scheduledId', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"type\": \"LEARNING_REMINDER\",\n  \"channel\": \"EMAIL\",\n  \"scheduledAt\": \"2024-12-31T09:00:00Z\",\n  \"timezone\": \"America/New_York\",\n  \"isRecurring\": false,\n  \"recurrencePattern\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/scheduled",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled"]
+						},
+						"description": "Create a scheduled notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Recurring Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"type\": \"WEEKLY_SUMMARY\",\n  \"channel\": \"EMAIL\",\n  \"scheduledAt\": \"2024-12-25T08:00:00Z\",\n  \"timezone\": \"UTC\",\n  \"isRecurring\": true,\n  \"recurrencePattern\": {\n    \"frequency\": \"WEEKLY\",\n    \"interval\": 1,\n    \"endDate\": \"2025-12-31T23:59:59Z\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/scheduled",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled"]
+						},
+						"description": "Create a recurring scheduled notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Scheduled Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/{{scheduledId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "{{scheduledId}}"]
+						},
+						"description": "Get a specific scheduled notification by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Scheduled Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"scheduledAt\": \"2024-12-31T10:00:00Z\",\n  \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/{{scheduledId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "{{scheduledId}}"]
+						},
+						"description": "Update a scheduled notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Scheduled Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/{{scheduledId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "{{scheduledId}}"]
+						},
+						"description": "Delete a scheduled notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Scheduled Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/user/{{userId}}?page=1&limit=20",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "user", "{{userId}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Get all scheduled notifications for a user"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Scheduled Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/{{scheduledId}}/cancel",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "{{scheduledId}}", "cancel"]
+						},
+						"description": "Cancel a scheduled notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Scheduled Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/stats",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "stats"]
+						},
+						"description": "Get statistics about scheduled notifications. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Process Due Scheduled Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scheduled/process",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "scheduled", "process"]
+						},
+						"description": "Manually trigger processing of due scheduled notifications. Requires moderator role."
+					},
+					"response": []
+				}
+			],
+			"description": "Scheduled and recurring notification management"
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Get Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/analytics?startDate=2024-01-01&endDate=2024-12-31&channel=&type=",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "analytics"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31"
+								},
+								{
+									"key": "channel",
+									"value": ""
+								},
+								{
+									"key": "type",
+									"value": ""
+								}
+							]
+						},
+						"description": "Get comprehensive notification analytics. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/analytics/user/{{userId}}",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "analytics", "user", "{{userId}}"]
+						},
+						"description": "Get analytics for a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/analytics/channel/EMAIL",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "analytics", "channel", "EMAIL"]
+						},
+						"description": "Get analytics for a specific channel (EMAIL, PUSH, SMS, IN_APP). Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Type Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/analytics/type/LEARNING_REMINDER",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "analytics", "type", "LEARNING_REMINDER"]
+						},
+						"description": "Get analytics for a specific notification type. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Realtime Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/analytics/realtime",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "analytics", "realtime"]
+						},
+						"description": "Get real-time analytics metrics. Requires moderator role."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Analytics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-12-31\",\n  \"format\": \"csv\",\n  \"includeChannels\": [\"EMAIL\", \"PUSH\"],\n  \"includeTypes\": [\"LEARNING_REMINDER\", \"ACHIEVEMENT_UNLOCKED\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/analytics/export",
+							"host": ["{{host}}"],
+							"port": "{{port}}",
+							"path": ["api", "analytics", "export"]
+						},
+						"description": "Export analytics data in various formats. Requires moderator role."
+					},
+					"response": []
+				}
+			],
+			"description": "Notification analytics and reporting"
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8005/api",
+			"type": "string"
+		},
+		{
+			"key": "host",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "port",
+			"value": "8005",
+			"type": "string"
+		}
+	]
+}

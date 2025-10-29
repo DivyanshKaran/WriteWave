@@ -5,12 +5,35 @@ import morgan from 'morgan';
 import compression from 'compression';
 import 'express-async-errors';
 
-import { config } from '@/config';
-import { connectDatabase, disconnectDatabase } from '@/config/database';
-import { connectRedis, disconnectRedis } from '@/config/redis';
-import { logger, morganStream, requestLogging, errorHandler, notFound, securityHeaders, requestId } from '@/config/logger';
-import { corsMiddleware, rateLimit } from '@/middleware/auth';
-import routes from '@/routes';
+import { config } from './config';
+import { connectDatabase, disconnectDatabase } from './config/database';
+import { connectRedis, disconnectRedis } from './config/redis';
+import { logger, morganStream, requestLogger, errorLogger } from './config/logger';
+import { corsMiddleware, rateLimit } from './middleware/auth';
+import passport from './config/passport';
+import routes from './routes';
+
+// Middleware functions
+const securityHeaders = (req: any, res: any, next: any) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+};
+
+const requestId = (req: any, res: any, next: any) => {
+  req.id = Math.random().toString(36).substr(2, 9);
+  next();
+};
+
+const notFound = (req: any, res: any) => {
+  res.status(404).json({ message: 'Route not found' });
+};
+
+const errorHandler = (err: any, req: any, res: any, next: any) => {
+  logger.error('Error:', err);
+  res.status(500).json({ message: 'Internal server error' });
+};
 
 // Create Express app
 const app = express();
@@ -33,9 +56,12 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Initialize Passport for OAuth
+app.use(passport.initialize());
+
 // Logging middleware
 app.use(morgan('combined', { stream: morganStream }));
-app.use(requestLogging);
+app.use(requestLogger);
 
 // Rate limiting middleware
 app.use(rateLimit(100, 900000)); // 100 requests per 15 minutes
@@ -52,10 +78,14 @@ const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
   
   try {
-    // Close server
-    server.close(() => {
-      logger.info('HTTP server closed');
-    });
+    // Disconnect from Kafka (no-op in this build context)
+    try {
+      const { disconnectKafka } = await import('./utils/events');
+      await disconnectKafka();
+      logger.info('Kafka connections closed');
+    } catch (error) {
+      logger.warn('Error disconnecting Kafka (non-fatal)', { error: (error as any).message });
+    }
 
     // Disconnect from databases
     await disconnectDatabase();
@@ -91,6 +121,17 @@ const startServer = async () => {
     // Connect to databases
     await connectDatabase();
     await connectRedis();
+
+    // Initialize Kafka producer if enabled
+    if (process.env.ENABLE_KAFKA === 'true') {
+      try {
+        const { getProducer } = await import('./utils/events');
+        await getProducer();
+        logger.info('Kafka producer connected');
+      } catch (error) {
+        logger.warn('Failed to connect Kafka producer (non-fatal)', { error: (error as any).message });
+      }
+    }
 
     // Start HTTP server
     const server = app.listen(config.port, () => {
@@ -131,7 +172,9 @@ const startServer = async () => {
 };
 
 // Start the server
-const server = await startServer();
+(async () => {
+  const server = await startServer();
+})();
 
 // Export app for testing
 export default app;

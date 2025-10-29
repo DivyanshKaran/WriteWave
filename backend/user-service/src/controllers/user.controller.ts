@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '@/types';
-import { userService } from '@/services/user.service';
-import { logger } from '@/config/logger';
+import { AuthenticatedRequest } from '../types';
+import { userService } from '../services/user.service';
+import { logger } from '../config/logger';
 
 // User controller class
 export class UserController {

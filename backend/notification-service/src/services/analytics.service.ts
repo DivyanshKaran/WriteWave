@@ -1,6 +1,6 @@
-import { logger } from '@/utils/logger';
-import { storage } from '@/models';
-import { NotificationAnalytics, ChannelStats, TypeStats, TimeSeriesData } from '@/types';
+import { logger } from '../utils/logger';
+import { storage } from '../models';
+import { NotificationAnalytics, ChannelStats, TypeStats, TimeSeriesData, NotificationChannel, NotificationType } from '../types';
 
 export class AnalyticsService {
   constructor() {
@@ -82,10 +82,10 @@ export class AnalyticsService {
     try {
       // Mock implementation - in real app, query database
       return [
-        { channel: 'EMAIL', count: 1000, percentage: 50 },
-        { channel: 'PUSH', count: 600, percentage: 30 },
-        { channel: 'SMS', count: 300, percentage: 15 },
-        { channel: 'IN_APP', count: 100, percentage: 5 }
+        { channel: NotificationChannel.EMAIL, count: 1000, percentage: 50 },
+        { channel: NotificationChannel.PUSH, count: 600, percentage: 30 },
+        { channel: NotificationChannel.SMS, count: 300, percentage: 15 },
+        { channel: NotificationChannel.IN_APP, count: 100, percentage: 5 }
       ];
     } catch (error) {
       logger.error('Error getting channel stats', { error: error.message });
@@ -97,11 +97,11 @@ export class AnalyticsService {
     try {
       // Mock implementation - in real app, query database
       return [
-        { type: 'LEARNING_REMINDER', count: 800, percentage: 40 },
-        { type: 'ACHIEVEMENT_UNLOCKED', count: 400, percentage: 20 },
-        { type: 'FRIEND_REQUEST', count: 300, percentage: 15 },
-        { type: 'SYSTEM_UPDATE', count: 200, percentage: 10 },
-        { type: 'STREAK_WARNING', count: 300, percentage: 15 }
+        { type: NotificationType.LEARNING_REMINDER, count: 800, percentage: 40 },
+        { type: NotificationType.ACHIEVEMENT_UNLOCKED, count: 400, percentage: 20 },
+        { type: NotificationType.FRIEND_REQUEST, count: 300, percentage: 15 },
+        { type: NotificationType.SYSTEM_UPDATE, count: 200, percentage: 10 },
+        { type: NotificationType.STREAK_WARNING, count: 300, percentage: 15 }
       ];
     } catch (error) {
       logger.error('Error getting type stats', { error: error.message });

@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.lessonRoutes = void 0;
+const express_1 = require("express");
+const lesson_controller_1 = require("../controllers/lesson.controller");
+const validation_1 = require("../middleware/validation");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+exports.lessonRoutes = router;
+router.get('/', lesson_controller_1.lessonController.getLessons);
+router.get('/statistics', lesson_controller_1.lessonController.getLessonStatistics);
+router.get('/:lessonId/progression', lesson_controller_1.lessonController.getLessonProgressionPath);
+router.get('/level/:level', lesson_controller_1.lessonController.getLessonsByLevel);
+router.get('/category/:category', lesson_controller_1.lessonController.getLessonsByCategory);
+router.get('/:lessonId', lesson_controller_1.lessonController.getLessonById);
+router.get('/:lessonId/steps', lesson_controller_1.lessonController.getLessonSteps);
+router.get('/:lessonId/prerequisites', lesson_controller_1.lessonController.getLessonPrerequisites);
+router.post('/', auth_1.authenticateJWT, (0, validation_1.validate)(validation_1.validationSchemas.lesson), lesson_controller_1.lessonController.createLesson);
+router.put('/:lessonId', auth_1.authenticateJWT, (0, validation_1.validate)(validation_1.validationSchemas.lesson), lesson_controller_1.lessonController.updateLesson);
+router.delete('/:lessonId', auth_1.authenticateJWT, lesson_controller_1.lessonController.deleteLesson);
+//# sourceMappingURL=lesson.routes.js.map

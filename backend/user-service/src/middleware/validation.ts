@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-import { logger } from '@/config/logger';
+import { logger } from '../config/logger';
 
 // Validation error class
 export class ValidationError extends Error {

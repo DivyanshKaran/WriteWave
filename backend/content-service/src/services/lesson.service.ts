@@ -1,6 +1,6 @@
-import { prisma } from '@/config/database';
-import { contentCacheService } from '@/config/redis';
-import { logger, lessonLogger } from '@/config/logger';
+import { prisma } from '../config/database';
+import { contentCacheService } from '../config/redis';
+import { logger, lessonLogger } from '../config/logger';
 import { 
   LessonData, 
   LessonWithRelations, 
@@ -11,7 +11,22 @@ import {
   LessonType,
   JLPTLevel,
   DifficultyLevel
-} from '@/types';
+} from '../types';
+
+// Helper function to publish Kafka events (optional, fails gracefully if Kafka is not available)
+async function publishKafkaEvent(topic: string, key: string, value: object): Promise<void> {
+  try {
+    if (process.env.ENABLE_KAFKA === 'true') {
+      const { publish } = await import('../../../shared/utils/kafka');
+      await publish(topic, key, value);
+    }
+  } catch (error) {
+    // Kafka is optional, log warning but don't fail
+    logger.debug('Kafka publish failed (non-fatal)', { error: (error as any)?.message });
+  }
+}
+
+const CONTENT_EVENTS_TOPIC = 'content.events';
 
 // Lesson service class
 export class LessonService {
@@ -131,6 +146,9 @@ export class LessonService {
         jlptLevel: lesson.jlptLevel,
       });
 
+      // Emit content.viewed
+      await publishKafkaEvent(CONTENT_EVENTS_TOPIC, lessonId, { type: 'content.viewed', id: lessonId, contentType: 'lesson', occurredAt: new Date().toISOString() });
+
       return {
         success: true,
         data: lesson,
@@ -156,9 +174,21 @@ export class LessonService {
       const cacheKey = `${type}_${pagination.page || 1}_${pagination.limit || 20}`;
       const cachedLessons = await contentCacheService.getCachedLessonsByType(cacheKey);
       if (cachedLessons) {
+        const { page = 1, limit = 20 } = pagination;
+        const total = cachedLessons.length;
+        const totalPages = Math.ceil(total / limit);
+        
         return {
           success: true,
-          data: cachedLessons,
+          data: {
+            data: cachedLessons,
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
           message: 'Lessons retrieved successfully'
         };
       }
@@ -362,9 +392,21 @@ export class LessonService {
       const cacheKey = `search_${Buffer.from(query).toString('base64')}_${JSON.stringify(filters)}_${pagination.page || 1}_${pagination.limit || 20}`;
       const cachedResults = await contentCacheService.getCachedSearchResults(cacheKey);
       if (cachedResults) {
+        const { page = 1, limit = 20 } = pagination;
+        const total = cachedResults.length;
+        const totalPages = Math.ceil(total / limit);
+        
         return {
           success: true,
-          data: cachedResults,
+          data: {
+            data: cachedResults,
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
           message: 'Search results retrieved successfully'
         };
       }
@@ -415,7 +457,7 @@ export class LessonService {
       };
 
       // Cache the results
-      await contentCacheService.cacheSearchResults(cacheKey, searchResults);
+      await contentCacheService.cacheSearchResults(cacheKey, result);
 
       lessonLogger('lessons_searched', undefined, {
         query,
@@ -692,6 +734,177 @@ export class LessonService {
         success: false,
         error: 'Get random lessons failed',
         message: 'An error occurred while retrieving random lessons'
+      };
+    }
+  }
+
+  // Get lessons by JLPT level
+  async getLessonsByLevel(level: string, pagination: PaginationParams = {}): Promise<ServiceResponse<SearchResult<any>>> {
+    try {
+      const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = pagination;
+      const skip = (page - 1) * limit;
+
+      const result = await prisma.$transaction(async (tx) => {
+        const lessons = await tx.lesson.findMany({
+          where: { jlptLevel: level as any },
+          skip,
+          take: limit,
+          orderBy: { [sortBy]: sortOrder },
+          include: {
+            mediaAssets: true
+          }
+        });
+
+        const total = await tx.lesson.count({
+          where: { jlptLevel: level as any }
+        });
+
+        return { lessons, total };
+      });
+
+      const totalPages = Math.ceil(result.total / limit);
+
+      const searchResults: SearchResult<any> = {
+        data: result.lessons,
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+
+      return {
+        success: true,
+        data: searchResults,
+        message: 'Lessons retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get lessons by level', { level, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve lessons',
+        message: 'An error occurred while retrieving lessons by level'
+      };
+    }
+  }
+
+  // Get lessons by category
+  async getLessonsByCategory(category: string, pagination: PaginationParams = {}): Promise<ServiceResponse<SearchResult<any>>> {
+    try {
+      const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = pagination;
+      const skip = (page - 1) * limit;
+
+      const result = await prisma.$transaction(async (tx) => {
+        const lessons = await tx.lesson.findMany({
+          where: { type: category as any },
+          skip,
+          take: limit,
+          orderBy: { [sortBy]: sortOrder },
+          include: {
+            mediaAssets: true
+          }
+        });
+
+        const total = await tx.lesson.count({
+          where: { type: category as any }
+        });
+
+        return { lessons, total };
+      });
+
+      const totalPages = Math.ceil(result.total / limit);
+
+      const searchResults: SearchResult<any> = {
+        data: result.lessons,
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+
+      return {
+        success: true,
+        data: searchResults,
+        message: 'Lessons retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get lessons by category', { category, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve lessons',
+        message: 'An error occurred while retrieving lessons by category'
+      };
+    }
+  }
+
+  // Get lesson steps
+  async getLessonSteps(lessonId: string): Promise<ServiceResponse<any[]>> {
+    try {
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: lessonId },
+        include: {
+          mediaAssets: true
+        }
+      });
+
+      if (!lesson) {
+        return {
+          success: false,
+          error: 'Lesson not found',
+          message: 'The specified lesson does not exist'
+        };
+      }
+
+      // Since there's no steps field, return the lesson content as steps
+      const steps = lesson.content ? [lesson.content] : [];
+
+      return {
+        success: true,
+        data: steps,
+        message: 'Lesson steps retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get lesson steps', { lessonId, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve lesson steps',
+        message: 'An error occurred while retrieving lesson steps'
+      };
+    }
+  }
+
+  // Get lesson prerequisites
+  async getLessonPrerequisites(lessonId: string): Promise<ServiceResponse<any[]>> {
+    try {
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: lessonId }
+      });
+
+      if (!lesson) {
+        return {
+          success: false,
+          error: 'Lesson not found',
+          message: 'The specified lesson does not exist'
+        };
+      }
+
+      // Prerequisites are stored as string array, return them as is
+      const prerequisites = lesson.prerequisites || [];
+
+      return {
+        success: true,
+        data: prerequisites,
+        message: 'Lesson prerequisites retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get lesson prerequisites', { lessonId, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve lesson prerequisites',
+        message: 'An error occurred while retrieving lesson prerequisites'
       };
     }
   }

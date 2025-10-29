@@ -1,0 +1,473 @@
+_format_version: "3.0"
+
+# Kong configuration for routing to REAL backend services
+# These services run on the host machine and are reachable via host.docker.internal
+services:
+  # User Service - Routes to real service on host
+  - name: user-service
+    url: http://host.docker.internal:8001
+    routes:
+      - name: user-service-v1
+        paths:
+          - /api/v1/users
+          - /api/v1/auth
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: user-service"
+                  - "X-Version: v1"
+
+  # Content Service
+  - name: content-service
+    url: http://host.docker.internal:8002
+    routes:
+      - name: content-service-v1
+        paths:
+          - /api/v1/content
+          - /api/v1/characters
+          - /api/v1/kanji
+          - /api/v1/hiragana
+          - /api/v1/katakana
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: content-service"
+                  - "X-Version: v1"
+
+  # Articles Service
+  - name: articles-service
+    url: http://host.docker.internal:8007
+    routes:
+      - name: articles-service-v1
+        paths:
+          - /api/articles
+          - /api/v1/articles
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: articles-service"
+                  - "X-Version: v1"
+
+  # Progress Service
+  - name: progress-service
+    url: http://host.docker.internal:8003
+    routes:
+      - name: progress-service-v1
+        paths:
+          - /api/v1/progress
+          - /api/v1/achievements
+          - /api/v1/stats
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: progress-service"
+                  - "X-Version: v1"
+
+  # Community Service
+  - name: community-service
+    url: http://host.docker.internal:8004
+    routes:
+      - name: community-service-v1
+        paths:
+          - /api/v1/community
+          - /api/v1/discussions
+          - /api/v1/groups
+          - /api/v1/leaderboard
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: community-service"
+                  - "X-Version: v1"
+
+  # Notification Service
+  - name: notification-service
+    url: http://host.docker.internal:8005
+    routes:
+      - name: notification-service-v1
+        paths:
+          - /api/v1/notifications
+          - /api/v1/websocket
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: notification-service"
+                  - "X-Version: v1"
+
+  # Analytics Service
+  - name: analytics-service
+    url: http://host.docker.internal:8006
+    routes:
+      - name: analytics-service-v1
+        paths:
+          - /api/v1/analytics
+          - /api/v1/metrics
+          - /api/v1/reports
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: analytics-service"
+                  - "X-Version: v1"
+
+# Global plugins
+plugins:
+  - name: request-logging
+    config:
+      log_level: info
+      log_format: json
+      log_to_redis: true
+      log_to_file: true
+

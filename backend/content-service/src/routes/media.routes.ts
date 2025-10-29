@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { mediaController } from '@/controllers/media.controller';
-import { validate } from '@/middleware/validation';
-import { authenticateJWT } from '@/middleware/auth';
+import { mediaController } from '../controllers/media.controller';
+import { validate, validationSchemas } from '../middleware/validation';
+import { authenticateJWT } from '../middleware/auth';
 import multer from 'multer';
 import path from 'path';
 
@@ -63,10 +63,10 @@ router.get('/:mediaId/file', mediaController.getMediaAssetFile);
 router.get('/:mediaId/thumbnail', mediaController.getMediaAssetThumbnail);
 
 // POST /media/upload - Upload media asset
-router.post('/upload', authenticateJWT, upload.single('file'), validate('mediaAsset'), mediaController.uploadMediaAsset);
+router.post('/upload', authenticateJWT, upload.single('file'), validate(validationSchemas.media), mediaController.uploadMediaAsset);
 
 // PUT /media/:mediaId - Update media asset (admin only)
-router.put('/:mediaId', authenticateJWT, validate('mediaAsset'), mediaController.updateMediaAsset);
+router.put('/:mediaId', authenticateJWT, validate(validationSchemas.media), mediaController.updateMediaAsset);
 
 // DELETE /media/:mediaId - Delete media asset (admin only)
 router.delete('/:mediaId', authenticateJWT, mediaController.deleteMediaAsset);

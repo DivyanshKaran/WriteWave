@@ -229,15 +229,34 @@ async function checkMicroservice(url, serviceName) {
       }
     });
     const responseTime = Date.now() - startTime;
+    const isHealthy = response.status === 200 && response.data?.status !== 'unhealthy';
+    
+    // Optionally check metrics endpoint if available
+    let metricsAvailable = false;
+    try {
+      const metricsResponse = await axios.get(`${url}/metrics`, {
+        timeout: HEALTH_CHECK_CONFIG.timeout / 2,
+        headers: {
+          'User-Agent': 'WriteWave-Health-Check/1.0',
+          'Accept': 'text/plain, application/json'
+        },
+        validateStatus: () => true // Accept any status
+      });
+      metricsAvailable = metricsResponse.status === 200;
+    } catch {
+      // Metrics endpoint not available - not a failure
+    }
 
     return {
-      status: response.status === 200 ? 'healthy' : 'unhealthy',
+      status: isHealthy ? 'healthy' : 'unhealthy',
       responseTime,
       details: {
         statusCode: response.status,
-        version: response.data.version || 'unknown',
-        uptime: response.data.uptime || 'unknown',
-        memory: response.data.memory || 'unknown'
+        version: response.data?.version || 'unknown',
+        uptime: response.data?.uptime || 'unknown',
+        memory: response.data?.memory || 'unknown',
+        checks: response.data?.checks || {},
+        metricsAvailable
       }
     };
   } catch (error) {

@@ -288,10 +288,13 @@ export enum RecurrenceFrequency {
 }
 
 export enum ScheduleStatus {
+  PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
+  PROCESSING = 'PROCESSING',
   PAUSED = 'PAUSED',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
+  FAILED = 'FAILED'
 }
 
 // Analytics Types
@@ -446,6 +449,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   username: string;
+  roles?: string[];
   iat?: number;
   exp?: number;
 }

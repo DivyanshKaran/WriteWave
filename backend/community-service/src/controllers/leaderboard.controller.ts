@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { leaderboardService } from '@/services/leaderboard.service';
-import { ApiResponse } from '@/types';
-import { validateRequest } from '@/middleware/validation';
-import { authenticate } from '@/middleware/auth';
+import { leaderboardService } from '../services/leaderboard.service';
+import { ApiResponse, LeaderboardType } from '../types';
+import { validateRequest } from '../middleware/validation';
+import { authenticate } from '../middleware/auth';
 
 export class LeaderboardController {
   // Leaderboards
@@ -19,7 +19,7 @@ export class LeaderboardController {
       }
 
       const query = {
-        type: type as string,
+        type: type as LeaderboardType,
         period: period as string,
         category: category as string,
         limit: limit ? parseInt(limit as string) : 50

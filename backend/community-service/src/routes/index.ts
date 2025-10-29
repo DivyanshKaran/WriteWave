@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { forumController } from '@/controllers/forum.controller';
-import { studyGroupController } from '@/controllers/study-group.controller';
-import { socialController } from '@/controllers/social.controller';
-import { leaderboardController } from '@/controllers/leaderboard.controller';
-import { moderationController } from '@/controllers/moderation.controller';
-import { authenticate } from '@/middleware/auth';
-import { validateRequest } from '@/middleware/validation';
+import { forumController } from '../controllers/forum.controller';
+import { studyGroupController } from '../controllers/study-group.controller';
+import { socialController } from '../controllers/social.controller';
+import { leaderboardController } from '../controllers/leaderboard.controller';
+import { moderationController } from '../controllers/moderation.controller';
+import { authenticate } from '../middleware/auth';
+import { validateRequest } from '../middleware/validation';
 import { 
   createPostSchema, 
   updatePostSchema, 
@@ -21,16 +21,16 @@ import {
   createMentorshipRequestSchema,
   createReportSchema,
   updateReportSchema
-} from '@/utils/validation';
+} from '../middleware/validation';
 
 const router = Router();
 
 // Health check
 router.get('/health', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Community Service is running',
-    timestamp: new Date().toISOString()
+  res.json({
+    status: 'ok',
+    version: process.env.npm_package_version || '1.0.0',
+    timestamp: new Date().toISOString(),
   });
 });
 

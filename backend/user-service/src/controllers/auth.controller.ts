@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '@/types';
-import { authService } from '@/services/auth.service';
-import { logger } from '@/config/logger';
+import { AuthenticatedRequest } from '../types';
+import { authService } from '../services/auth.service';
+import { logger } from '../config/logger';
 
 // Authentication controller class
 export class AuthController {
@@ -47,7 +47,11 @@ export class AuthController {
         userAgent: req.headers['user-agent'] || 'unknown',
       };
 
-      const result = await authService.loginUser(req.body, deviceInfo);
+      // Extract IP address and user agent
+      const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'] || 'unknown';
+
+      const result = await authService.loginUser(req.body, deviceInfo, ipAddress, userAgent);
 
       if (!result.success) {
         res.status(401).json({
@@ -76,15 +80,16 @@ export class AuthController {
     }
   }
 
-  // OAuth login (Google)
+  // OAuth login (Google) - Initiate OAuth flow
   async googleLogin(req: Request, res: Response): Promise<void> {
     try {
-      // This would typically be handled by Passport.js middleware
-      // For now, we'll return a placeholder response
-      res.status(501).json({
-        success: false,
-        message: 'Google OAuth not implemented yet',
-        error: 'NOT_IMPLEMENTED',
+      // This will be handled by Passport middleware
+      // The actual implementation is in passport.ts
+      // This method is kept for consistency but won't be reached
+      // as Passport will redirect to Google
+      res.status(200).json({
+        success: true,
+        message: 'Redirecting to Google for authentication',
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
@@ -98,27 +103,33 @@ export class AuthController {
     }
   }
 
-  // OAuth login (Apple)
-  async appleLogin(req: Request, res: Response): Promise<void> {
+  // Google OAuth callback
+  async googleCallback(req: Request, res: Response): Promise<void> {
     try {
-      // This would typically be handled by Passport.js middleware
-      // For now, we'll return a placeholder response
-      res.status(501).json({
-        success: false,
-        message: 'Apple OAuth not implemented yet',
-        error: 'NOT_IMPLEMENTED',
-        timestamp: new Date().toISOString(),
-      });
+      // Extract user from Passport after successful authentication
+      const user: any = (req as any).user;
+      
+      if (!user) {
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_failed`);
+        return;
+      }
+
+      // Redirect to frontend with tokens
+      const redirectUrl = new URL(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback`);
+      redirectUrl.searchParams.set('accessToken', user.accessToken);
+      redirectUrl.searchParams.set('refreshToken', user.refreshToken);
+      redirectUrl.searchParams.set('provider', 'google');
+      if (user.isNewUser) {
+        redirectUrl.searchParams.set('isNewUser', 'true');
+      }
+
+      res.redirect(redirectUrl.toString());
     } catch (error) {
-      logger.error('Apple OAuth controller error', { error: error.message });
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: 'INTERNAL_ERROR',
-        timestamp: new Date().toISOString(),
-      });
+      logger.error('Google OAuth callback error', { error: error.message });
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_error`);
     }
   }
+
 
   // Refresh token
   async refreshToken(req: Request, res: Response): Promise<void> {

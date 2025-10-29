@@ -1,0 +1,1215 @@
+{
+	"info": {
+		"_postman_id": "writewave-articles-service-v1",
+		"name": "WriteWave Articles Service API",
+		"description": "Complete API collection for WriteWave Articles Service with automated testing, environment management, and comprehensive examples.\n\n## Features\n- ✅ Automated test scripts for all endpoints\n- ✅ Auto token and variable management\n- ✅ Variable extraction from responses (articleId, commentId, etc.)\n- ✅ Comprehensive request/response examples\n- ✅ Pre-request scripts for dynamic values\n- ✅ Multiple endpoint variations and scenarios\n- ✅ Query parameter examples\n- ✅ Error handling tests\n\n## Quick Start\n1. Set `accessToken` variable (get from user-service login)\n2. Set `userId` variable or use auto-generated test user\n3. Start with Health Check endpoint\n4. Create an article to auto-capture `articleId`\n5. All endpoints include automated tests\n\n## Collection Variables\n- `baseUrl`: http://localhost:8007/api\n- `userId`: User ID for testing (auto-generated if not set)\n- `accessToken`: JWT token for authentication\n- `articleId`: Article ID (auto-extracted from create response)\n- `commentId`: Comment ID (auto-extracted from comment responses)\n- `tag`: Tag name for filtering",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "writewave-team"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-generate userId if not set",
+					"if (!pm.collectionVariables.get('userId')) {",
+					"    const testUserId = 'test_user_' + Date.now();",
+					"    pm.collectionVariables.set('userId', testUserId);",
+					"    console.log('Generated userId:', testUserId);",
+					"}",
+					"",
+					"// Set base URL if not set",
+					"if (!pm.collectionVariables.get('baseUrl')) {",
+					"    pm.collectionVariables.set('baseUrl', 'http://localhost:8007/api');",
+					"}",
+					"",
+					"// Ensure Content-Type header",
+					"pm.request.headers.upsert({",
+					"    key: 'Content-Type',",
+					"    value: 'application/json'",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script - log response time",
+					"console.log('Response time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Log errors",
+					"if (pm.response.code >= 400) {",
+					"    console.log('Error response:', pm.response.text());",
+					"}",
+					"",
+					"// Basic success/error check",
+					"if (pm.response.code < 400) {",
+					"    const jsonData = pm.response.json();",
+					"    if (jsonData && typeof jsonData === 'object') {",
+					"        pm.test('Response is valid JSON', function () {",
+					"            pm.expect(jsonData).to.be.an('object');",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8007/api",
+			"type": "string",
+			"description": "Base URL for Articles Service API"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string",
+			"description": "User ID for testing. Auto-generated if not set."
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string",
+			"description": "JWT access token for authentication. Get from user-service login endpoint."
+		},
+		{
+			"key": "articleId",
+			"value": "",
+			"type": "string",
+			"description": "Article ID - auto-extracted from create article response"
+		},
+		{
+			"key": "commentId",
+			"value": "",
+			"type": "string",
+			"description": "Comment ID - auto-extracted from comment responses"
+		},
+		{
+			"key": "slug",
+			"value": "",
+			"type": "string",
+			"description": "Article slug - auto-extracted from article responses"
+		},
+		{
+			"key": "tag",
+			"value": "japanese",
+			"type": "string",
+			"description": "Tag name for filtering articles"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 503', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 503]);",
+									"});",
+									"",
+									"pm.test('Response has success field', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"});",
+									"",
+									"pm.test('Response has status field', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"});",
+									"",
+									"pm.test('Response has checks object', function () {",
+									"    const jsonData = pm.response.json();冰糖",
+									"    pm.expect(jsonData).to.have.property('checks');",
+									"    if (jsonData.checks) {",
+									"        pm.expect(jsonData.checks).to.have.property('service');",
+									"        pm.expect(jsonData.checks).to.have.property('database');",
+									"        pm.expect(jsonData.checks).to.have.property('redis');",
+									"    }",
+									"});",
+									"",
+									"pm.test('Response time is less than 1000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						},
+						"description": "Check the health status of the Articles Service including database and Redis connectivity. Returns detailed status of all service dependencies."
+					},
+					"response": []
+				},
+				{
+					"name": "API Documentation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains endpoints documentation', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('endpoints');",
+									"    if (jsonData.endpoints) {",
+									"        pm.expect(jsonData.endpoints).to.have.property('articles');",
+									"        pm.expect(jsonData.endpoints).to.have.property('comments');",
+									"        pm.expect(jsonData.endpoints).to.have.property('tags');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/docs",
+							"host": ["{{baseUrl}}"],
+							"path": ["docs"]
+						},
+						"description": "Get comprehensive API documentation including all available endpoints with descriptions."
+					},
+					"response": []
+				},
+				{
+					"name": "Root Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains service info', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('version');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/../",
+							"host": ["{{baseUrl}}"],
+							"path": ["..", ""]
+						},
+						"description": "Get service information and version."
+					},
+					"response": []
+				}
+			],
+			"description": "Health check and service information endpoints."
+		},
+		{
+			"name": "2. Articles - CRUD",
+			"item": [
+				{
+					"name": "GET /articles - List All",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('articles');",
+									"        pm.expect(jsonData.data).to.have.property('total');",
+									"        pm.expect(jsonData.data).to.have.property('page');",
+									"        pm.expect(jsonData.data).to.have.property('limit');",
+									"        pm.expect(jsonData.data).to.have.property('totalPages');",
+									"    }",
+									"});",
+									"",
+									"pm.test('Articles is an array', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.articles) {",
+									"        pm.expect(jsonData.data.articles).to.be.an('array');",
+									"    }",
+									"});",
+									"",
+									"// Extract first article ID if available",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.articles && jsonData.data.articles.length > 0) {",
+									"        const firstArticle = jsonData.data.articles[0];",
+									"        if (firstArticle.id && !pm.collectionVariables.get('articleId')) {",
+									"            pm.collectionVariables.set('articleId', firstArticle.id);",
+									"            pm.collectionVariables.set('slug', firstArticle.slug || '');",
+									"            console.log('Auto-extracted articleId:', firstArticle.id);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles?page=1&limit=10&published=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (starts at 1)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of items per page (max 100)"
+								},
+								{
+									"key": "published",
+									"value": "true",
+									"description": "Filter by published status"
+								}
+							]
+						},
+						"description": "Get a paginated list of articles. Supports filtering by published status, tags, author, featured, trending, and search query."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles - With Filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Filtered results returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles?page=1&limit=20&tags=japanese&tags=learning&featured=true&sortBy=views&sortOrder=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "20" },
+								{ "key": "tags", "value": "japanese" },
+								{ "key": "tags", "value": "learning" },
+								{ "key": "featured", "value": "true" },
+								{ "key": "sortBy", "value": "views", "description": "createdAt, updatedAt, views, likes, publishedAt" },
+								{ "key": "sortOrder", "value": "desc", "description": "asc or desc" }
+							]
+						},
+						"description": "Example of filtered article list with multiple tags, featured filter, and sorting by views."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles - Search Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles?search=hiragana&published=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{ "key": "search", "value": "hiragana", "description": "Search in title and content" },
+								{ "key": "published", "value": "true" }
+							]
+						},
+						"description": "Search articles by query string (searches in title and content)."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /articles - Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test('Article created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});",
+									"",
+									"pm.test('Article has required fields', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.expect(jsonData.data).to.have.property('title');",
+									"        pm.expect(jsonData.data).to.have.property('slug');",
+									"        pm.expect(jsonData.data).to.have.property('content');",
+									"        pm.expect(jsonData.data).to.have.property('author');",
+									"    }",
+									"});",
+									"",
+									"// Auto-extract article ID and slug",
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('articleId', jsonData.data.id);",
+									"        pm.collectionVariables.set('slug', jsonData.data.slug || '');",
+									"        console.log('Auto-extracted articleId:', jsonData.data.id);",
+									"        console.log('Auto-extracted slug:', jsonData.data.slug);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Introduction to Hiragana: Your First Japanese Characters\",\n  \"content\": \"# Introduction to Hiragana\\n\\nHiragana is one of the three main writing systems used in Japanese...\\n\\n## Basic Characters\\n\\nあ (a) - The first character\\nい (i) - The second character\\nう (u) - The third character\\n\\n## Practice Tips\\n\\n1. Start with the first row\\n2. Practice writing daily\\n3. Use flashcards for memorization\",\n  \"excerpt\": \"Learn the fundamentals of Hiragana, the first writing system you'll master in Japanese. This guide covers everything from basic characters to practice techniques.\",\n  \"tags\": [\"japanese\", \"hiragana\", \"learning\", \"beginner\"],\n  \"published\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/articles",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"]
+						},
+						"description": "Create a new article. The content can be in Markdown format and will be automatically converted to HTML. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /articles - Create Draft",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Advanced Kanji Techniques\",\n  \"content\": \"# Advanced Kanji\\n\\nThis article is still being written...\",\n  \"excerpt\": \"Coming soon...\",\n  \"tags\": [\"kanji\", \"advanced\"],\n  \"published\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/articles",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"]
+						},
+						"description": "Create an article as a draft (published: false). Drafts are not visible to public but can be accessed by the author."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/:id - By ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Article structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.expect(jsonData.data).to.have.property('title');",
+									"        pm.expect(jsonData.data).to.have.property('content');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}"]
+						},
+						"description": "Get a single article by ID. Public endpoint, no authentication required."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/:slug - By Slug",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{slug}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{slug}}"]
+						},
+						"description": "Get a single article by slug (URL-friendly identifier). Works the same as ID lookup."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /articles/:id - Update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Article updated successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated: Introduction to Hiragana\",\n  \"excerpt\": \"Updated excerpt with more details about the content.\",\n  \"published\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}"]
+						},
+						"description": "Update an existing article. Only the article author can update their article. All fields are optional - only provided fields will be updated."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /articles/:id - Update Tags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tags\": [\"japanese\", \"hiragana\", \"learning\", \"beginner\", \"writing\", \"updated\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}"]
+						},
+						"description": "Update article tags. Replaces all existing tags with the new ones provided."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /articles/:id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Article deleted successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}"]
+						},
+						"description": "Delete an article. Only the article author can delete their article. This action is permanent and will also delete associated comments, likes, and bookmarks."
+					},
+					"response": []
+				}
+			],
+			"description": "Core CRUD operations for articles: Create, Read, Update, Delete."
+		},
+		{
+			"name": "3. Social Actions",
+			"item": [
+				{
+					"name": "POST /articles/:id/like - Like Article",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Like action successful', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('liked');",
+									"        pm.expect(jsonData.data).to.have.property('likes');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}/like",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}", "like"]
+						},
+						"description": "Like or unlike an article. This is a toggle action - if the article is already liked, it will be unliked. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /articles/:id/bookmark - Bookmark Article",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Bookmark action successful', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('bookmarked');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}/bookmark",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}", "bookmark"]
+						},
+						"description": "Bookmark or unbookmark an article. This is a toggle action - if the article is already bookmarked, it will be unbookmarked. Requires authentication."
+					},
+					"response": []
+				}
+			],
+			"description": "Social interaction endpoints: like and bookmark articles."
+		},
+		{
+			"name": "4. Comments",
+			"item": [
+				{
+					"name": "POST /articles/:id/comments - Add Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test('Comment created successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('id');",
+									"        pm.expect(jsonData.data).to.have.property('content');",
+									"        pm.expect(jsonData.data).to.have.property('author');",
+									"    }",
+									"});",
+									"",
+									"// Auto-extract comment ID",
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('commentId', jsonData.data.id);",
+									"        console.log('Auto-extracted commentId:', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Great article! This really helped me understand Hiragana better.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}/comments",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}", "comments"]
+						},
+						"description": "Add a comment to an article. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /articles/:id/comments - Reply to Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 or 201', function () {",
+									"    pm.response.to.have.status(200, 201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Thanks! Glad it helped.\",\n  \"parentId\": \"{{commentId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}/comments",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}", "comments"]
+						},
+						"description": "Reply to an existing comment by providing the parentId. Creates nested comment threads."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/:id/comments - List Comments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Comments structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}/comments",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}", "comments"]
+						},
+						"description": "Get all comments for an article. Comments are returned in a nested structure with replies. Public endpoint, no authentication required."
+					},
+					"response": []
+				}
+			],
+			"description": "Comment management: add comments and replies, list all comments for an article."
+		},
+		{
+			"name": "5. Discovery & Stats",
+			"item": [
+				{
+					"name": "GET /articles/trending",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Trending articles returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/trending",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "trending"]
+						},
+						"description": "Get trending articles based on recent views, likes, and engagement metrics. Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/featured",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/featured",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "featured"]
+						},
+						"description": "Get featured articles (manually curated). Public endpoint."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/user/:userId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/user/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "user", "{{userId}}"]
+						},
+						"description": "Get all articles by a specific user/author. Includes both published and draft articles."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/stats - Global Stats",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Stats structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('totalArticles');",
+									"        pm.expect(jsonData.data).to.have.property('publishedArticles');",
+									"        pm.expect(jsonData.data).to.have.property('totalViews');",
+									"        pm.expect(jsonData.data).to.have.property('totalLikes');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "stats"]
+						},
+						"description": "Get global statistics about all articles including total count, views, likes, comments, top tags, and recent articles."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/user/:userId/stats",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('User stats structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('totalArticles');",
+									"        pm.expect(jsonData.data).to.have.property('totalViews');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/user/{{userId}}/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "user", "{{userId}}", "stats"]
+						},
+						"description": "Get statistics for a specific user's articles including total articles, views, likes, comments, and average read time."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /articles/tags/popular",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Popular tags returned', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/tags/popular",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "tags", "popular"]
+						},
+						"description": "Get most popular tags based on usage count, views, and likes. Useful for tag clouds and filtering."
+					},
+					"response": []
+				}
+			],
+			"description": "Discovery endpoints: trending articles, featured content, user articles, statistics, and popular tags."
+		}
+	]
+}

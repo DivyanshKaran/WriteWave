@@ -1,4 +1,4 @@
-import { prisma } from '@/models';
+import { prisma } from '../models';
 import { 
   LeaderboardEntry, 
   LeaderboardQuery, 
@@ -7,9 +7,9 @@ import {
   UserAchievement,
   AchievementType,
   PaginationQuery
-} from '@/types';
-import { AppError } from '@/utils/errors';
-import { redis } from '@/utils/redis';
+} from '../types';
+import { AppError } from '../utils/errors';
+import { redis } from '../utils/redis';
 
 export class LeaderboardService {
   // Leaderboard Management
@@ -33,14 +33,12 @@ export class LeaderboardService {
   }
 
   async updateLeaderboardEntry(userId: string, type: LeaderboardType, score: number, period?: string, category?: string): Promise<LeaderboardEntry> {
-    const existingEntry = await prisma.leaderboardEntry.findUnique({
+    const existingEntry = await prisma.leaderboardEntry.findFirst({
       where: {
-        userId_type_period_category: {
-          userId,
-          type,
-          period: period || null,
-          category: category || null,
-        }
+        userId,
+        type,
+        period: period ?? null,
+        category: category ?? null,
       }
     });
 
@@ -89,14 +87,12 @@ export class LeaderboardService {
     if (period) where.period = period;
     if (category) where.category = category;
 
-    const userEntry = await prisma.leaderboardEntry.findUnique({
+    const userEntry = await prisma.leaderboardEntry.findFirst({
       where: {
-        userId_type_period_category: {
-          userId,
-          type,
-          period: period || null,
-          category: category || null,
-        }
+        userId,
+        type,
+        period: period ?? null,
+        category: category ?? null,
       }
     });
 
@@ -115,14 +111,12 @@ export class LeaderboardService {
   }
 
   async getLeaderboardAroundUser(userId: string, type: LeaderboardType, period?: string, category?: string, limit: number = 10): Promise<LeaderboardEntry[]> {
-    const userEntry = await prisma.leaderboardEntry.findUnique({
+    const userEntry = await prisma.leaderboardEntry.findFirst({
       where: {
-        userId_type_period_category: {
-          userId,
-          type,
-          period: period || null,
-          category: category || null,
-        }
+        userId,
+        type,
+        period: period ?? null,
+        category: category ?? null,
       }
     });
 
@@ -445,7 +439,7 @@ export class LeaderboardService {
   async clearLeaderboardCache(): Promise<void> {
     const keys = await redis.keys('leaderboard:*');
     if (keys.length > 0) {
-      await redis.del(...keys);
+      await redis.delMultiple(keys);
     }
   }
 

@@ -1,5 +1,7 @@
 import express from 'express';
+// @ts-ignore - bull-board types may not be properly exported
 import { createBullBoard } from 'bull-board';
+// @ts-ignore
 import { BullAdapter } from 'bull-board/bullAdapter';
 import basicAuth from 'express-basic-auth';
 import { 
@@ -11,10 +13,11 @@ import {
   scheduledQueue, 
   analyticsQueue 
 } from './queue';
-import { logger } from '@/utils/logger';
+import { logger } from '../utils/logger';
 
 const app = express();
 const PORT = process.env.DASHBOARD_PORT || 3001;
+const ENABLE_DASHBOARD = process.env.ENABLE_DASHBOARD === 'true' && process.env.NODE_ENV !== 'production';
 
 // Basic authentication
 const auth = basicAuth({
@@ -36,11 +39,17 @@ const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard([
   new BullAdapter(analyticsQueue),
 ]);
 
-// Apply authentication to all routes
-app.use(auth);
+// Apply authentication to all routes (and optional gating)
+if (!ENABLE_DASHBOARD) {
+  app.use((_, res) => {
+    return res.status(404).json({ success: false, error: 'Dashboard disabled' });
+  });
+} else {
+  app.use(auth);
 
-// Mount Bull Board
-app.use('/admin/queues', addQueue);
+  // Mount Bull Board
+  app.use('/admin/queues', addQueue);
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -109,13 +118,13 @@ app.post('/api/queues/:queueName/pause', async (req, res) => {
     await queue.pause();
     logger.info(`Queue ${queueName} paused via dashboard`);
     
-    res.json({
+    return res.json({
       success: true,
       message: `Queue ${queueName} paused successfully`
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error pausing queue', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to pause queue'
     });
@@ -137,13 +146,13 @@ app.post('/api/queues/:queueName/resume', async (req, res) => {
     await queue.resume();
     logger.info(`Queue ${queueName} resumed via dashboard`);
     
-    res.json({
+    return res.json({
       success: true,
       message: `Queue ${queueName} resumed successfully`
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error resuming queue', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to resume queue'
     });
@@ -167,13 +176,13 @@ app.post('/api/queues/:queueName/clean', async (req, res) => {
     await queue.clean(grace, 'failed');
     logger.info(`Queue ${queueName} cleaned via dashboard`);
     
-    res.json({
+    return res.json({
       success: true,
       message: `Queue ${queueName} cleaned successfully`
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error cleaning queue', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to clean queue'
     });
@@ -203,13 +212,13 @@ app.delete('/api/queues/:queueName/jobs/:jobId', async (req, res) => {
     await job.remove();
     logger.info(`Job ${jobId} removed from queue ${queueName} via dashboard`);
     
-    res.json({
+    return res.json({
       success: true,
       message: `Job ${jobId} removed successfully`
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error removing job', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to remove job'
     });
@@ -239,13 +248,13 @@ app.post('/api/queues/:queueName/jobs/:jobId/retry', async (req, res) => {
     await job.retry();
     logger.info(`Job ${jobId} retried in queue ${queueName} via dashboard`);
     
-    res.json({
+    return res.json({
       success: true,
       message: `Job ${jobId} retried successfully`
     });
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error retrying job', { error: error.message });
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to retry job'
     });
@@ -269,13 +278,13 @@ function getQueueByName(queueName: string) {
 
 // Helper function to get queue statistics
 async function getQueueStats(queue: any) {
-  const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+  const [waiting, active, completed, failed, delayed, isPaused] = await Promise.all([
     queue.getWaiting(),
     queue.getActive(),
     queue.getCompleted(),
     queue.getFailed(),
     queue.getDelayed(),
-    queue.getPaused(),
+    queue.isPaused(),
   ]);
 
   return {
@@ -284,14 +293,17 @@ async function getQueueStats(queue: any) {
     completed: completed.length,
     failed: failed.length,
     delayed: delayed.length,
-    paused: paused.length,
+    paused: isPaused ? 1 : 0,
   };
 }
 
 // Start the dashboard server
+
 app.listen(PORT, () => {
-  logger.info(`Queue Dashboard running on http://localhost:${PORT}`);
-  logger.info(`Bull Board available at http://localhost:${PORT}/admin/queues`);
+  logger.info(`Queue Dashboard running on http://localhost:${PORT}`, { enabled: ENABLE_DASHBOARD });
+  if (ENABLE_DASHBOARD) {
+    logger.info(`Bull Board available at http://localhost:${PORT}/admin/queues`);
+  }
 });
 
 // Graceful shutdown

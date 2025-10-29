@@ -1,19 +1,21 @@
 import { notificationQueue, emailQueue, pushQueue, smsQueue, inAppQueue, scheduledQueue, analyticsQueue } from './queue';
-import { logger } from '@/utils/logger';
-import { NotificationService } from '@/services/notification.service';
-import { EmailService } from '@/services/email.service';
-import { PushService } from '@/services/push.service';
-import { SMSService } from '@/services/sms.service';
-import { InAppService } from '@/services/in-app.service';
-import { AnalyticsService } from '@/services/analytics.service';
+import { logger } from '../utils/logger';
+import { NotificationService } from '../services/notification.service';
+import { EmailService } from '../services/email.service';
+import { PushService } from '../services/push.service';
+import { SMSService } from '../services/sms.service';
+import { InAppService } from '../services/in-app.service';
+import { AnalyticsService } from '../services/analytics.service';
 import { 
   Notification, 
   NotificationChannel, 
   NotificationStatus,
+  NotificationPriority,
+  DeliveryStatus,
   CreateNotificationRequest,
   CreateScheduledNotificationRequest
-} from '@/types';
-import { storage, generateId } from '@/models';
+} from '../types';
+import { storage, generateId } from '../models';
 
 // Initialize services
 const notificationService = new NotificationService();
@@ -41,7 +43,7 @@ notificationQueue.process('process-notification', async (job) => {
       data,
       templateId,
       status: NotificationStatus.PROCESSING,
-      priority: priority || 'NORMAL',
+      priority: (priority || NotificationPriority.NORMAL) as NotificationPriority,
       retryCount: 0,
       maxRetries: 3,
       createdAt: new Date(),
@@ -109,6 +111,7 @@ emailQueue.process('send-email', async (job) => {
       to: user.email,
       subject: notification.title,
       html: notification.content,
+      // @ts-ignore - data field may be used by email service
       data: notification.data
     });
 
@@ -338,7 +341,7 @@ scheduledQueue.process('process-scheduled', async (job) => {
       content: template?.content || 'This is a scheduled notification',
       data,
       templateId,
-      priority: 'NORMAL'
+      priority: NotificationPriority.NORMAL
     };
 
     // Add to notification queue
@@ -377,7 +380,7 @@ analyticsQueue.process('track-delivery', async (job) => {
       id: generateId(),
       notificationId,
       channel: channel || 'unknown',
-      status: event === 'sent' ? 'SENT' : event === 'delivered' ? 'DELIVERED' : 'FAILED',
+      status: (event === 'sent' ? 'SENT' : event === 'delivered' ? 'DELIVERED' : 'FAILED') as DeliveryStatus,
       providerId,
       deliveredAt: event === 'delivered' ? new Date() : undefined,
       retryCount: 0,

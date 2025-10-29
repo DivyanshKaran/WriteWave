@@ -1,0 +1,32 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <circle cx="32" cy="32" r="30" fill="url(#waveGradient)" stroke="url(#borderGradient)" stroke-width="2"/>
+  
+  <!-- Wave pattern -->
+  <path d="M10 32 Q22 24, 32 32 T54 32" stroke="#FFD700" stroke-width="2.5" fill="none"/>
+  <path d="M10 38 Q22 30, 32 38 T54 38" stroke="#FFD700" stroke-width="2.5" fill="none" opacity="0.7"/>
+  <path d="M10 44 Q22 36, 32 44 T54 44" stroke="#FFD700" stroke-width="2.5" fill="none" opacity="0.5"/>
+  
+  <!-- Japanese character representing wave (波 - nami) -->
+  <g transform="translate(20, 12)">
+    <!-- Simplified wave symbol -->
+    <path d="M20 25 L16 30 L12 27 L8 32 L4 29" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M20 30 L16 35 L12 32 L8 37 L4 34" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+  </g>
+  
+  <!-- Accent dot -->
+  <circle cx="48" cy="18" r="3" fill="#FFD700"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="50%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="borderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </linearGradient>
+  </defs>
+</svg>

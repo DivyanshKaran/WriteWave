@@ -1,5 +1,7 @@
 // Progress Service TypeScript Types
 
+import { Request } from 'express';
+
 // Base types
 export interface BaseResponse {
   success: boolean;
@@ -142,18 +144,20 @@ export interface CharacterMasteryInput {
   recognitionScore?: number;
 }
 
-export enum CharacterType {
-  HIRAGANA = 'HIRAGANA',
-  KATAKANA = 'KATAKANA',
-  KANJI = 'KANJI'
-}
+export const CharacterType = {
+  HIRAGANA: 'HIRAGANA',
+  KATAKANA: 'KATAKANA',
+  KANJI: 'KANJI'
+} as const;
+export type CharacterType = typeof CharacterType[keyof typeof CharacterType];
 
-export enum MasteryLevel {
-  LEARNING = 'LEARNING',
-  PRACTICING = 'PRACTICING',
-  MASTERED = 'MASTERED',
-  EXPERT = 'EXPERT'
-}
+export const MasteryLevel = {
+  LEARNING: 'LEARNING',
+  PRACTICING: 'PRACTICING',
+  MASTERED: 'MASTERED',
+  EXPERT: 'EXPERT'
+} as const;
+export type MasteryLevel = typeof MasteryLevel[keyof typeof MasteryLevel];
 
 // Practice Session Types
 export interface PracticeSession {
@@ -216,24 +220,26 @@ export interface AchievementInput {
   isActive?: boolean;
 }
 
-export enum AchievementCategory {
-  LEARNING = 'LEARNING',
-  PRACTICE = 'PRACTICE',
-  STREAK = 'STREAK',
-  MASTERY = 'MASTERY',
-  SOCIAL = 'SOCIAL',
-  SPECIAL = 'SPECIAL',
-  MILESTONE = 'MILESTONE',
-  CHALLENGE = 'CHALLENGE'
-}
+export const AchievementCategory = {
+  LEARNING: 'LEARNING',
+  PRACTICE: 'PRACTICE',
+  STREAK: 'STREAK',
+  MASTERY: 'MASTERY',
+  SOCIAL: 'SOCIAL',
+  SPECIAL: 'SPECIAL',
+  MILESTONE: 'MILESTONE',
+  CHALLENGE: 'CHALLENGE'
+} as const;
+export type AchievementCategory = typeof AchievementCategory[keyof typeof AchievementCategory];
 
-export enum AchievementRarity {
-  COMMON = 'COMMON',
-  UNCOMMON = 'UNCOMMON',
-  RARE = 'RARE',
-  EPIC = 'EPIC',
-  LEGENDARY = 'LEGENDARY'
-}
+export const AchievementRarity = {
+  COMMON: 'COMMON',
+  UNCOMMON: 'UNCOMMON',
+  RARE: 'RARE',
+  EPIC: 'EPIC',
+  LEGENDARY: 'LEGENDARY'
+} as const;
+export type AchievementRarity = typeof AchievementRarity[keyof typeof AchievementRarity];
 
 // User Achievement Types
 export interface UserAchievement {
@@ -279,13 +285,14 @@ export interface StreakInput {
   isActive?: boolean;
 }
 
-export enum StreakType {
-  DAILY_LOGIN = 'DAILY_LOGIN',
-  DAILY_PRACTICE = 'DAILY_PRACTICE',
-  PERFECT_SCORE = 'PERFECT_SCORE',
-  WEEKLY_STUDY = 'WEEKLY_STUDY',
-  MONTHLY_GOAL = 'MONTHLY_GOAL'
-}
+export const StreakType = {
+  DAILY_LOGIN: 'DAILY_LOGIN',
+  DAILY_PRACTICE: 'DAILY_PRACTICE',
+  PERFECT_SCORE: 'PERFECT_SCORE',
+  WEEKLY_STUDY: 'WEEKLY_STUDY',
+  MONTHLY_GOAL: 'MONTHLY_GOAL'
+} as const;
+export type StreakType = typeof StreakType[keyof typeof StreakType];
 
 // Analytics Types
 export interface UserAnalytics {

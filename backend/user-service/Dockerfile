@@ -17,7 +17,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Stage 2: Build application
 FROM node:18-alpine AS builder
@@ -35,7 +35,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies (including dev dependencies)
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY src/ ./src/
@@ -59,16 +59,15 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN apk update && apk upgrade && \
     apk add --no-cache dumb-init
 
-# Copy production dependencies
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/package*.json ./
+# Copy all dependencies (including dev dependencies for ts-node)
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
-# Copy built application
-COPY --from=builder /app/dist ./dist
+# Copy source code and configuration files
+COPY --from=builder /app/src ./src
 COPY --from=builder /app/prisma ./prisma
-
-# Copy configuration files
 COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/tsconfig.node.json ./
 
 # Set ownership
 RUN chown -R nodejs:nodejs /app
@@ -85,4 +84,5 @@ EXPOSE 8001
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application
-CMD ["node", "dist/index.js"]
+# Start the application with ts-node and explicit config
+CMD ["npx", "ts-node", "--project", "tsconfig.node.json", "src/index.ts"]

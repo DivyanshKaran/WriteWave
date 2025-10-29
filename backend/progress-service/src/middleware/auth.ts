@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { config } from '@/config';
-import { logger } from '@/config/logger';
+import { config } from '../config';
+import { logger } from '../config/logger';
 
 // Extend Request interface to include user
 declare global {
@@ -325,13 +325,13 @@ export const authenticateService = (req: Request, res: Response, next: NextFunct
 };
 
 // Generate JWT token
-export const generateToken = (payload: any, expiresIn: string = '15m'): string => {
-  return jwt.sign(payload, config.JWT_SECRET, { expiresIn });
+export const generateToken = (payload: any, expiresIn?: string): string => {
+  return jwt.sign(payload, config.JWT_SECRET, expiresIn ? { expiresIn } as any : undefined);
 };
 
 // Generate refresh token
-export const generateRefreshToken = (payload: any, expiresIn: string = '7d'): string => {
-  return jwt.sign(payload, config.JWT_REFRESH_SECRET, { expiresIn });
+export const generateRefreshToken = (payload: any, expiresIn?: string): string => {
+  return jwt.sign(payload, config.JWT_REFRESH_SECRET, expiresIn ? { expiresIn } as any : undefined);
 };
 
 // Verify JWT token

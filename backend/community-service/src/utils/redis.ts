@@ -89,6 +89,16 @@ class RedisService {
     }
   }
 
+  async setex(key: string, ttl: number, value: string): Promise<boolean> {
+    try {
+      await this.client.setEx(key, ttl, value);
+      return true;
+    } catch (error) {
+      logger.error('Redis SETEX error:', error);
+      return false;
+    }
+  }
+
   async del(key: string): Promise<boolean> {
     try {
       const result = await this.client.del(key);
@@ -96,6 +106,17 @@ class RedisService {
     } catch (error) {
       logger.error('Redis DEL error:', error);
       return false;
+    }
+  }
+
+  async delMultiple(keys: string[]): Promise<number> {
+    try {
+      if (keys.length === 0) return 0;
+      const result = await this.client.del(keys);
+      return result;
+    } catch (error) {
+      logger.error('Redis DEL MULTIPLE error:', error);
+      return 0;
     }
   }
 
@@ -131,7 +152,8 @@ class RedisService {
   // Hash operations
   async hget(key: string, field: string): Promise<string | null> {
     try {
-      return await this.client.hGet(key, field);
+      const result = await this.client.hGet(key, field);
+      return result || null;
     } catch (error) {
       logger.error('Redis HGET error:', error);
       return null;
@@ -472,7 +494,7 @@ class RedisService {
       
       if (current >= limit) {
         // Get the oldest entry to calculate reset time
-        const oldest = await this.client.zRange(key, 0, 0, { REV: false });
+        const oldest = await this.client.zRange(key, 0, 0);
         const resetTime = oldest.length > 0 ? parseInt(oldest[0]) + window * 1000 : now + window * 1000;
         
         return {

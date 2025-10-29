@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { config } from '@/config';
-import { logger } from '@/config/logger';
+import { config } from '../config';
+import { logger } from '../config/logger';
 
 // Password utility class
 export class PasswordService {

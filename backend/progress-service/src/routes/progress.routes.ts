@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { progressController } from '@/controllers/progress.controller';
-import { validate, validateQuery, validateParams } from '@/middleware/validation';
-import { authenticateJWT, checkUserAccess, adminOnly } from '@/middleware/auth';
+import { progressController } from '../controllers/progress.controller';
+import { validate, validateQuery, validateParams } from '../middleware/validation';
+import { authenticateJWT, checkUserAccess, adminOnly } from '../middleware/auth';
 
 const router = Router();
 

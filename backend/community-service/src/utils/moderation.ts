@@ -1,5 +1,6 @@
 import Filter from 'bad-words';
 import natural from 'natural';
+import { logger } from './logger';
 
 // Initialize bad words filter
 const filter = new Filter();
@@ -176,19 +177,21 @@ export class ContentModerationService {
 
   // Advanced text analysis using natural language processing
   private analyzeSentiment(text: string): number {
-    const analyzer = new natural.SentimentAnalyzer('English', 
-      natural.PorterStemmer, ['negation']);
-    
-    const tokenizer = new natural.WordTokenizer();
-    const tokens = tokenizer.tokenize(text.toLowerCase());
-    
-    const lexicon = new natural.Lexicon('English', 'N', 'NNP');
-    const ruleSet = new natural.RuleSet('English');
-    const stemmer = natural.PorterStemmer;
-    
-    const stemmedTokens = tokens.map(token => stemmer.stem(token));
-    
-    return analyzer.getSentiment(stemmedTokens, lexicon, ruleSet);
+    try {
+      const analyzer = new natural.SentimentAnalyzer('English', 
+        natural.PorterStemmer, 'afinn');
+      
+      const tokenizer = new natural.WordTokenizer();
+      const tokens = tokenizer.tokenize(text.toLowerCase());
+      
+      if (!tokens) return 0;
+      
+      const stemmedTokens = tokens.map(token => natural.PorterStemmer.stem(token));
+      return analyzer.getSentiment(stemmedTokens);
+    } catch (error) {
+      logger.error('Sentiment analysis error:', error);
+      return 0;
+    }
   }
 
   private detectLanguage(text: string): string {
@@ -217,10 +220,12 @@ export class ContentModerationService {
     const tokenizer = new natural.WordTokenizer();
     const tokens = tokenizer.tokenize(text.toLowerCase());
     
+    if (!tokens) return [];
+    
     // Remove stop words and short words
     const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by']);
     const keywords = tokens.filter(token => 
-      token.length > 2 && !stopWords.has(token) && /^[a-zA-Z]+$/.test(token)
+      token && token.length > 2 && !stopWords.has(token) && /^[a-zA-Z]+$/.test(token)
     );
     
     // Get unique keywords

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { studyGroupService } from '@/services/study-group.service';
-import { ApiResponse } from '@/types';
-import { validateRequest } from '@/middleware/validation';
-import { authenticate } from '@/middleware/auth';
+import { studyGroupService } from '../services/study-group.service';
+import { ApiResponse } from '../types';
+import { validateRequest } from '../middleware/validation';
+import { authenticate } from '../middleware/auth';
 
 export class StudyGroupController {
   // Study Groups

@@ -5,15 +5,15 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import { logger } from '@/utils/logger';
-import { errorHandler } from '@/utils/errors';
-import routes from '@/routes';
+import { logger } from './utils/logger';
+import { errorHandler } from './utils/errors';
+import routes from './routes';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8005;
+const PORT = parseInt(process.env.PORT || '8005', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
 // Security middleware
@@ -31,7 +31,7 @@ app.use(helmet({
 // CORS configuration
 app.use(cors({
   origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
+  credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Webhook-Signature']
 }));
@@ -71,23 +71,47 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Request ID middleware
-app.use((req, res, next) => {
+app.use((req: any, res, next) => {
   req.id = Math.random().toString(36).substr(2, 9);
   res.setHeader('X-Request-ID', req.id);
   next();
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Notification Service is healthy',
-    timestamp: new Date().toISOString(),
+app.get('/health', async (_req, res) => {
+  const start = Date.now();
+  const checks: {
+    service: string;
+    redis: string;
+    latencyMs?: number;
+  } = {
+    service: 'healthy',
+    redis: 'unknown',
+  };
+
+  try {
+    // Redis check (notification service uses Redis for queues)
+    const redisClient = await import('./workers/queue');
+    // Redis is accessed via IORedis in queue.ts - check if queue is initialized
+    const redis = new (await import('ioredis')).default(process.env.REDIS_URL || 'redis://localhost:6379');
+    await redis.ping();
+    redis.disconnect();
+    checks.redis = 'healthy';
+  } catch (error: any) {
+    checks.redis = 'unhealthy';
+    logger.error('Redis health check failed', { error: error.message });
+  }
+
+  checks.latencyMs = Date.now() - start;
+  const isHealthy = checks.redis === 'healthy';
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    success: isHealthy,
+    status: isHealthy ? 'healthy' : 'degraded',
+    checks,
     version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    pid: process.pid
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -133,21 +157,34 @@ app.use('*', (req, res) => {
 });
 
 // Graceful shutdown
-const gracefulShutdown = (signal: string) => {
+const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}, shutting down gracefully...`);
   
-  server.close(() => {
-    logger.info('HTTP server closed');
-    
-    // Close database connections, queues, etc.
-    process.exit(0);
-  });
+  try {
+    // Close Kafka connections (consumer disconnection handled in service, but producer/admin cleanup)
+    try {
+      const { disconnectKafka } = await import('../../shared/utils/kafka');
+      await disconnectKafka();
+      logger.info('Kafka connections closed');
+    } catch (error) {
+      logger.warn('Error disconnecting Kafka (non-fatal)', { error: (error as any).message });
+    }
 
-  // Force close after 30 seconds
-  setTimeout(() => {
-    logger.error('Could not close connections in time, forcefully shutting down');
+    server.close(() => {
+      logger.info('HTTP server closed');
+      // Close database connections, queues, etc.
+      process.exit(0);
+    });
+
+    // Force close after 30 seconds
+    setTimeout(() => {
+      logger.error('Could not close connections in time, forcefully shutting down');
+      process.exit(1);
+    }, 30000);
+  } catch (error) {
+    logger.error('Error during graceful shutdown', { error: (error as any).message });
     process.exit(1);
-  }, 30000);
+  }
 };
 
 // Start server
@@ -171,7 +208,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Handle shutdown signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM').catch(err => logger.error('Shutdown error', err)));
+process.on('SIGINT', () => gracefulShutdown('SIGINT').catch(err => logger.error('Shutdown error', err)));
 
 export default app;

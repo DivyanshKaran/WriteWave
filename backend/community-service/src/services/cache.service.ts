@@ -1,5 +1,5 @@
-import { redis } from '@/utils/redis';
-import { logger } from '@/utils/logger';
+import { redis } from '../utils/redis';
+import { logger } from '../utils/logger';
 import { 
   LeaderboardEntry, 
   LeaderboardType, 
@@ -8,7 +8,7 @@ import {
   StudyGroup, 
   User,
   ForumCategory
-} from '@/types';
+} from '../types';
 
 export class CacheService {
   private readonly DEFAULT_TTL = 3600; // 1 hour
@@ -216,7 +216,7 @@ export class CacheService {
         const pattern = 'leaderboard:*';
         const keys = await redis.keys(pattern);
         if (keys.length > 0) {
-          await redis.del(...keys);
+          await redis.delMultiple(keys);
         }
         return true;
       }
@@ -252,7 +252,7 @@ export class CacheService {
       const pattern = 'search:*';
       const keys = await redis.keys(pattern);
       if (keys.length > 0) {
-        await redis.del(...keys);
+        await redis.delMultiple(keys);
       }
       return true;
     } catch (error) {
@@ -436,7 +436,7 @@ export class CacheService {
     try {
       const keys = await redis.keys(pattern);
       if (keys.length > 0) {
-        await redis.del(...keys);
+        await redis.delMultiple(keys);
       }
       return true;
     } catch (error) {

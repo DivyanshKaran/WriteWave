@@ -281,13 +281,6 @@ export interface AppConfig {
       clientSecret: string;
       callbackUrl: string;
     };
-    apple: {
-      clientId: string;
-      teamId: string;
-      keyId: string;
-      privateKey: string;
-      callbackUrl: string;
-    };
   };
   upload: {
     maxFileSize: number;

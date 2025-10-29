@@ -1,20 +1,26 @@
 import Queue from 'bull';
 import IORedis from 'ioredis';
-import { logger } from '@/utils/logger';
+import { logger } from '../utils/logger';
 import { 
   Notification, 
   NotificationChannel, 
   NotificationType,
   CreateNotificationRequest,
   CreateScheduledNotificationRequest
-} from '@/types';
+} from '../types';
+import { publish, Topics } from '../../../shared/utils/kafka';
 
 // Redis connection
 const redis = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: 3,
-  retryDelayOnFailover: 100,
   enableReadyCheck: false,
-  maxLoadingTimeout: 1000,
+  reconnectOnError: (err: Error) => {
+    const targetError = 'READONLY';
+    if (err.message.includes(targetError)) {
+      return true;
+    }
+    return false;
+  },
 });
 
 // Queue configurations
@@ -46,12 +52,14 @@ export const analyticsQueue = new Queue('analytics processing', queueOptions);
 
 // Queue event handlers
 const setupQueueEvents = (queue: Queue.Queue, queueName: string) => {
-  queue.on('completed', (job, result) => {
+  queue.on('completed', async (job, result) => {
     logger.info(`Job ${job.id} completed in ${queueName} queue`, { result });
+    try { await publish(Topics.NOTIFICATION_EVENTS, String(job.id), { type: 'notification.delivered', jobId: job.id, queue: queueName, occurredAt: new Date().toISOString() }); } catch {}
   });
 
-  queue.on('failed', (job, err) => {
+  queue.on('failed', async (job, err) => {
     logger.error(`Job ${job.id} failed in ${queueName} queue`, { error: err.message, stack: err.stack });
+    try { await publish(Topics.NOTIFICATION_EVENTS, String(job?.id || Date.now()), { type: 'notification.failed', jobId: job?.id, queue: queueName, error: err.message, occurredAt: new Date().toISOString() }); } catch {}
   });
 
   queue.on('stalled', (job) => {
@@ -87,6 +95,8 @@ export class QueueService {
       type: notification.type,
       channel: notification.channel 
     });
+
+    try { await publish(Topics.NOTIFICATION_EVENTS, String(job.id), { type: 'notification.sent', jobId: job.id, userId: notification.userId, channel: notification.channel, occurredAt: new Date().toISOString() }); } catch {}
 
     return job;
   }
@@ -180,13 +190,13 @@ export class QueueService {
 
   // Get individual queue statistics
   private static async getQueueStat(queue: Queue.Queue): Promise<any> {
-    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+    const [waiting, active, completed, failed, delayed, isPaused] = await Promise.all([
       queue.getWaiting(),
       queue.getActive(),
       queue.getCompleted(),
       queue.getFailed(),
       queue.getDelayed(),
-      queue.getPaused(),
+      queue.isPaused(),
     ]);
 
     return {
@@ -195,7 +205,7 @@ export class QueueService {
       completed: completed.length,
       failed: failed.length,
       delayed: delayed.length,
-      paused: paused.length,
+      paused: isPaused ? 1 : 0,
     };
   }
 

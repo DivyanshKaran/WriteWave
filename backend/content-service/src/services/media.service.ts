@@ -1,6 +1,6 @@
-import { prisma } from '@/config/database';
-import { contentCacheService } from '@/config/redis';
-import { logger, mediaLogger } from '@/config/logger';
+import { prisma } from '../config/database';
+import { contentCacheService } from '../config/redis';
+import { logger, mediaLogger } from '../config/logger';
 import { 
   MediaData, 
   FileUpload,
@@ -10,7 +10,7 @@ import {
   PaginationParams,
   SearchResult,
   MediaType
-} from '@/types';
+} from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs/promises';
@@ -545,6 +545,246 @@ export class MediaService {
         success: false,
         error: 'Cleanup failed',
         message: 'An error occurred while cleaning up orphaned media assets'
+      };
+    }
+  }
+
+  // Get media assets by type
+  async getMediaAssetsByType(type: MediaType, pagination: PaginationParams = {}): Promise<ServiceResponse<SearchResult<any>>> {
+    try {
+      const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = pagination;
+      const skip = (page - 1) * limit;
+
+      const result = await prisma.$transaction(async (tx) => {
+        const mediaAssets = await tx.mediaAsset.findMany({
+          where: { type },
+          skip,
+          take: limit,
+          orderBy: { [sortBy]: sortOrder },
+          include: {
+            character: true,
+            lesson: true
+          }
+        });
+
+        const total = await tx.mediaAsset.count({
+          where: { type }
+        });
+
+        return { mediaAssets, total };
+      });
+
+      const totalPages = Math.ceil(result.total / limit);
+
+      const searchResults: SearchResult<any> = {
+        data: result.mediaAssets,
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+
+      return {
+        success: true,
+        data: searchResults,
+        message: 'Media assets retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get media assets by type', { type, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve media assets',
+        message: 'An error occurred while retrieving media assets by type'
+      };
+    }
+  }
+
+  // Get media assets by category (using character type as category)
+  async getMediaAssetsByCategory(category: string, pagination: PaginationParams = {}): Promise<ServiceResponse<SearchResult<any>>> {
+    try {
+      const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = pagination;
+      const skip = (page - 1) * limit;
+
+      const result = await prisma.$transaction(async (tx) => {
+        const mediaAssets = await tx.mediaAsset.findMany({
+          where: {
+            character: {
+              type: category as any
+            }
+          },
+          skip,
+          take: limit,
+          orderBy: { [sortBy]: sortOrder },
+          include: {
+            character: true,
+            lesson: true
+          }
+        });
+
+        const total = await tx.mediaAsset.count({
+          where: {
+            character: {
+              type: category as any
+            }
+          }
+        });
+
+        return { mediaAssets, total };
+      });
+
+      const totalPages = Math.ceil(result.total / limit);
+
+      const searchResults: SearchResult<any> = {
+        data: result.mediaAssets,
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+
+      return {
+        success: true,
+        data: searchResults,
+        message: 'Media assets retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get media assets by category', { category, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve media assets',
+        message: 'An error occurred while retrieving media assets by category'
+      };
+    }
+  }
+
+  // Search media assets
+  async searchMediaAssets(query: string, filters: any = {}, pagination: PaginationParams = {}): Promise<ServiceResponse<SearchResult<any>>> {
+    try {
+      const { page = 1, limit = 20 } = pagination;
+      const skip = (page - 1) * limit;
+
+      const result = await prisma.$transaction(async (tx) => {
+        const mediaAssets = await tx.mediaAsset.findMany({
+          where: {
+            OR: [
+              { filename: { contains: query, mode: 'insensitive' } },
+              { originalName: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } }
+            ],
+            ...filters
+          },
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            character: true,
+            lesson: true
+          }
+        });
+
+        const total = await tx.mediaAsset.count({
+          where: {
+            OR: [
+              { filename: { contains: query, mode: 'insensitive' } },
+              { originalName: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } }
+            ],
+            ...filters
+          }
+        });
+
+        return { mediaAssets, total };
+      });
+
+      const totalPages = Math.ceil(result.total / limit);
+
+      const searchResults: SearchResult<any> = {
+        data: result.mediaAssets,
+        total: result.total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+
+      return {
+        success: true,
+        data: searchResults,
+        message: 'Media assets search completed successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to search media assets', { query, error });
+      return {
+        success: false,
+        error: 'Failed to search media assets',
+        message: 'An error occurred while searching media assets'
+      };
+    }
+  }
+
+  // Get media asset file
+  async getMediaAssetFile(mediaId: string): Promise<ServiceResponse<any>> {
+    try {
+      const mediaAsset = await prisma.mediaAsset.findUnique({
+        where: { id: mediaId }
+      });
+
+      if (!mediaAsset) {
+        return {
+          success: false,
+          error: 'Media asset not found',
+          message: 'The specified media asset does not exist'
+        };
+      }
+
+      return {
+        success: true,
+        data: mediaAsset,
+        message: 'Media asset file retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get media asset file', { mediaId, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve media asset file',
+        message: 'An error occurred while retrieving media asset file'
+      };
+    }
+  }
+
+  // Get media asset thumbnail
+  async getMediaAssetThumbnail(mediaId: string): Promise<ServiceResponse<any>> {
+    try {
+      const mediaAsset = await prisma.mediaAsset.findUnique({
+        where: { id: mediaId }
+      });
+
+      if (!mediaAsset) {
+        return {
+          success: false,
+          error: 'Media asset not found',
+          message: 'The specified media asset does not exist'
+        };
+      }
+
+      // For now, return the media asset itself as thumbnail
+      // In a real implementation, you would generate thumbnails
+      return {
+        success: true,
+        data: mediaAsset,
+        message: 'Media asset thumbnail retrieved successfully'
+      };
+    } catch (error) {
+      logger.error('Failed to get media asset thumbnail', { mediaId, error });
+      return {
+        success: false,
+        error: 'Failed to retrieve media asset thumbnail',
+        message: 'An error occurred while retrieving media asset thumbnail'
       };
     }
   }

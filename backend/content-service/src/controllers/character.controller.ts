@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { characterService } from '@/services/character.service';
-import { logger } from '@/config/logger';
+import { characterService } from '../services/character.service';
+import { logger } from '../config/logger';
 
 // Character controller class
 export class CharacterController {

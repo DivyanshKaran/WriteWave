@@ -1,6 +1,6 @@
 import twilio from 'twilio';
-import { logger } from '@/utils/logger';
-import { SMSData } from '@/types';
+import { logger } from '../utils/logger';
+import { SMSData } from '../types';
 
 export class SMSService {
   private client: twilio.Twilio;
@@ -190,6 +190,7 @@ export class SMSService {
         deliveryRate: totalSent > 0 ? (delivered / totalSent) * 100 : 0,
         failureRate: totalSent > 0 ? (failed / totalSent) * 100 : 0,
         usage: usage.map(u => ({
+          // @ts-ignore - period property exists at runtime
           period: u.period,
           count: u.count,
           price: u.price

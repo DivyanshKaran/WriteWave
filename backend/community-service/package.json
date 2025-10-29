@@ -13,6 +13,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node prisma/seed.ts"
   },
@@ -39,6 +40,7 @@
     "winston": "^3.11.0",
     "dotenv": "^16.3.1",
     "uuid": "^9.0.1",
+    "axios": "^1.6.2",
     "moment": "^2.29.4",
     "lodash": "^4.17.21",
     "bad-words": "^3.0.4",

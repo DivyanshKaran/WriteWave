@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { socialService } from '@/services/social.service';
-import { ApiResponse } from '@/types';
-import { validateRequest } from '@/middleware/validation';
-import { authenticate } from '@/middleware/auth';
+import { socialService } from '../services/social.service';
+import { ApiResponse } from '../types';
+import { validateRequest } from '../middleware/validation';
+import { authenticate } from '../middleware/auth';
 
 export class SocialController {
   // Friend Requests

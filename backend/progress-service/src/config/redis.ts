@@ -64,7 +64,11 @@ export const connectRedis = async (): Promise<void> => {
     await client.connect();
     logger.info('Redis connected successfully');
   } catch (error) {
-    logger.error('Failed to connect to Redis', { error: error.message });
+    if (process.env.OPTIONAL_REDIS === 'true') {
+      logger.warn('Redis optional: proceeding without Redis', { error: (error as any)?.message });
+      return;
+    }
+    logger.error('Failed to connect to Redis', { error: (error as any)?.message });
     throw error;
   }
 };

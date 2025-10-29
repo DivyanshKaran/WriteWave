@@ -1,14 +1,25 @@
-import { logger } from '@/utils/logger';
-import { clickhouseClient } from '@/models/clickhouse';
+import { logger } from '../utils/logger';
+import { clickhouseClient } from '../models/clickhouse';
 import { 
   AnalyticsEvent, 
   CreateEventRequest, 
   EventType, 
   EventSource, 
   Platform 
-} from '@/types';
-import { generateId } from '@/utils/helpers';
-import { redisClient } from '@/utils/redis';
+} from '../types';
+import { generateId } from '../utils/helpers';
+import { redisClient } from '../utils/redis';
+// Kafka imports - optional
+let createConsumer: any, Topics: any;
+try {
+  const kafkaModule = require('../../../shared/utils/kafka');
+  createConsumer = kafkaModule.createConsumer;
+  Topics = kafkaModule.Topics;
+} catch (e) {
+  // Kafka not available, will be handled gracefully
+  createConsumer = null;
+  Topics = { USER_EVENTS: 'user.events' };
+}
 
 export class EventTrackingService {
   private eventBuffer: AnalyticsEvent[] = [];
@@ -17,8 +28,16 @@ export class EventTrackingService {
 
   constructor() {
     this.batchSize = parseInt(process.env.ANALYTICS_BATCH_SIZE || '1000');
-    this.startFlushInterval();
-    logger.info('Event tracking service initialized');
+    if (process.env.ENABLE_CRON === 'true') {
+      this.startFlushInterval();
+      logger.info('Event tracking service initialized with scheduled flush');
+    } else {
+      logger.warn('ENABLE_CRON is not true; scheduled flush is disabled');
+    }
+
+    if (process.env.ENABLE_KAFKA === 'true') {
+      this.startKafkaConsumer().catch((e) => logger.error('Kafka consumer failed to start', { error: e.message }));
+    }
   }
 
   private startFlushInterval(): void {
@@ -26,6 +45,58 @@ export class EventTrackingService {
     this.flushInterval = setInterval(() => {
       this.flushEvents();
     }, interval);
+  }
+
+  private async isDuplicate(topic: string, id?: string): Promise<boolean> {
+    if (!id) return false;
+    const key = `kafka:dedup:${topic}:${id}`;
+    const exists = await redisClient.get(key);
+    if (exists) return true;
+    await redisClient.setex(key, 3600, '1');
+    return false;
+  }
+
+  private async startKafkaConsumer(): Promise<void> {
+    if (!createConsumer) {
+      logger.warn('Kafka consumer not available, skipping');
+      return;
+    }
+    const consumer = await createConsumer('analytics-service');
+    await consumer.subscribe({ topic: Topics.USER_EVENTS, fromBeginning: false });
+
+    await consumer.run({
+      eachMessage: async ({ topic, message }) => {
+        try {
+          if (!message.value) return;
+          const payload = JSON.parse(message.value.toString());
+          if (await this.isDuplicate(topic, payload.id || payload.eventId)) {
+            return;
+          }
+          await clickhouseClient.insertEvents([
+            {
+              id: generateId(),
+              userId: payload.id,
+              sessionId: undefined as any,
+              eventType: EventType.USER_INTERACTION,
+              eventName: payload.type || 'user_event',
+              properties: payload,
+              timestamp: new Date(payload.occurredAt || new Date().toISOString()),
+              source: EventSource.API,
+              version: '1.0.0',
+              platform: Platform.SERVER,
+              userAgent: 'kafka',
+              ipAddress: undefined as any,
+              location: undefined as any,
+              metadata: { topic },
+            } as any,
+          ]);
+        } catch (err: any) {
+          logger.error('Failed to process Kafka message', { error: err.message });
+        }
+      },
+    });
+
+    logger.info('Analytics Kafka consumer running', { topic: Topics.USER_EVENTS });
   }
 
   async trackEvent(eventData: CreateEventRequest): Promise<{ success: boolean; eventId?: string; error?: string }> {
@@ -71,8 +142,8 @@ export class EventTrackingService {
       return { success: true, eventId: event.id };
 
     } catch (error) {
-      logger.error('Error tracking event', { error: error.message, eventData });
-      return { success: false, error: error.message };
+      logger.error('Error tracking event', { error: (error as any).message, eventData });
+      return { success: false, error: (error as any).message };
     }
   }
 
@@ -82,17 +153,40 @@ export class EventTrackingService {
 
     logger.info('Tracking multiple events', { count: eventsData.length });
 
-    for (const eventData of eventsData) {
+    // Process events in parallel for better performance
+    const promises = eventsData.map(async (eventData) => {
       try {
         const result = await this.trackEvent(eventData);
-        results.push(result);
+        return { success: true, result, eventData: null };
       } catch (error) {
+        return { 
+          success: false, 
+          result: null, 
+          eventData, 
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
+    });
+
+    const settledResults = await Promise.allSettled(promises);
+    
+    settledResults.forEach((settled) => {
+      if (settled.status === 'fulfilled') {
+        if (settled.value.success) {
+          results.push(settled.value.result);
+        } else {
+          errors.push({
+            eventData: settled.value.eventData,
+            error: settled.value.error
+          });
+        }
+      } else {
         errors.push({
-          eventData,
-          error: error.message
+          eventData: null,
+          error: settled.reason instanceof Error ? settled.reason.message : String(settled.reason)
         });
       }
-    }
+    });
 
     // Flush all buffered events
     await this.flushEvents();
@@ -108,6 +202,17 @@ export class EventTrackingService {
       results,
       errors
     };
+  }
+
+  async trackBatchEvents(eventsData: CreateEventRequest[], userId?: string): Promise<any[]> {
+    // Apply userId override if provided
+    const eventsWithUserId = eventsData.map(event => ({
+      ...event,
+      userId: userId || event.userId
+    }));
+    
+    const result = await this.trackEvents(eventsWithUserId);
+    return result.results;
   }
 
   async flushEvents(): Promise<void> {
@@ -290,7 +395,14 @@ export class EventTrackingService {
     }
   }
 
-  async getEventStats(): Promise<any> {
+  async getEventStats(filters?: {
+    startDate?: Date;
+    endDate?: Date;
+    eventType?: EventType;
+    eventName?: string;
+    userId?: string;
+    groupBy?: string;
+  }): Promise<any> {
     try {
       const now = new Date();
       const hourKey = `events:hour:${now.getFullYear()}:${now.getMonth()}:${now.getDate()}:${now.getHours()}`;
@@ -316,28 +428,234 @@ export class EventTrackingService {
     }
   }
 
-  async searchEvents(
-    query: string,
-    startDate: Date,
-    endDate: Date,
-    limit: number = 100
-  ): Promise<AnalyticsEvent[]> {
+  async searchEvents(params: {
+    query?: string;
+    eventType?: EventType;
+    eventName?: string;
+    userId?: string;
+    startDate?: Date;
+    endDate?: Date;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{ events: AnalyticsEvent[]; pagination: any }> {
+    const {
+      query,
+      startDate,
+      endDate,
+      limit = 100,
+      page = 1,
+      eventType,
+      eventName,
+      userId
+    } = params;
     try {
-      // This would typically use ClickHouse's full-text search capabilities
-      // For now, we'll implement a simple search in the cached events
-      const events = await this.getRecentEvents(1000);
+      const offset = (page - 1) * limit;
+      let sqlQuery = `
+        SELECT * FROM events
+        WHERE timestamp >= {startDate:DateTime64(3)} AND timestamp <= {endDate:DateTime64(3)}
+      `;
       
-      return events
-        .filter(event => {
-          const searchText = `${event.eventName} ${event.eventType} ${JSON.stringify(event.properties)}`.toLowerCase();
-          return searchText.includes(query.toLowerCase()) &&
-                 event.timestamp >= startDate &&
-                 event.timestamp <= endDate;
-        })
-        .slice(0, limit);
+      const queryParams: any = {
+        startDate: startDate || new Date(Date.now() - 86400000),
+        endDate: endDate || new Date()
+      };
+
+      if (eventType) {
+        sqlQuery += ' AND event_type = {eventType:String}';
+        queryParams.eventType = eventType;
+      }
+
+      if (eventName) {
+        sqlQuery += ' AND event_name = {eventName:String}';
+        queryParams.eventName = eventName;
+      }
+
+      if (userId) {
+        sqlQuery += ' AND user_id = {userId:String}';
+        queryParams.userId = userId;
+      }
+
+      if (query) {
+        // Full-text search on event_name and properties
+        sqlQuery += ' AND (event_name LIKE {searchQuery:String} OR properties LIKE {searchQuery:String})';
+        queryParams.searchQuery = `%${query}%`;
+      }
+
+      sqlQuery += ` ORDER BY timestamp ${params.sortOrder === 'asc' ? 'ASC' : 'DESC'} LIMIT {limit:UInt32} OFFSET {offset:UInt32}`;
+      queryParams.limit = limit;
+      queryParams.offset = offset;
+
+      const events = await clickhouseClient.query(sqlQuery, queryParams);
+      const totalCount = await clickhouseClient.getEventCount(
+        queryParams.startDate,
+        queryParams.endDate,
+        eventType
+      );
+
+      return {
+        events: events.map((row: any) => ({
+          id: row.id,
+          userId: row.user_id,
+          sessionId: row.session_id,
+          eventType: row.event_type as EventType,
+          eventName: row.event_name,
+          properties: JSON.parse(row.properties),
+          timestamp: new Date(row.timestamp),
+          source: row.source as EventSource,
+          version: row.version,
+          platform: row.platform as Platform,
+          userAgent: row.user_agent,
+          ipAddress: row.ip_address,
+          location: row.country ? {
+            country: row.country,
+            region: row.region,
+            city: row.city,
+            latitude: row.latitude,
+            longitude: row.longitude,
+            timezone: row.timezone
+          } : undefined,
+          metadata: JSON.parse(row.metadata)
+        })),
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasNext: offset + limit < totalCount,
+          hasPrev: page > 1
+        }
+      };
     } catch (error) {
-      logger.error('Failed to search events', { error: error.message });
-      return [];
+      logger.error('Failed to search events', { error: error instanceof Error ? error.message : String(error) });
+      return { events: [], pagination: { page: 1, limit, total: 0, totalPages: 0, hasNext: false, hasPrev: false } };
+    }
+  }
+
+  async getEventById(id: string): Promise<AnalyticsEvent | null> {
+    try {
+      // Try to get from cache first
+      const cachedEvent = await redisClient.get(`event:${id}`);
+      if (cachedEvent) {
+        const event = JSON.parse(cachedEvent);
+        return {
+          ...event,
+          timestamp: new Date(event.timestamp)
+        };
+      }
+
+      // Query ClickHouse if not in cache
+      const query = `
+        SELECT * FROM events
+        WHERE id = {id:String}
+        LIMIT 1
+      `;
+      const result = await clickhouseClient.query(query, { id });
+      
+      if (result.length === 0) {
+        return null;
+      }
+
+      const row = result[0];
+      return {
+        id: row.id,
+        userId: row.user_id,
+        sessionId: row.session_id,
+        eventType: row.event_type as EventType,
+        eventName: row.event_name,
+        properties: JSON.parse(row.properties),
+        timestamp: new Date(row.timestamp),
+        source: row.source as EventSource,
+        version: row.version,
+        platform: row.platform as Platform,
+        userAgent: row.user_agent,
+        ipAddress: row.ip_address,
+        location: row.country ? {
+          country: row.country,
+          region: row.region,
+          city: row.city,
+          latitude: row.latitude,
+          longitude: row.longitude,
+          timezone: row.timezone
+        } : undefined,
+        metadata: JSON.parse(row.metadata)
+      };
+    } catch (error) {
+      logger.error('Failed to get event by ID', { error: error instanceof Error ? error.message : String(error), id });
+      return null;
+    }
+  }
+
+  async exportEvents(params: {
+    format: 'json' | 'csv' | 'parquet';
+    startDate?: Date;
+    endDate?: Date;
+    eventType?: EventType;
+    eventName?: string;
+    userId?: string;
+  }): Promise<string | Buffer> {
+    try {
+      let sqlQuery = `
+        SELECT * FROM events
+        WHERE timestamp >= {startDate:DateTime64(3)} AND timestamp <= {endDate:DateTime64(3)}
+      `;
+      
+      const queryParams: any = {
+        startDate: params.startDate || new Date(Date.now() - 86400000),
+        endDate: params.endDate || new Date()
+      };
+
+      if (params.eventType) {
+        sqlQuery += ' AND event_type = {eventType:String}';
+        queryParams.eventType = params.eventType;
+      }
+
+      if (params.eventName) {
+        sqlQuery += ' AND event_name = {eventName:String}';
+        queryParams.eventName = params.eventName;
+      }
+
+      if (params.userId) {
+        sqlQuery += ' AND user_id = {userId:String}';
+        queryParams.userId = params.userId;
+      }
+
+      sqlQuery += ' ORDER BY timestamp DESC';
+
+      const events = await clickhouseClient.query(sqlQuery, queryParams);
+
+      switch (params.format) {
+        case 'csv':
+          const headers = ['id', 'user_id', 'event_type', 'event_name', 'timestamp', 'properties'];
+          const csvRows = [
+            headers.join(','),
+            ...events.map((row: any) => [
+              row.id,
+              row.user_id || '',
+              row.event_type,
+              row.event_name,
+              row.timestamp,
+              JSON.stringify(row.properties).replace(/"/g, '""')
+            ].join(','))
+          ];
+          return csvRows.join('\n');
+
+        case 'json':
+          return JSON.stringify(events, null, 2);
+
+        case 'parquet':
+          // Parquet export would require additional library
+          // For now, return JSON
+          logger.warn('Parquet format not implemented, returning JSON');
+          return JSON.stringify(events, null, 2);
+
+        default:
+          return JSON.stringify(events, null, 2);
+      }
+    } catch (error) {
+      logger.error('Failed to export events', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
     }
   }
 

@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '@/utils/logger';
-import { storage } from '@/models';
-import { asyncHandler } from '@/utils/errors';
+import { logger } from '../utils/logger';
+import { storage } from '../models';
+import { asyncHandler } from '../utils/errors';
 import { 
   NotificationPreferences, 
   UpdatePreferencesRequest 
-} from '@/types';
+} from '../types';
 
 export class PreferencesController {
   // Get user preferences
-  static getPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     
     const preferences = await storage.getPreferences(userId);
@@ -38,10 +38,11 @@ export class PreferencesController {
         updatedAt: new Date()
       };
 
-      return res.json({
+      res.json({
         success: true,
         data: defaultPreferences
       });
+      return;
     }
 
     res.json({
@@ -51,7 +52,7 @@ export class PreferencesController {
   });
 
   // Update user preferences
-  static updatePreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static updatePreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     const updates: UpdatePreferencesRequest = req.body;
     
@@ -91,10 +92,11 @@ export class PreferencesController {
     const updatedPreferences = await storage.updatePreferences(userId, updates);
     
     if (!updatedPreferences) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Failed to update preferences'
       });
+      return;
     }
 
     res.json({
@@ -105,7 +107,7 @@ export class PreferencesController {
   });
 
   // Reset preferences to defaults
-  static resetPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static resetPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     
     logger.info('Resetting user preferences to defaults', { userId });
@@ -135,10 +137,11 @@ export class PreferencesController {
     const updatedPreferences = await storage.updatePreferences(userId, defaultPreferences);
     
     if (!updatedPreferences) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Failed to reset preferences'
       });
+      return;
     }
 
     res.json({
@@ -149,7 +152,7 @@ export class PreferencesController {
   });
 
   // Delete user preferences
-  static deletePreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static deletePreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     
     logger.info('Deleting user preferences', { userId });
@@ -157,10 +160,11 @@ export class PreferencesController {
     const success = await storage.deletePreferences(userId);
     
     if (!success) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Preferences not found'
       });
+      return;
     }
 
     res.json({
@@ -170,14 +174,15 @@ export class PreferencesController {
   });
 
   // Get preferences for multiple users
-  static getBulkPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getBulkPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userIds } = req.body;
     
     if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'User IDs array is required'
       });
+      return;
     }
 
     const preferences = await Promise.all(
@@ -194,14 +199,15 @@ export class PreferencesController {
   });
 
   // Update preferences for multiple users
-  static updateBulkPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static updateBulkPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { updates } = req.body;
     
     if (!Array.isArray(updates) || updates.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Updates array is required'
       });
+      return;
     }
 
     const results = await Promise.allSettled(
@@ -232,7 +238,7 @@ export class PreferencesController {
   });
 
   // Get preferences statistics
-  static getPreferencesStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getPreferencesStats = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Mock implementation - in real app, query database
     const stats = {
       totalUsers: 1000,
@@ -275,14 +281,15 @@ export class PreferencesController {
   });
 
   // Export preferences
-  static exportPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static exportPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userIds, format = 'json' } = req.body;
     
     if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'User IDs array is required'
       });
+      return;
     }
 
     const preferences = await Promise.all(
@@ -328,14 +335,15 @@ export class PreferencesController {
   });
 
   // Import preferences
-  static importPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static importPreferences = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { preferences } = req.body;
     
     if (!Array.isArray(preferences) || preferences.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Preferences array is required'
       });
+      return;
     }
 
     const results = await Promise.allSettled(

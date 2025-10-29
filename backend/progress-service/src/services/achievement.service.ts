@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { logger } from '@/config/logger';
-import { config } from '@/config';
+import { logger } from '../config/logger';
+import { config } from '../config';
 import { 
   Achievement, 
   AchievementInput, 
@@ -8,8 +8,9 @@ import {
   UserAchievementInput,
   AchievementCategory,
   AchievementRarity
-} from '@/types';
-import { cacheGet, cacheSet, cacheDel } from '@/config/redis';
+} from '../types';
+import { cacheGet, cacheSet, cacheDel } from '../config/redis';
+import { publish, Topics } from '../../../shared/utils/kafka';
 
 export class AchievementService {
   private prisma: PrismaClient;
@@ -111,13 +112,7 @@ export class AchievementService {
       const userAchievements = await this.prisma.userAchievement.findMany({
         where: whereClause,
         include: {
-          achievement: {
-            where: {
-              isActive: true,
-              ...(category && { category }),
-              ...(rarity && { rarity })
-            }
-          }
+          achievement: true
         },
         orderBy: [
           { isUnlocked: 'desc' },
@@ -127,7 +122,13 @@ export class AchievementService {
       });
 
       // Filter out achievements that don't match the criteria
-      const filteredAchievements = userAchievements.filter(ua => ua.achievement);
+      const filteredAchievements = userAchievements
+        .filter(ua => ua.achievement && ua.achievement.isActive)
+        .filter(ua => {
+          if (category && ua.achievement?.category !== category) return false;
+          if (rarity && ua.achievement?.rarity !== rarity) return false;
+          return true;
+        });
 
       // Cache the result
       await cacheSet(cacheKey, filteredAchievements, config.CACHE_TTL);
@@ -237,6 +238,9 @@ export class AchievementService {
             achievementId: achievement.id,
             achievementName: achievement.name
           });
+
+          // Emit achievement.unlocked per achievement
+          try { await publish(Topics.PROGRESS_EVENTS, userId, { type: 'achievement.unlocked', userId, achievementId: achievement.id, name: achievement.name, occurredAt: new Date().toISOString() }); } catch {}
         }
       }
 
@@ -623,4 +627,4 @@ export class AchievementService {
 }
 
 // Export singleton instance
-export const achievementService = new AchievementService(require('@/config/database').default);
+export const achievementService = new AchievementService(require('../config/database').default);

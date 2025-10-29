@@ -1,13 +1,13 @@
 import Handlebars from 'handlebars';
-import { logger } from '@/utils/logger';
-import { storage, generateId } from '@/models';
+import { logger } from '../utils/logger';
+import { storage, generateId } from '../models';
 import { 
   NotificationTemplate, 
   CreateTemplateRequest, 
   UpdateTemplateRequest,
   NotificationType,
   NotificationChannel
-} from '@/types';
+} from '../types';
 
 export class TemplateService {
   private templateCache: Map<string, NotificationTemplate> = new Map();

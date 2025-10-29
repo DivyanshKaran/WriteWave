@@ -1,9 +1,9 @@
-import { prisma } from '@/config/database';
-import { cacheService } from '@/config/redis';
-import { jwtService } from '@/utils/jwt';
-import { passwordService } from '@/utils/password';
-import { emailService } from '@/utils/email';
-import { logger, authLogger } from '@/config/logger';
+import { prisma } from '../config/database';
+import { getCacheService } from '../config/redis';
+import { jwtService } from '../utils/jwt';
+import { passwordService } from '../utils/password';
+import { emailService } from '../utils/email';
+import { logger, authLogger } from '../config/logger';
 import { 
   UserRegistrationData, 
   UserLoginData, 
@@ -13,8 +13,9 @@ import {
   PasswordResetConfirmData,
   EmailVerificationData,
   ServiceResponse 
-} from '@/types';
+} from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { publish, Topics } from '../utils/events';
 
 // Authentication service class
 export class AuthService {
@@ -143,6 +144,15 @@ export class AuthService {
         username: result.username,
       });
 
+      // emit user.created
+      await publish(Topics.USER_EVENTS, result.id, {
+        type: 'user.created',
+        id: result.id,
+        email: result.email,
+        username: result.username,
+        occurredAt: new Date().toISOString(),
+      });
+
       return {
         success: true,
         data: {
@@ -172,7 +182,12 @@ export class AuthService {
   }
 
   // User login
-  async loginUser(data: UserLoginData, deviceInfo?: any): Promise<ServiceResponse<{
+  async loginUser(
+    data: UserLoginData, 
+    deviceInfo?: any,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<ServiceResponse<{
     user: any;
     accessToken: string;
     refreshToken: string;
@@ -266,6 +281,21 @@ export class AuthService {
         }
       });
 
+      // Create session record
+      const sessionToken = accessToken.split('.')[2]; // Use token signature as unique identifier
+      const sessionExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      await prisma.session.create({
+        data: {
+          userId: user.id,
+          token: sessionToken,
+          deviceInfo: deviceInfo ? JSON.stringify(deviceInfo) : null,
+          ipAddress: ipAddress || null,
+          userAgent: userAgent || null,
+          expiresAt: sessionExpiresAt,
+          isActive: true,
+        }
+      });
+
       authLogger('user_logged_in', user.id, {
         email: user.email,
         deviceInfo,
@@ -302,7 +332,12 @@ export class AuthService {
   }
 
   // OAuth login/registration
-  async oauthLogin(data: OAuthUserData, deviceInfo?: any): Promise<ServiceResponse<{
+  async oauthLogin(
+    data: OAuthUserData, 
+    deviceInfo?: any,
+    ipAddress?: string,
+    userAgent?: string
+  ): Promise<ServiceResponse<{
     user: any;
     accessToken: string;
     refreshToken: string;
@@ -415,6 +450,21 @@ export class AuthService {
           token: refreshToken,
           expiresAt: refreshTokenExpiresAt,
           deviceInfo: deviceInfo ? JSON.stringify(deviceInfo) : null,
+        }
+      });
+
+      // Create session record
+      const sessionToken = accessToken.split('.')[2]; // Use token signature as unique identifier
+      const sessionExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      await prisma.session.create({
+        data: {
+          userId: user.id,
+          token: sessionToken,
+          deviceInfo: deviceInfo ? JSON.stringify(deviceInfo) : null,
+          ipAddress: ipAddress || null,
+          userAgent: userAgent || null,
+          expiresAt: sessionExpiresAt,
+          isActive: true,
         }
       });
 

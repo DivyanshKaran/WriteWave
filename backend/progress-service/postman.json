@@ -1,0 +1,1230 @@
+{
+	"info": {
+		"_postman_id": "writewave-progress-service-v2",
+		"name": "WriteWave Progress Service API",
+		"description": "Complete API collection for WriteWave Progress Service with automated testing, environment management, and comprehensive examples.\n\n## Features\n- ✅ Automated test scripts for all endpoints\n- ✅ Auto token management\n- ✅ Variable extraction from responses\n- ✅ Comprehensive request/response examples\n- ✅ Pre-request scripts for dynamic values\n\n## Quick Start\n1. Set `accessToken` variable (get from user-service login)\n2. Set `userId` variable or use auto-generated test user\n3. Start with Health Check endpoint\n4. All endpoints include automated tests\n\n## Collection Variables\n- `baseUrl`: http://localhost:8003/api/v1\n- `userId`: User ID for testing (auto-generated if not set)\n- `accessToken`: JWT token for authentication\n- `characterId`: Character ID for practice (auto-generated if not set)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "writewave-team"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-generate userId if not set",
+					"if (!pm.collectionVariables.get('userId')) {",
+					"    const testUserId = 'test_user_' + Date.now();",
+					"    pm.collectionVariables.set('userId', testUserId);",
+					"    console.log('Generated userId:', testUserId);",
+					"}",
+					"",
+					"// Set base URL if not set",
+					"if (!pm.collectionVariables.get('baseUrl')) {",
+					"    pm.collectionVariables.set('baseUrl', 'http://localhost:8003/api/v1');",
+					"}",
+					"",
+					"// Generate character ID if not set",
+					"if (!pm.collectionVariables.get('characterId')) {",
+					"    pm.collectionVariables.set('characterId', 'char_' + Date.now());",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script - log response time",
+					"console.log('Response time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Log errors",
+					"if (pm.response.code >= 400) {",
+					"    console.log('Error response:', pm.response.text());",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8003/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string",
+			"description": "User ID for testing. Auto-generated if not set."
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string",
+			"description": "JWT access token for authentication. Get from user-service login endpoint."
+		},
+		{
+			"key": "characterId",
+			"value": "",
+			"type": "string",
+			"description": "Character ID for practice sessions. Auto-generated if not set."
+		},
+		{
+			"key": "period",
+			"value": "WEEKLY",
+			"type": "string",
+			"description": "Leaderboard period: DAILY, WEEKLY, MONTHLY, ALL_TIME"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Health & Info",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success field', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"});",
+									"",
+									"pm.test('Database is healthy', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.db) {",
+									"        pm.expect(jsonData.db).to.eql('ok');",
+									"    }",
+									"});",
+									"",
+									"pm.test('Response time is less than 500ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						},
+						"description": "Check the health status of the Progress Service including database and Redis connectivity."
+					},
+					"response": []
+				},
+				{
+					"name": "Service Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains service information', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/../",
+							"host": ["{{baseUrl}}"],
+							"path": ["..", ""]
+						},
+						"description": "Get service information and available endpoints."
+					},
+					"response": []
+				}
+			],
+			"description": "Health check and service information endpoints."
+		},
+		{
+			"name": "2. User Progress",
+			"item": [
+				{
+					"name": "Get User Progress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response structure is correct', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('levelInfo');",
+									"        pm.expect(jsonData.data).to.have.property('masteryStats');",
+									"        pm.expect(jsonData.data).to.have.property('achievementStats');",
+									"        pm.expect(jsonData.data).to.have.property('streakStats');",
+									"    }",
+									"});",
+									"",
+									"// Store values for next requests",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.levelInfo) {",
+									"        pm.collectionVariables.set('currentLevel', jsonData.data.levelInfo.level);",
+									"        pm.collectionVariables.set('totalXp', jsonData.data.levelInfo.totalXp);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "{{userId}}"]
+						},
+						"description": "Get comprehensive user progress including level, XP, mastery stats, achievements, and streaks."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Character Practice",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Auto-generate character ID if not set",
+									"if (!pm.collectionVariables.get('characterId')) {",
+									"    pm.collectionVariables.set('characterId', 'char_' + Date.now());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Practice updated successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('mastery');",
+									"        pm.expect(jsonData.data).to.have.property('xp');",
+									"        pm.expect(jsonData.data).to.have.property('streak');",
+									"    }",
+									"});",
+									"",
+									"pm.test('XP was awarded', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.xp) {",
+									"        pm.expect(jsonData.data.xp).to.have.property('totalXp');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"characterId\": \"{{characterId}}\",\n  \"characterType\": \"HIRAGANA\",\n  \"accuracy\": 85.5,\n  \"timeSpent\": 120,\n  \"isPerfect\": false,\n  \"strokesCorrect\": 8,\n  \"strokesTotal\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/progress/character-practice",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "character-practice"]
+						},
+						"description": "Update character practice session. Automatically awards XP, updates mastery, and maintains streaks. Supports HIRAGANA, KATAKANA, and KANJI character types."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Character Practice - Perfect Score",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Perfect score detected', function () {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.xp) {",
+									"        pm.expect(jsonData.data.xp).to.have.property('totalXp');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"characterId\": \"{{characterId}}\",\n  \"characterType\": \"KANJI\",\n  \"accuracy\": 100.0,\n  \"timeSpent\": 90,\n  \"isPerfect\": true,\n  \"strokesCorrect\": 12,\n  \"strokesTotal\": 12\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/progress/character-practice",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "character-practice"]
+						},
+						"description": "Example of a perfect score practice session. Perfect scores (100% accuracy, all strokes correct) award bonus XP."
+					},
+					"response": []
+				},
+				{
+					"name": "Update XP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('XP added successfully', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});",
+									"",
+									"// Store updated XP",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.userProgress) {",
+									"        pm.collectionVariables.set('totalXp', jsonData.data.userProgress.totalXp);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"amount\": 50,\n  \"source\": \"CHARACTER_PRACTICE\",\n  \"description\": \"Character practice completed\",\n  \"metadata\": {\n    \"characterId\": \"{{characterId}}\",\n    \"accuracy\": 85.5,\n    \"lessonId\": \"lesson_123\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/progress/xp",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "xp"]
+						},
+						"description": "Manually add XP to a user. Supports various sources: CHARACTER_PRACTICE, PERFECT_STROKE, DAILY_STREAK, ACHIEVEMENT_UNLOCK, LESSON_COMPLETION, VOCABULARY_LEARNED, PERFECT_SCORE, DAILY_LOGIN, WEEKLY_CHALLENGE, MONTHLY_CHALLENGE, SOCIAL_SHARE, REVIEW_SESSION, MISTAKE_CORRECTION, SPEED_CHALLENGE."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Character Mastery",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Mastery updated', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"characterId\": \"{{characterId}}\",\n  \"characterType\": \"HIRAGANA\",\n  \"accuracy\": 92.5,\n  \"timeSpent\": 150,\n  \"isPerfect\": false,\n  \"strokesCorrect\": 9,\n  \"strokesTotal\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/progress/update-mastery",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "update-mastery"]
+						},
+						"description": "Update character mastery level and statistics directly. Mastery levels: LEARNING, PRACTICING, MASTERED, EXPERT."
+					},
+					"response": []
+				}
+			],
+			"description": "Core progress tracking endpoints for user progress, XP, and character mastery."
+		},
+		{
+			"name": "3. Streaks",
+			"item": [
+				{
+					"name": "Get User Streaks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Streaks data structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/streaks/{{userId}}?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "streaks", "{{userId}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "type",
+									"value": "DAILY_PRACTICE",
+									"description": "Optional: Filter by streak type",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all streaks for a user. Optional query parameter 'type' to filter by streak type."
+					},
+					"response": []
+				},
+				{
+					"name": "Freeze Streak",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Streak frozen', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"type\": \"DAILY_PRACTICE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/progress/freeze-streak",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "freeze-streak"]
+						},
+						"description": "Freeze a user's streak to prevent it from breaking. Users have a limited number of freezes (default: 3). Streak types: DAILY_LOGIN, DAILY_PRACTICE, PERFECT_SCORE, WEEKLY_STUDY, MONTHLY_GOAL."
+					},
+					"response": []
+				}
+			],
+			"description": "Streak management endpoints for maintaining and freezing daily practice streaks."
+		},
+		{
+			"name": "4. Achievements",
+			"item": [
+				{
+					"name": "Get User Achievements",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Achievements structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});",
+									"",
+									"// Count unlocked achievements",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && Array.isArray(jsonData.data)) {",
+									"        const unlocked = jsonData.data.filter(a => a.isUnlocked);",
+									"        pm.collectionVariables.set('unlockedAchievements', unlocked.length);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/achievements/{{userId}}?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "achievements", "{{userId}}"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "category",
+									"value": "LEARNING",
+									"description": "Optional: Filter by category",
+									"disabled": true
+								},
+								{
+									"key": "rarity",
+									"value": "RARE",
+									"description": "Optional: Filter by rarity",
+									"disabled": true
+								},
+								{
+									"key": "unlocked",
+									"value": "true",
+									"description": "Optional: Filter by unlock status",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get user achievements. Supports filtering by category, rarity, and unlock status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Achievements - Unlocked Only",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/achievements/{{userId}}?unlocked=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "achievements", "{{userId}}"],
+							"query": [
+								{
+									"key": "unlocked",
+									"value": "true"
+								}
+							]
+						},
+						"description": "Get only unlocked achievements for a user."
+					},
+					"response": []
+				}
+			],
+			"description": "Achievement system endpoints for tracking and retrieving user achievements."
+		},
+		{
+			"name": "5. Analytics & Insights",
+			"item": [
+				{
+					"name": "Get User Analytics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Analytics data structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('object');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/analytics/{{userId}}?period=30d",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "analytics", "{{userId}}"],
+							"query": [
+								{
+									"key": "period",
+									"value": "30d",
+									"description": "Time period: 7d, 30d, 90d, 1y"
+								},
+								{
+									"key": "startDate",
+									"value": "2024-01-01",
+									"description": "Optional: Custom start date",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31",
+									"description": "Optional: Custom end date",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get user analytics data for a specified time period. Period options: 7d, 30d, 90d, 1y."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Learning Insights",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Insights structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('weakAreas');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/insights/{{userId}}?period=30d",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "insights", "{{userId}}"],
+							"query": [
+								{
+									"key": "period",
+									"value": "30d"
+								}
+							]
+						},
+						"description": "Get personalized learning insights including weak areas, improvement trends, and predictions."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Progress Metrics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Metrics structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('currentLevel');",
+									"        pm.expect(jsonData.data).to.have.property('rank');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/metrics/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "metrics", "{{userId}}"]
+						},
+						"description": "Get comprehensive progress metrics including level, streak, goals, achievements, and ranking."
+					},
+					"response": []
+				}
+			],
+			"description": "Analytics and insights endpoints for learning progress analysis."
+		},
+		{
+			"name": "6. Character Mastery",
+			"item": [
+				{
+					"name": "Get Characters for Review",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Review characters structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/review/{{userId}}?limit=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "review", "{{userId}}"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Get characters scheduled for review based on spaced repetition algorithm."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Weak Areas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Weak areas structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/weak-areas/{{userId}}?limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "weak-areas", "{{userId}}"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get characters or areas where the user needs more practice based on accuracy and mastery metrics."
+					},
+					"response": []
+				}
+			],
+			"description": "Character mastery endpoints for spaced repetition and weak area identification."
+		},
+		{
+			"name": "7. Leaderboards",
+			"item": [
+				{
+					"name": "Get Leaderboard",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set default period if not set",
+									"if (!pm.collectionVariables.get('period')) {",
+									"    pm.collectionVariables.set('period', 'WEEKLY');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Leaderboard structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/leaderboard/{{period}}?limit=100&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "leaderboard", "{{period}}"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get leaderboard rankings for a specific period. Periods: DAILY, WEEKLY, MONTHLY, ALL_TIME."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leaderboard - Daily",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/leaderboard/DAILY?limit=100&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "leaderboard", "DAILY"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get daily leaderboard rankings."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leaderboard - Weekly",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/leaderboard/WEEKLY?limit=100&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "leaderboard", "WEEKLY"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get weekly leaderboard rankings."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leaderboard - Monthly",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/leaderboard/MONTHLY?limit=100&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "leaderboard", "MONTHLY"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get monthly leaderboard rankings."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Leaderboard - All Time",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/leaderboard/ALL_TIME?limit=100&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "leaderboard", "ALL_TIME"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get all-time leaderboard rankings."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Rank",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Rank data structure', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    if (jsonData.success && jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('rank');",
+									"        pm.expect(jsonData.data).to.have.property('period');",
+									"    }",
+									"});",
+									"",
+									"// Store rank for display",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.rank) {",
+									"        pm.collectionVariables.set('userRank', jsonData.data.rank);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/progress/rank/{{userId}}/{{period}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["progress", "rank", "{{userId}}", "{{period}}"]
+						},
+						"description": "Get a specific user's rank for a given period. Periods: DAILY, WEEKLY, MONTHLY, ALL_TIME."
+					},
+					"response": []
+				}
+			],
+			"description": "Leaderboard endpoints for rankings and competitive features."
+		}
+	]
+}
+

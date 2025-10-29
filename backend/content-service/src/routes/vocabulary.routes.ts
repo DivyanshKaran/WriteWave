@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { vocabularyController } from '@/controllers/vocabulary.controller';
-import { validate } from '@/middleware/validation';
-import { authenticateJWT } from '@/middleware/auth';
+import { vocabularyController } from '../controllers/vocabulary.controller';
+import { validate, validationSchemas } from '../middleware/validation';
+import { authenticateJWT } from '../middleware/auth';
 
 const router = Router();
 
@@ -34,10 +34,10 @@ router.get('/jlpt/:level', vocabularyController.getVocabularyWordsByJLPTLevel);
 router.get('/:vocabularyId', vocabularyController.getVocabularyWordById);
 
 // POST /vocabulary - Create vocabulary word (admin only)
-router.post('/', authenticateJWT, validate('vocabulary'), vocabularyController.createVocabularyWord);
+router.post('/', authenticateJWT, validate(validationSchemas.vocabulary), vocabularyController.createVocabularyWord);
 
 // PUT /vocabulary/:vocabularyId - Update vocabulary word (admin only)
-router.put('/:vocabularyId', authenticateJWT, validate('vocabulary'), vocabularyController.updateVocabularyWord);
+router.put('/:vocabularyId', authenticateJWT, validate(validationSchemas.vocabulary), vocabularyController.updateVocabularyWord);
 
 // DELETE /vocabulary/:vocabularyId - Delete vocabulary word (admin only)
 router.delete('/:vocabularyId', authenticateJWT, vocabularyController.deleteVocabularyWord);

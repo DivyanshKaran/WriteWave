@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import { logger } from '@/config/logger';
-import { config } from '@/config';
+import { logger } from '../config/logger';
+import { config } from '../config';
 import { 
   Leaderboard, 
   LeaderboardInput, 
   LeaderboardPeriod
-} from '@/types';
-import { cacheGet, cacheSet, cacheDel } from '@/config/redis';
+} from '../types';
+import { cacheGet, cacheSet, cacheDel } from '../config/redis';
 import moment from 'moment';
 
 export class LeaderboardService {
@@ -618,4 +618,4 @@ export class LeaderboardService {
 }
 
 // Export singleton instance
-export const leaderboardService = new LeaderboardService(require('@/config/database').default);
+export const leaderboardService = new LeaderboardService(require('../config/database').default);

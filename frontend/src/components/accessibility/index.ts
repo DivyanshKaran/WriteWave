@@ -1,6 +1,13 @@
-// Accessibility components barrel export
-export * from './SkipLinks';
-export * from './FocusManager';
-export * from './LiveRegion';
-export * from './AccessibleForm';
-export * from './AccessibleImage';
+/**
+ * Accessibility component exports
+ */
+
+export { 
+  SkipLink,
+  ScreenReaderOnly,
+  AriaLiveRegion,
+  FocusTrap,
+  AccessibleButton,
+  AccessibleInput,
+  AccessibleCard
+} from './AccessibilityComponents';

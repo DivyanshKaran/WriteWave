@@ -1,176 +1,50 @@
-# Community Service - WriteWave
+# Community Service
 
-A comprehensive community service for social learning features in the WriteWave application, built with Node.js, Express, TypeScript, PostgreSQL, and Redis.
+The Community Service is a microservice for WriteWave that handles social learning features including forums, study groups, user interactions, and community management. It provides APIs for user engagement, content moderation, leaderboards, and real-time communication via WebSockets.
 
 ## Features
 
-### 🗣️ Forum System
-- Discussion categories (Character Help, Vocabulary, Culture, General)
-- Thread creation and management
-- Comment system with nested replies
-- Post voting and reputation system
-- Thread pinning and moderation
-- Search functionality across posts
+- **Forum System**: Create posts, comments, and discussions in categorized forums
+- **Study Groups**: Collaborate with other learners in study groups
+- **Social Features**: Friend requests, friendships, following users, and mentorship
+- **Leaderboards**: Track user achievements and rankings
+- **Content Moderation**: Automated content filtering and manual moderation tools
+- **Real-time Updates**: WebSocket support for live notifications and updates
+- **User Sync**: Automatic synchronization with user-service via Kafka events
 
-### 👥 Study Groups
-- Group creation and management
-- Member invitation and approval system
-- Group challenges and competitions
-- Shared progress tracking
-- Group chat/messaging (basic)
-- Group achievements and leaderboards
+## Prerequisites
 
-### 🤝 Social Features
-- Friend system (send/accept/decline requests)
-- User following/followers
-- Activity feeds (friend achievements, milestones)
-- Progress sharing and celebrations
-- Mentorship program matching
+Before setting up the Community Service, ensure you have the following installed:
 
-### 🏆 Leaderboards
-- Global rankings (XP, streaks, characters mastered)
-- Category-specific leaderboards
-- Time-based rankings (daily, weekly, monthly)
-- Group leaderboards
-- Achievement leaderboards
+- **Node.js** (v18 or higher)
+- **npm** or **yarn** package manager
+- **PostgreSQL** (v15 or higher)
+- **Redis** (v7 or higher) - Optional but recommended for caching
+- **Docker** and **Docker Compose** (for containerized setup)
 
-### 🛡️ Content Moderation
-- Automated spam detection
-- Report system for inappropriate content
-- Moderator tools and dashboard
-- Content flagging and review workflows
-- User suspension and ban management
+## Setup
 
-### ⚡ Real-time Features
-- WebSocket support for notifications
-- Real-time chat in study groups
-- Live activity feeds
-- Online status indicators
-- Typing indicators
+### 1. Clone and Navigate to Service Directory
 
-## Technology Stack
+```bash
+cd backend/community-service
+```
 
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Cache**: Redis
-- **Real-time**: Socket.IO
-- **Authentication**: JWT
-- **Validation**: Joi
-- **Logging**: Winston
-- **Containerization**: Docker
+### 2. Install Dependencies
 
-## API Endpoints
+```bash
+npm install
+```
 
-### Forum
-- `GET /api/community/forums` - Get forum categories
-- `GET /api/community/posts` - Get posts with pagination
-- `POST /api/community/posts` - Create new post
-- `GET /api/community/posts/:postId` - Get post details
-- `PUT /api/community/posts/:postId` - Update post
-- `DELETE /api/community/posts/:postId` - Delete post
-- `POST /api/community/posts/:postId/vote` - Vote on post
-- `GET /api/community/posts/:postId/comments` - Get post comments
-- `POST /api/community/posts/:postId/comments` - Add comment
-- `POST /api/community/comments/:commentId/vote` - Vote on comment
+### 3. Environment Configuration
 
-### Study Groups
-- `GET /api/community/study-groups` - Get study groups
-- `POST /api/community/study-groups` - Create study group
-- `GET /api/community/study-groups/:groupId` - Get group details
-- `POST /api/community/study-groups/:groupId/join` - Join group
-- `POST /api/community/study-groups/:groupId/leave` - Leave group
-- `GET /api/community/study-groups/:groupId/challenges` - Get group challenges
-- `POST /api/community/study-groups/:groupId/challenges` - Create challenge
+Copy the example environment file and configure it:
 
-### Social Features
-- `GET /api/community/friends/requests` - Get friend requests
-- `POST /api/community/friends/requests` - Send friend request
-- `PUT /api/community/friends/requests/:requestId` - Respond to friend request
-- `GET /api/community/friends` - Get friends list
-- `POST /api/community/users/:userId/follow` - Follow user
-- `GET /api/community/users/:userId/activity` - Get user activity
-- `GET /api/community/users/:userId/achievements` - Get user achievements
+```bash
+cp env.example .env
+```
 
-### Leaderboards
-- `GET /api/community/leaderboard` - Get leaderboard
-- `GET /api/community/leaderboard/users/:userId/rank/:type` - Get user rank
-- `GET /api/community/leaderboard/categories/:categoryId/:type` - Get category leaderboard
-- `GET /api/community/leaderboard/groups/:groupId/:type` - Get group leaderboard
-
-### Moderation
-- `GET /api/community/reports` - Get reports (moderators only)
-- `POST /api/community/reports` - Create report
-- `PUT /api/community/reports/:reportId` - Update report status
-- `POST /api/community/users/:userId/suspend` - Suspend user
-- `GET /api/community/moderation/dashboard` - Get moderation dashboard
-
-## Installation
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 15+
-- Redis 7+
-- Docker (optional)
-
-### Local Development
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd community-service
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp env.example .env
-   # Edit .env with your configuration
-   ```
-
-4. **Set up the database**
-   ```bash
-   # Start PostgreSQL and Redis
-   # Update DATABASE_URL and REDIS_URL in .env
-   
-   # Generate Prisma client
-   npm run prisma:generate
-   
-   # Run database migrations
-   npm run prisma:migrate
-   
-   # Seed the database
-   npm run prisma:seed
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-### Docker Development
-
-1. **Start all services**
-   ```bash
-   docker-compose up -d
-   ```
-
-2. **Run database migrations**
-   ```bash
-   docker-compose exec community-service npm run prisma:migrate
-   ```
-
-3. **Seed the database**
-   ```bash
-   docker-compose exec community-service npm run prisma:seed
-   ```
-
-## Environment Variables
+Edit `.env` file with your configuration. Key variables to configure:
 
 ```env
 # Server Configuration
@@ -181,156 +55,356 @@ HOST=0.0.0.0
 # Database Configuration
 DATABASE_URL=postgresql://postgres:password@localhost:5432/community_db
 
-# Redis Configuration
+# Redis Configuration (Optional)
 REDIS_URL=redis://localhost:6379
 
 # JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 JWT_EXPIRES_IN=7d
 
-# Email Configuration
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
+# External Services
+USER_SERVICE_URL=http://localhost:8001
+CONTENT_SERVICE_URL=http://localhost:8002
+PROGRESS_SERVICE_URL=http://localhost:8003
 
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-
-# Content Moderation
-MODERATION_ENABLED=true
-AUTO_MODERATION_THRESHOLD=0.8
-
-# WebSocket Configuration
-WS_CORS_ORIGIN=http://localhost:3000
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
 ```
 
-## Database Schema
+### 4. Database Setup
 
-The service uses PostgreSQL with Prisma ORM. Key entities include:
+#### Option A: Using Docker Compose (Recommended for Development)
 
-- **Users**: User profiles and authentication
-- **ForumCategories**: Discussion categories
-- **Posts**: Forum posts/threads
-- **Comments**: Post comments with nested replies
-- **StudyGroups**: Study group management
-- **StudyGroupMembers**: Group membership
-- **FriendRequests**: Friend request system
-- **Friendships**: User friendships
-- **Follows**: User following system
-- **Activities**: User activity tracking
-- **UserAchievements**: Achievement system
-- **LeaderboardEntries**: Leaderboard data
-- **Reports**: Content moderation reports
-
-## WebSocket Events
-
-### Client to Server
-- `join_study_group` - Join a study group room
-- `leave_study_group` - Leave a study group room
-- `group_message` - Send message to study group
-- `typing_start` - Start typing indicator
-- `typing_stop` - Stop typing indicator
-- `update_status` - Update online status
-
-### Server to Client
-- `notification` - General notification
-- `room_notification` - Room-specific notification
-- `new_post` - New post created
-- `new_comment` - New comment added
-- `group_message` - New group message
-- `user_typing` - User typing indicator
-- `user_status_changed` - User status change
-- `leaderboard_update` - Leaderboard updated
-
-## Caching Strategy
-
-The service uses Redis for:
-- **User sessions**: JWT token validation and session data
-- **Leaderboards**: Cached leaderboard data with TTL
-- **Search results**: Cached search queries
-- **User data**: Frequently accessed user information
-- **Rate limiting**: Request rate limiting
-- **Real-time data**: Online users and activity feeds
-
-## Content Moderation
-
-The service includes automated content moderation:
-- **Spam detection**: Keyword-based spam filtering
-- **Profanity filtering**: Bad words detection
-- **Sentiment analysis**: Content sentiment scoring
-- **Automated actions**: Auto-suspend users with multiple violations
-- **Report system**: User reporting with moderator review
-
-## Performance Optimizations
-
-- **Database indexing**: Optimized queries with proper indexes
-- **Redis caching**: Frequently accessed data caching
-- **Pagination**: Efficient data pagination
-- **Connection pooling**: Database connection optimization
-- **Compression**: Response compression
-- **Rate limiting**: API rate limiting
-
-## Monitoring and Logging
-
-- **Winston logging**: Structured logging with different levels
-- **Health checks**: Service health monitoring
-- **Error tracking**: Comprehensive error handling
-- **Performance metrics**: Request timing and performance
-
-## Security Features
-
-- **JWT authentication**: Secure token-based authentication
-- **Input validation**: Comprehensive input validation with Joi
-- **SQL injection prevention**: Prisma ORM protection
-- **XSS protection**: Content sanitization
-- **Rate limiting**: DDoS protection
-- **CORS configuration**: Cross-origin request security
-- **Helmet.js**: Security headers
-
-## Testing
+The service includes a `docker-compose.yml` file for easy local development:
 
 ```bash
-# Run tests
-npm test
+# Start PostgreSQL and Redis
+docker compose up -d postgres redis
 
-# Run tests in watch mode
-npm run test:watch
-
-# Run linting
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
+# Wait for services to be ready
+sleep 5
 ```
 
-## Deployment
+#### Option B: Manual PostgreSQL Setup
 
-### Production Build
+1. Create a PostgreSQL database:
+```bash
+createdb community_db
+```
+
+2. Or using PostgreSQL client:
+```sql
+CREATE DATABASE community_db;
+```
+
+### 5. Database Migrations
+
+Generate Prisma Client and run migrations:
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Run database migrations
+npx prisma migrate dev
+
+# (Optional) Seed the database
+npm run prisma:seed
+```
+
+### 6. Build the Service
+
+Build the TypeScript code:
+
 ```bash
 npm run build
+```
+
+## Starting the Server
+
+### Development Mode
+
+For development with hot-reload:
+
+```bash
+npm run dev
+```
+
+This uses `ts-node-dev` to automatically restart the server on file changes.
+
+### Production Mode
+
+1. Build the project:
+```bash
+npm run build
+```
+
+2. Start the server:
+```bash
 npm start
 ```
 
-### Docker Production
+### Using Docker Compose
+
+Use the provided setup script for automated setup:
+
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+chmod +x setup.sh
+./setup.sh
 ```
 
-## Contributing
+Or manually using Docker Compose:
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+```bash
+# Start all services (PostgreSQL, Redis, and Community Service)
+docker compose up -d
+
+# View logs
+docker compose logs -f community-service
+
+# Stop all services
+docker compose down
+```
+
+### Using Setup Script
+
+The `setup.sh` script automates the setup process:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+This script will:
+- Check for required dependencies
+- Set up environment files
+- Start Kafka (if available)
+- Start PostgreSQL and Redis
+- Start the Community Service
+- Perform health checks
+
+## Project Structure
+
+```
+community-service/
+├── src/
+│   ├── controllers/      # Request handlers
+│   ├── services/         # Business logic
+│   ├── middleware/       # Express middleware (auth, validation)
+│   ├── models/           # Prisma models
+│   ├── routes/           # API routes
+│   ├── utils/            # Utilities (logger, errors, redis)
+│   ├── types/            # TypeScript types and interfaces
+│   └── index.ts          # Application entry point
+├── prisma/
+│   ├── schema.prisma     # Database schema
+│   └── migrations/       # Database migrations
+├── dist/                 # Compiled JavaScript (generated)
+├── logs/                 # Application logs
+├── uploads/              # File uploads directory
+├── docker-compose.yml    # Docker Compose configuration
+├── Dockerfile            # Docker image definition
+├── package.json          # Dependencies and scripts
+├── tsconfig.json         # TypeScript configuration
+└── env.example           # Environment variables template
+```
+
+## Available Scripts
+
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm start` - Start the server in production mode
+- `npm run dev` - Start the server in development mode with hot-reload
+- `npm test` - Run tests
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint errors automatically
+- `npm run prisma:generate` - Generate Prisma Client
+- `npm run prisma:migrate` - Run database migrations (development)
+- `npm run prisma:deploy` - Deploy migrations (production)
+- `npm run prisma:studio` - Open Prisma Studio (database GUI)
+- `npm run prisma:seed` - Seed the database with initial data
+
+## API Endpoints
+
+The service exposes RESTful APIs under `/api/community`:
+
+### Forum
+- `GET /api/community/forum/categories` - List forum categories
+- `GET /api/community/forum/posts` - List posts
+- `POST /api/community/forum/posts` - Create a post
+- `GET /api/community/forum/posts/:id` - Get post details
+- `PUT /api/community/forum/posts/:id` - Update a post
+- `DELETE /api/community/forum/posts/:id` - Delete a post
+- `POST /api/community/forum/posts/:id/comments` - Add a comment
+- `POST /api/community/forum/posts/:id/vote` - Vote on a post
+
+### Study Groups
+- `GET /api/community/study-groups` - List study groups
+- `POST /api/community/study-groups` - Create a study group
+- `GET /api/community/study-groups/:id` - Get study group details
+- `POST /api/community/study-groups/:id/join` - Join a study group
+- `POST /api/community/study-groups/:id/leave` - Leave a study group
+
+### Social Features
+- `GET /api/community/social/friends` - List friends
+- `POST /api/community/social/friend-requests` - Send friend request
+- `POST /api/community/social/friend-requests/:id/accept` - Accept friend request
+- `POST /api/community/social/follow/:userId` - Follow a user
+- `POST /api/community/social/unfollow/:userId` - Unfollow a user
+
+### Leaderboards
+- `GET /api/community/leaderboards` - Get leaderboard entries
+- `GET /api/community/leaderboards/:type` - Get leaderboard by type
+
+### Moderation
+- `GET /api/community/moderation/reports` - List reports (moderator only)
+- `POST /api/community/moderation/reports` - Create a report
+- `POST /api/community/moderation/users/:id/suspend` - Suspend a user (moderator only)
+- `POST /api/community/moderation/users/:id/unsuspend` - Unsuspend a user (moderator only)
+
+## Environment Variables
+
+See `env.example` for a complete list of environment variables. Key variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `8004` |
+| `DATABASE_URL` | PostgreSQL connection string | Required |
+| `REDIS_URL` | Redis connection string | Optional |
+| `JWT_SECRET` | Secret key for JWT tokens | Required |
+| `USER_SERVICE_URL` | User service base URL | `http://localhost:8001` |
+| `CORS_ORIGIN` | Allowed CORS origins | `http://localhost:3000` |
+| `ENABLE_KAFKA` | Enable Kafka event consumption | `false` |
+
+## Database Schema
+
+The service uses Prisma ORM with PostgreSQL. Key models include:
+
+- **User**: Community user profiles (synced with user-service)
+- **ForumCategory**: Forum categories
+- **Post**: Forum posts/threads
+- **Comment**: Post comments/replies
+- **StudyGroup**: Study groups
+- **Friendship**: User friendships
+- **Follow**: User following relationships
+- **Report**: Content reports
+- **LeaderboardEntry**: Leaderboard rankings
+- **Activity**: User activity feed
+
+View the full schema in `prisma/schema.prisma`.
+
+## WebSocket Support
+
+The service includes WebSocket support for real-time updates. Connect to:
+
+```
+ws://localhost:8004
+```
+
+Events include:
+- Post updates
+- New comments
+- Friend requests
+- Study group activities
+- Leaderboard updates
+
+## Health Check
+
+Check service health:
+
+```bash
+curl http://localhost:8004/health
+```
+
+Or visit in browser: `http://localhost:8004/health`
+
+## Troubleshooting
+
+### Build Errors
+
+If you encounter build errors:
+
+1. Ensure all dependencies are installed:
+```bash
+npm install
+```
+
+2. Regenerate Prisma Client:
+```bash
+npx prisma generate
+```
+
+3. Check TypeScript configuration:
+```bash
+npm run build
+```
+
+### Database Connection Issues
+
+1. Verify PostgreSQL is running:
+```bash
+pg_isready -h localhost -p 5432
+```
+
+2. Check database URL in `.env` file
+3. Ensure database exists:
+```bash
+psql -h localhost -U postgres -l
+```
+
+### Redis Connection Issues
+
+Redis is optional. If Redis is not available:
+- Set `OPTIONAL_REDIS=false` in `.env`
+- The service will continue without caching
+
+### Port Already in Use
+
+If port 8004 is already in use:
+1. Change `PORT` in `.env` file
+2. Or stop the conflicting service:
+```bash
+lsof -ti:8004 | xargs kill -9
+```
+
+## Development
+
+### Running Tests
+
+```bash
+npm test
+```
+
+### Database Migrations
+
+Create a new migration:
+```bash
+npx prisma migrate dev --name migration_name
+```
+
+### View Database
+
+Use Prisma Studio to view and edit database:
+```bash
+npm Dash prisma:studio
+```
+
+## Production Deployment
+
+For production deployment:
+
+1. Set `NODE_ENV=production` in `.env`
+2. Use strong `JWT_SECRET`
+3. Configure proper CORS origins
+4. Set up proper database connection pooling
+5. Enable Redis for caching
+6. Configure proper logging
+7. Set up monitoring and health checks
 
 ## License
 
-This project is licensed under the MIT License.
+MIT
 
 ## Support
 
-For support and questions, please contact the development team or create an issue in the repository.
+For issues and questions, please contact the WriteWave development team.

@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '@/utils/logger';
-import { storage, generateId } from '@/models';
-import { pushService } from '@/services/push.service';
-import { asyncHandler } from '@/utils/errors';
+import { logger } from '../utils/logger';
+import { storage, generateId } from '../models';
+import { pushService } from '../services/push.service';
+import { asyncHandler } from '../utils/errors';
 import { 
   PushSubscription, 
   CreateSubscriptionRequest 
-} from '@/types';
+} from '../types';
 
 export class SubscriptionController {
   // Create push subscription
-  static createSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static createSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     const subscriptionData: CreateSubscriptionRequest = req.body;
     
@@ -32,11 +32,12 @@ export class SubscriptionController {
         updatedAt: new Date()
       });
 
-      return res.json({
+      res.json({
         success: true,
         data: updatedSubscription,
         message: 'Push subscription updated successfully'
       });
+      return;
     }
 
     // Create new subscription
@@ -62,7 +63,7 @@ export class SubscriptionController {
   });
 
   // Get user subscriptions
-  static getUserSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getUserSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     
     const subscriptions = await storage.getSubscriptionsByUser(userId);
@@ -75,16 +76,17 @@ export class SubscriptionController {
   });
 
   // Get subscription by ID
-  static getSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     const subscription = await storage.getSubscription(id);
     
     if (!subscription) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Subscription not found'
       });
+      return;
     }
 
     res.json({
@@ -94,7 +96,7 @@ export class SubscriptionController {
   });
 
   // Update subscription
-  static updateSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static updateSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     const updates = req.body;
     
@@ -106,10 +108,11 @@ export class SubscriptionController {
     });
     
     if (!updatedSubscription) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Subscription not found'
       });
+      return;
     }
 
     res.json({
@@ -120,7 +123,7 @@ export class SubscriptionController {
   });
 
   // Delete subscription
-  static deleteSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static deleteSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     logger.info('Deleting push subscription', { id });
@@ -128,10 +131,11 @@ export class SubscriptionController {
     const success = await storage.deleteSubscription(id);
     
     if (!success) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Subscription not found'
       });
+      return;
     }
 
     res.json({
@@ -141,7 +145,7 @@ export class SubscriptionController {
   });
 
   // Unsubscribe user (delete all subscriptions)
-  static unsubscribeUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static unsubscribeUser = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = req.params;
     
     logger.info('Unsubscribing user from push notifications', { userId });
@@ -164,16 +168,17 @@ export class SubscriptionController {
   });
 
   // Validate subscription
-  static validateSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static validateSubscription = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     
     const subscription = await storage.getSubscription(id);
     
     if (!subscription) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Subscription not found'
       });
+      return;
     }
 
     logger.info('Validating push subscription', { id });
@@ -196,7 +201,7 @@ export class SubscriptionController {
   });
 
   // Get VAPID public key
-  static getVapidPublicKey = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getVapidPublicKey = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const publicKey = await pushService.getVapidPublicKey();
     
     res.json({
@@ -206,17 +211,18 @@ export class SubscriptionController {
   });
 
   // Send test notification
-  static sendTestNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static sendTestNotification = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     const { title = 'Test Notification', body = 'This is a test notification' } = req.body;
     
     const subscription = await storage.getSubscription(id);
     
     if (!subscription) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Subscription not found'
       });
+      return;
     }
 
     logger.info('Sending test notification', { id });
@@ -229,10 +235,11 @@ export class SubscriptionController {
     });
 
     if (!result.success) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: result.error
       });
+      return;
     }
 
     res.json({
@@ -243,7 +250,7 @@ export class SubscriptionController {
   });
 
   // Get subscription statistics
-  static getSubscriptionStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static getSubscriptionStats = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Mock implementation - in real app, query database
     const stats = {
       totalSubscriptions: 1000,
@@ -266,7 +273,7 @@ export class SubscriptionController {
   });
 
   // Cleanup expired subscriptions
-  static cleanupExpiredSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static cleanupExpiredSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     logger.info('Cleaning up expired push subscriptions');
 
     const deletedCount = await pushService.cleanupExpiredSubscriptions();
@@ -279,14 +286,15 @@ export class SubscriptionController {
   });
 
   // Bulk operations
-  static bulkUpdateSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static bulkUpdateSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { updates } = req.body;
     
     if (!Array.isArray(updates) || updates.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Updates array is required'
       });
+      return;
     }
 
     const results = await Promise.allSettled(
@@ -316,14 +324,15 @@ export class SubscriptionController {
     });
   });
 
-  static bulkDeleteSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  static bulkDeleteSubscriptions = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { ids } = req.body;
     
     if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'IDs array is required'
       });
+      return;
     }
 
     const results = await Promise.allSettled(

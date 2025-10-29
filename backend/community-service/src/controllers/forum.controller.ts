@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { forumService } from '@/services/forum.service';
-import { ApiResponse } from '@/types';
-import { validateRequest } from '@/middleware/validation';
-import { authenticate } from '@/middleware/auth';
+import { forumService } from '../services/forum.service';
+import { ApiResponse } from '../types';
+import { validateRequest } from '../middleware/validation';
+import { authenticate } from '../middleware/auth';
 import { 
   createPostSchema, 
   updatePostSchema, 
@@ -10,7 +10,7 @@ import {
   updateCommentSchema,
   voteSchema,
   searchSchema 
-} from '@/utils/validation';
+} from '../middleware/validation';
 
 export class ForumController {
   // Categories

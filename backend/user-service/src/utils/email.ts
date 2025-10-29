@@ -1,22 +1,28 @@
 import nodemailer from 'nodemailer';
-import { config } from '@/config';
-import { logger, emailLogger } from '@/config/logger';
-import { EmailTemplate } from '@/types';
+import { config } from '../config';
+import { logger, emailLogger } from '../config/logger';
+import { EmailTemplate } from '../types';
 
 // Email service class
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    this.transporter = nodemailer.createTransporter({
-      host: config.email.host,
-      port: config.email.port,
-      secure: config.email.port === 465,
-      auth: {
-        user: config.email.user,
-        pass: config.email.pass,
-      },
-    });
+    if (config.email.user && config.email.pass) {
+      this.transporter = nodemailer.createTransport({
+        host: config.email.host,
+        port: config.email.port,
+        secure: config.email.port === 465,
+        auth: {
+          user: config.email.user,
+          pass: config.email.pass,
+        },
+      });
+    } else {
+      // Lazy init on first use
+      this.transporter = nodemailer.createTransport({ jsonTransport: true } as any);
+      logger.warn('Email transport not fully configured; falling back to jsonTransport');
+    }
   }
 
   // Send email
@@ -27,6 +33,9 @@ export class EmailService {
     text?: string
   ): Promise<void> {
     try {
+      if (!this.transporter) {
+        throw new Error('Email transporter not initialized');
+      }
       const mailOptions = {
         from: `"${config.email.fromName}" <${config.email.from}>`,
         to,
@@ -92,7 +101,7 @@ export class EmailService {
       
       const template: EmailTemplate = {
         subject: 'Welcome to WriteWave!',
-        html: this.generateWelcomeEmailHtml(firstName, verificationUrl),
+        html: this.generateWelcomeEmailHtml(firstName, verificationUrl, to),
         text: this.generateWelcomeEmailText(firstName, verificationUrl),
       };
 
@@ -241,7 +250,7 @@ export class EmailService {
   }
 
   // Generate welcome email HTML
-  private generateWelcomeEmailHtml(firstName: string, verificationUrl: string): string {
+  private generateWelcomeEmailHtml(firstName: string, verificationUrl: string, to: string): string {
     return `
       <!DOCTYPE html>
       <html>

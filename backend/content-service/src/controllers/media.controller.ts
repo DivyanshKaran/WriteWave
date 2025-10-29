@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { mediaService } from '@/services/media.service';
-import { logger } from '@/config/logger';
+import { mediaService } from '../services/media.service';
+import { logger } from '../config/logger';
 
 // Media controller class
 export class MediaController {

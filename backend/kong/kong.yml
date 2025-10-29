@@ -4,7 +4,7 @@ _format_version: "3.0"
 services:
   # User Service
   - name: user-service
-    url: http://user-service:8001
+    url: http://user-service:80
     routes:
       - name: user-service-v1
         paths:
@@ -17,7 +17,7 @@ services:
           - DELETE
           - PATCH
         plugins:
-          - name: jwt-auth
+          - name: jwt
             config:
               key_claim_name: iss
               secret_is_base64: false
@@ -34,6 +34,7 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -82,7 +83,7 @@ services:
 
   # Content Service
   - name: content-service
-    url: http://content-service:8002
+    url: http://content-service:80
     routes:
       - name: content-service-v1
         paths:
@@ -97,7 +98,7 @@ services:
           - PUT
           - DELETE
         plugins:
-          - name: jwt-auth
+          - name: jwt
             config:
               key_claim_name: iss
               secret_is_base64: false
@@ -114,6 +115,7 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -159,22 +161,22 @@ services:
               redis_host: redis
               redis_port: 6379
 
-  # Progress Service
-  - name: progress-service
-    url: http://progress-service:8003
+  # Articles Service
+  - name: articles-service
+    url: http://articles-service:80
     routes:
-      - name: progress-service-v1
+      - name: articles-service-v1
         paths:
-          - /api/v1/progress
-          - /api/v1/achievements
-          - /api/v1/stats
+          - /api/articles
+          - /api/v1/articles
         methods:
           - GET
           - POST
           - PUT
           - DELETE
+          - PATCH
         plugins:
-          - name: jwt-auth
+          - name: jwt
             config:
               key_claim_name: iss
               secret_is_base64: false
@@ -191,6 +193,87 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
+                - https://writewave.app
+                - https://staging.writewave.app
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - Authorization
+                - X-Requested-With
+              exposed_headers:
+                - X-Auth-Token
+                - X-User-ID
+                - X-User-Role
+              credentials: true
+              max_age: 3600
+          - name: request-logging
+            config:
+              log_requests: true
+              log_responses: true
+              log_to_redis: true
+              log_to_file: true
+              add_response_time_header: true
+          - name: response-transformer
+            config:
+              add:
+                headers:
+                  - "X-Service: articles-service"
+                  - "X-Version: v1"
+                  - "X-Port: 8007"
+          - name: circuit-breaker
+            config:
+              threshold: 5
+              timeout: 60
+              unhealthy: 3
+              healthy: 2
+              redis_host: redis
+              redis_port: 6379
+
+  # Progress Service
+  - name: progress-service
+    url: http://progress-service:80
+    routes:
+      - name: progress-service-v1
+        paths:
+          - /api/v1/progress
+          - /api/v1/achievements
+          - /api/v1/stats
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: iss
+              secret_is_base64: false
+              run_on_preflight: true
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 1000
+              policy: redis
+              redis_host: redis
+              redis_port: 6379
+              fault_tolerant: true
+          - name: cors
+            config:
+              origins:
+                - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -238,7 +321,7 @@ services:
 
   # Community Service
   - name: community-service
-    url: http://community-service:8004
+    url: http://community-service:80
     routes:
       - name: community-service-v1
         paths:
@@ -252,7 +335,7 @@ services:
           - PUT
           - DELETE
         plugins:
-          - name: jwt-auth
+          - name: jwt
             config:
               key_claim_name: iss
               secret_is_base64: false
@@ -269,6 +352,7 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -316,7 +400,7 @@ services:
 
   # Notification Service
   - name: notification-service
-    url: http://notification-service:8005
+    url: http://notification-service:80
     routes:
       - name: notification-service-v1
         paths:
@@ -328,7 +412,7 @@ services:
           - PUT
           - DELETE
         plugins:
-          - name: jwt-auth
+          - name: jwt
             config:
               key_claim_name: iss
               secret_is_base64: false
@@ -345,6 +429,7 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -392,7 +477,7 @@ services:
 
   # Analytics Service
   - name: analytics-service
-    url: http://analytics-service:8006
+    url: http://analytics-service:80
     routes:
       - name: analytics-service-v1
         paths:
@@ -405,7 +490,7 @@ services:
           - PUT
           - DELETE
         plugins:
-          - name: jwt-auth
+          - name: jwt
             config:
               key_claim_name: iss
               secret_is_base64: false
@@ -422,6 +507,7 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -469,13 +555,14 @@ services:
 
 # Health check endpoints for each service
   - name: health-check-service
-    url: http://health-check-service:8007
+    url: http://health-check-service:80
     routes:
       - name: health-check-route
         paths:
           - /health
           - /health/users
           - /health/content
+          - /health/articles
           - /health/progress
           - /health/community
           - /health/notifications
@@ -487,6 +574,7 @@ services:
             config:
               origins:
                 - http://localhost:3000
+                - http://localhost:8080
                 - https://writewave.app
                 - https://staging.writewave.app
               methods:
@@ -506,18 +594,19 @@ services:
 
 # Global plugins
 plugins:
+  # Correlation ID plugin - generate and propagate request IDs
+  - name: correlation-id
+    config:
+      header_name: X-Request-ID
+      echo_downstream: true
+      generator: uuid # Options: uuid, uuid-counter, track
   - name: request-logging
     config:
       log_level: info
       log_format: json
       log_to_redis: true
       log_to_file: true
-  - name: response-logging
-    config:
-      log_level: info
-      log_format: json
-      log_to_redis: true
-      log_to_file: true
+      include_correlation_id: true
   - name: ip-restriction
     config:
       whitelist:
@@ -530,3 +619,4 @@ plugins:
       error_response_format: json
       include_request_details: true
       log_errors: true
+      include_correlation_id: true

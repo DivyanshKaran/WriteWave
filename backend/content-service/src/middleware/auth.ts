@@ -1,5 +1,55 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger, rateLimitLogger } from '@/config/logger';
+import jwt from 'jsonwebtoken';
+import { logger, rateLimitLogger } from '../config/logger';
+
+// Extend Request interface to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email: string;
+        role: string;
+      };
+    }
+  }
+}
+
+// JWT Authentication middleware
+export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Access token is required',
+        error: 'UNAUTHORIZED',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const jwtSecret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
+    const decoded = jwt.verify(token, jwtSecret) as any;
+
+    req.user = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role || 'user'
+    };
+
+    next();
+  } catch (error) {
+    logger.error('JWT authentication failed', { error });
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired token',
+      error: 'UNAUTHORIZED',
+      timestamp: new Date().toISOString()
+    });
+  }
+};
 
 // Rate limiting middleware
 export const rateLimit = (maxRequests: number = 100, windowMs: number = 900000) => {
@@ -197,3 +247,6 @@ export const healthCheck = (req: Request, res: Response): void => {
     environment: process.env.NODE_ENV || 'development',
   });
 };
+
+// Export authMiddleware as an alias for authenticateJWT
+export const authMiddleware = authenticateJWT;

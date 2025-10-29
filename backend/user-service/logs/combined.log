@@ -1,0 +1,473 @@
+{"error":{"clientVersion":"5.22.0","name":"PrismaClientInitializationError"},"level":"error","message":"Database connection failed","timestamp":"2025-10-18 18:19:00:190"}
+{"error":{"clientVersion":"5.22.0","name":"PrismaClientInitializationError"},"level":"error","message":"Database connection failed","timestamp":"2025-10-18 18:20:12:2012"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-18 18:23:29:2329"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-18 18:23:30:2330"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-18 18:23:30:2330"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-18 18:23:30:2330"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-18 18:23:30:2330","version":"1.0.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [18/Oct/2025:18:23:56 +0000] \"GET /health HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-18 18:23:56:2356"}
+{"duration":"35ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-18 18:23:56:2356","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [18/Oct/2025:18:24:15 +0000] \"GET /api/v1/health HTTP/1.1\" 200 127 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-18 18:24:15:2415"}
+{"duration":"14ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-18 18:24:15:2415","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [18/Oct/2025:18:24:21 +0000] \"GET /api/v1/ HTTP/1.1\" 200 1354 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-18 18:24:21:2421"}
+{"duration":"9ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-18 18:24:21:2421","url":"/","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [18/Oct/2025:18:28:53 +0000] \"GET /api/v1/health HTTP/1.1\" 200 128 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-18 18:28:53:2853"}
+{"duration":"4ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-18 18:28:53:2853","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [18/Oct/2025:18:29:01 +0000] \"GET /api/v1/health HTTP/1.1\" 200 128 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-18 18:29:01:291"}
+{"duration":"14ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-18 18:29:01:291","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [18/Oct/2025:18:29:07 +0000] \"GET /api/v1/ HTTP/1.1\" 200 1354 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-18 18:29:07:297"}
+{"duration":"6ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-18 18:29:07:297","url":"/","userAgent":"curl/8.16.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-18 18:29:52:2952"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-18 18:29:52:2952"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-18 18:29:52:2952"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-18 18:29:52:2952"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-18 18:29:52:2952","version":"1.0.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:05:20:51 +0000] \"GET /health HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 05:20:51:2051"}
+{"duration":"8ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-19 05:20:51:2051","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:05:20:55 +0000] \"GET / HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 05:20:55:2055"}
+{"duration":"3ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-19 05:20:55:2055","url":"/","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:05:37:00 +0000] \"GET /health HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 05:37:00:370"}
+{"duration":"3ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-19 05:37:00:370","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:05:37:07 +0000] \"GET /api/v1/health HTTP/1.1\" 200 129 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 05:37:07:377"}
+{"duration":"2ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 05:37:07:377","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:05:43:35 +0000] \"GET /api/v1/health HTTP/1.1\" 200 129 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 05:43:35:4335"}
+{"duration":"5ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 05:43:35:4335","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:05:43:54 +0000] \"GET /api/v1/health HTTP/1.1\" 200 129 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 05:43:54:4354"}
+{"duration":"4ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 05:43:54:4354","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:06:03:05 +0000] \"GET /api/v1/health HTTP/1.1\" 200 130 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 06:03:05:35"}
+{"duration":"8ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 06:03:05:35","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:08:26:32 +0000] \"GET /health HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 08:26:32:2632"}
+{"duration":"5ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-19 08:26:32:2632","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:08:26:41 +0000] \"GET /api/v1/health HTTP/1.1\" 200 130 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 08:26:41:2641"}
+{"duration":"6ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 08:26:41:2641","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:08:41:29 +0000] \"GET /api/v1/health HTTP/1.1\" 200 130 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 08:41:29:4129"}
+{"duration":"9ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 08:41:29:4129","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:09:05:26 +0000] \"GET /api/v1/health HTTP/1.1\" 200 130 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 09:05:26:526"}
+{"duration":"7ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 09:05:26:526","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [19/Oct/2025:09:13:47 +0000] \"GET /api/v1/health HTTP/1.1\" 200 130 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-19 09:13:47:1347"}
+{"duration":"15ms","ip":"::ffff:172.20.0.1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-19 09:13:47:1347","url":"/health","userAgent":"curl/8.16.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 17:23:56:2356"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 17:23:57:2357"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 17:23:57:2357"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 17:23:57:2357"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-19 17:23:57:2357","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 17:24:26:2426"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 17:24:26:2426"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 17:24:26:2426"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 17:24:26:2426"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-19 17:24:26:2426","version":"1.0.0"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-21 06:53:27:5327"}
+{"error":"Socket closed unexpectedly","level":"error","message":"Redis client error","timestamp":"2025-10-21 06:53:27:5327"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-21 06:53:27:5327"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-21 06:53:27:5327"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-21 06:53:27:5327"}
+{"error":"connect ECONNREFUSED 172.20.0.5:6379","level":"error","message":"Redis client error","timestamp":"2025-10-21 06:53:27:5327"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-21 06:54:25:5425"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-21 06:54:25:5425"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-21 06:54:25:5425"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-21 06:54:25:5425"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-21 06:54:25:5425","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-21 08:50:11:5011"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-21 08:50:11:5011"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-21 08:50:11:5011"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-21 08:50:11:5011"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-21 08:50:11:5011","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-22 12:50:14:5014"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-22 12:50:14:5014"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-22 12:50:14:5014"}
+{"error":"Socket closed unexpectedly","level":"error","message":"Redis client error","timestamp":"2025-10-22 12:50:14:5014"}
+{"error":"connect ECONNREFUSED 172.20.0.2:6379","level":"error","message":"Redis client error","timestamp":"2025-10-22 12:50:15:5015"}
+{"error":"connect ECONNREFUSED 172.20.0.2:6379","level":"error","message":"Redis client error","timestamp":"2025-10-22 12:50:15:5015"}
+{"error":"connect ECONNREFUSED 172.20.0.2:6379","level":"error","message":"Redis client error","timestamp":"2025-10-22 12:50:15:5015"}
+{"error":"connect ECONNREFUSED 172.20.0.2:6379","level":"error","message":"Redis client error","timestamp":"2025-10-22 12:50:15:5015"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-22 12:50:15:5015"}
+{"error":"connect ECONNREFUSED 172.20.0.2:6379","level":"error","message":"Redis client error","timestamp":"2025-10-22 12:50:15:5015"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-22 12:50:15:5015"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-22 14:22:18:2218"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-22 14:22:18:2218"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-22 14:22:18:2218"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-22 14:22:18:2218"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-22 14:22:18:2218","version":"1.0.0"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-22 14:23:57:2357"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-22 14:23:57:2357"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-22 14:23:57:2357"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-22 14:23:57:2357"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 01:07:26:726"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 01:07:26:726"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 01:07:26:726"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 01:07:26:726"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 01:07:26:726","version":"1.0.0"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-23 06:56:17:5617"}
+{"error":"Socket closed unexpectedly","level":"error","message":"Redis client error","timestamp":"2025-10-23 06:56:17:5617"}
+{"error":"connect ECONNREFUSED 172.20.0.6:6379","level":"error","message":"Redis client error","timestamp":"2025-10-23 06:56:17:5617"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 06:56:17:5617"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 06:56:17:5617"}
+{"error":"connect ECONNREFUSED 172.20.0.6:6379","level":"error","message":"Redis client error","timestamp":"2025-10-23 06:56:17:5617"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-23 06:56:17:5617"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 06:57:13:5713"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 06:57:13:5713"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 06:57:13:5713"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 06:57:13:5713"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 06:57:13:5713","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 06:57:56:5756"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-23 06:57:56:5756"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-23 06:57:56:5756"}
+{"level":"info","message":"Redis client disconnected","timestamp":"2025-10-23 06:57:56:5756"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 12:30:56:3056"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 12:30:56:3056"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 12:30:56:3056"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 12:30:56:3056"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 12:30:56:3056","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 07:32:20:3220"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 07:32:20:3220"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 07:32:20:3220"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-23 07:32:20:3220"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 07:33:18:3318"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 07:33:18:3318"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 07:33:18:3318"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 07:33:18:3318"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 07:33:18:3318","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 07:35:06:356"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 07:35:06:356"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 07:35:06:356"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-23 07:35:06:356"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 07:36:00:360"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 07:36:01:361"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 07:36:01:361"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 07:36:01:361"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 07:36:01:361","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 09:09:51:951"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 09:09:51:951"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-23 09:09:51:951"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 20:03:47:347"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 20:03:47:347"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 20:03:47:347"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 20:03:47:347"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 20:03:47:347","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 20:03:48:348"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 20:03:48:348"}
+{"error":"Socket closed unexpectedly","level":"error","message":"Redis client error","timestamp":"2025-10-23 20:03:48:348"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-23 20:03:48:348"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-23 22:16:43:1643"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-23 22:16:43:1643"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-23 22:16:43:1643"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-23 22:16:43:1643"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-23 22:16:43:1643","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-23 18:26:41:2641"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-23 18:26:41:2641"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-23 18:26:41:2641"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-23 18:26:41:2641"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-25 02:37:15:3715"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-25 02:37:16:3716"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-25 02:37:16:3716"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-25 02:37:16:3716"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-25 02:37:16:3716","version":"1.0.0"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-25 13:43:49:4349"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-25 13:43:49:4349"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-25 13:43:49:4349"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-25 13:43:49:4349"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-25 13:43:49:4349"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-25 16:12:37:1237"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-25 16:12:37:1237"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-25 16:12:37:1237"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-25 16:12:37:1237"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-25 16:12:37:1237","version":"1.0.0"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-25 17:54:42:5442"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-25 17:54:42:5442"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-25 17:54:42:5442"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-25 17:54:42:5442"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-25 18:00:35:035"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-25 18:00:35:035"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-25 18:00:35:035"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-25 18:00:35:035"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-25 18:00:35:035","version":"1.0.0"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-25 18:10:51:1051"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-25 18:10:51:1051"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-25 18:10:51:1051"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-26 18:01:13:113"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-26 18:01:13:113"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-26 18:01:13:113"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-26 18:01:13:113"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-26 18:01:13:113","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-27 12:33:50:3350"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 12:33:50:3350"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-27 12:33:50:3350"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-27 12:33:50:3350"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-27 12:33:50:3350","version":"1.0.0"}
+{"error":{"clientVersion":"5.22.0","name":"PrismaClientInitializationError"},"level":"error","message":"Database connection failed","timestamp":"2025-10-27 15:59:33:5933"}
+{"error":{"clientVersion":"5.22.0","name":"PrismaClientInitializationError"},"level":"error","message":"Database connection failed","timestamp":"2025-10-27 16:00:12:012"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-27 16:15:48:1548"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 16:15:48:1548"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-27 16:15:48:1548"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-27 16:15:48:1548"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-27 16:15:48:1548","version":"1.0.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [27/Oct/2025:16:22:39 +0000] \"GET /health HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-27 16:22:39:2239"}
+{"duration":"75ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-27 16:22:39:2239","url":"/health","userAgent":"curl/8.16.0"}
+{"errors":[{"field":"email","message":"Please provide a valid email address","value":"test"}],"ip":"::ffff:172.20.0.1","level":"warn","message":"Validation failed","method":"POST","timestamp":"2025-10-27 16:22:51:2251","url":"/login"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [27/Oct/2025:16:22:51 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 400 206 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-27 16:22:51:2251"}
+{"duration":"7ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"POST","status":400,"timestamp":"2025-10-27 16:22:51:2251","url":"/login","userAgent":"curl/8.16.0"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [27/Oct/2025:16:23:00 +0000] \"GET / HTTP/1.1\" 404 29 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-27 16:23:00:230"}
+{"duration":"2ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"GET","status":404,"timestamp":"2025-10-27 16:23:00:230","url":"/","userAgent":"curl/8.16.0"}
+{"duration":"17ms","level":"debug","message":"Prisma Query","params":"[\"test@example.com\",1,0]","query":"SELECT \"public\".\"users\".\"id\", \"public\".\"users\".\"email\", \"public\".\"users\".\"username\", \"public\".\"users\".\"password\", \"public\".\"users\".\"firstName\", \"public\".\"users\".\"lastName\", \"public\".\"users\".\"isEmailVerified\", \"public\".\"users\".\"isActive\", \"public\".\"users\".\"lastLoginAt\", \"public\".\"users\".\"createdAt\", \"public\".\"users\".\"updatedAt\", \"public\".\"users\".\"googleId\", \"public\".\"users\".\"appleId\", \"public\".\"users\".\"oauthProvider\" FROM \"public\".\"users\" WHERE (\"public\".\"users\".\"email\" = $1 AND 1=1) LIMIT $2 OFFSET $3","timestamp":"2025-10-27 16:23:06:236"}
+{"email":"test@example.com","event":"login_failed","level":"info","message":"Authentication Event","reason":"user_not_found","timestamp":"2025-10-27 16:23:06:236"}
+{"level":"http","message":"::ffff:172.20.0.1 - - [27/Oct/2025:16:23:06 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 401 129 \"-\" \"curl/8.16.0\"","timestamp":"2025-10-27 16:23:06:236"}
+{"duration":"50ms","ip":"::ffff:172.20.0.1","level":"warn","message":"HTTP Request","method":"POST","status":401,"timestamp":"2025-10-27 16:23:06:236","url":"/login","userAgent":"curl/8.16.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 08:21:56:2156"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 08:21:56:2156"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 08:21:56:2156"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 08:21:56:2156"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 08:21:56:2156","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 08:23:52:2352"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 08:23:52:2352","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:12:20:1220"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:12:20:1220"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:12:20:1220"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:12:20:1220"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 10:12:20:1220","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:13:57:1357"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:13:57:1357"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:13:57:1357"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:13:57:1357"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 10:13:57:1357","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:22:06:226"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:22:07:227"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:22:07:227"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:22:07:227"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 10:22:07:227","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:22:56:2256"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:22:56:2256"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:22:56:2256"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:22:56:2256"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 10:22:56:2256","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:25:43:2543"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:25:43:2543"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:25:43:2543"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:25:43:2543"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 10:25:43:2543","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:27:51:2751"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:27:51:2751"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:27:51:2751"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:27:51:2751"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 10:27:51:2751","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 11:10:08:108"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 11:10:08:108"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 11:10:08:108"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 11:10:08:108"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 11:10:08:108","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 11:10:22:1022"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 11:10:22:1022"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 11:10:22:1022"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 11:10:22:1022"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 11:10:22:1022","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 11:11:24:1124"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 11:11:24:1124"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 11:11:24:1124"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 11:11:24:1124"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 11:11:24:1124","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:16:00:160"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:16:00:160"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:00:160"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:00:160"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:00:160"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:00:160"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:01:161"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:01:161"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:02:162"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:02:162"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:03:163"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:04:164"}
+{"error":"","level":"error","message":"Redis client error","timestamp":"2025-10-28 17:16:05:165"}
+{"level":"error","message":"Redis connection failed after 10 retries","timestamp":"2025-10-28 17:16:06:166"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:22:24:2224"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:22:24:2224"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:22:24:2224"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:22:24:2224"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:22:24:2224","version":"1.0.0"}
+{"duration":"9ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:25:26:2526","url":"/health","userAgent":"PostmanRuntime/7.48.0"}
+{"duration":"28ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:26:18:2618","url":"/","userAgent":"PostmanRuntime/7.48.0"}
+{"level":"error","message":"Prisma Error \nInvalid `prisma.user.findFirst()` invocation in\n/home/the_hero_of_ages/Desktop/IndividualProjects/writewave/backend/user-service/src/services/auth.service.ts:29:46\n\n  26 }>> {\n  27   try {\n  28     // Check if user already exists\n→ 29     const existingUser = await prisma.user.findFirst(\nThe table `public.users` does not exist in the current database.","target":"user.findFirst","timestamp":"2025-10-28 17:26:52:2652"}
+{"data":{"email":"test@example.com","firstName":"Test","lastName":"User","password":"TestPassword123!","username":"testuser"},"error":"\nInvalid `prisma.user.findFirst()` invocation in\n/home/the_hero_of_ages/Desktop/IndividualProjects/writewave/backend/user-service/src/services/auth.service.ts:29:46\n\n  26 }>> {\n  27   try {\n  28     // Check if user already exists\n→ 29     const existingUser = await prisma.user.findFirst(\nThe table `public.users` does not exist in the current database.","level":"error","message":"User registration failed","timestamp":"2025-10-28 17:26:52:2652"}
+{"duration":"91ms","ip":"::1","level":"warn","message":"HTTP Request","method":"POST","status":400,"timestamp":"2025-10-28 17:26:52:2652","url":"/register","userAgent":"PostmanRuntime/7.48.0"}
+{"level":"info","message":"Token pair generated","timestamp":"2025-10-28 17:29:33:2933","userId":"cmhaikrpl00015a34g3yajvy3"}
+{"error":"Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-29498cf358fsm113940555ad.20 - gsmtp","event":"failed","level":"info","message":"Email Event","recipient":"test@example.com","subject":"Welcome to WriteWave!","timestamp":"2025-10-28 17:29:35:2935"}
+{"error":"Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-29498cf358fsm113940555ad.20 - gsmtp","level":"error","message":"Email sending failed","subject":"Welcome to WriteWave!","timestamp":"2025-10-28 17:29:35:2935","to":"test@example.com"}
+{"error":"Email sending failed","level":"error","message":"Email template sending failed","subject":"Welcome to WriteWave!","timestamp":"2025-10-28 17:29:35:2935","to":"test@example.com"}
+{"error":"Email sending failed","firstName":"Test","level":"error","message":"Welcome email sending failed","timestamp":"2025-10-28 17:29:35:2935","to":"test@example.com"}
+{"error":"Email sending failed","level":"warn","message":"Failed to send welcome email","timestamp":"2025-10-28 17:29:35:2935","userId":"cmhaikrpl00015a34g3yajvy3"}
+{"email":"test@example.com","event":"user_registered","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:29:35:2935","userId":"cmhaikrpl00015a34g3yajvy3","username":"testuser"}
+{"duration":"2740ms","ip":"::1","level":"info","message":"HTTP Request","method":"POST","status":201,"timestamp":"2025-10-28 17:29:35:2935","url":"/register","userAgent":"PostmanRuntime/7.48.0"}
+{"errors":[{"field":"password","message":"Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character","value":"divyansh@writewave.com"},{"field":"username","message":"Username can only contain letters, numbers, underscores, and hyphens","value":"divyansh@writewave"}],"ip":"::1","level":"warn","message":"Validation failed","method":"POST","timestamp":"2025-10-28 17:30:32:3032","url":"/register"}
+{"duration":"4ms","ip":"::1","level":"warn","message":"HTTP Request","method":"POST","status":400,"timestamp":"2025-10-28 17:30:32:3032","url":"/register","userAgent":"PostmanRuntime/7.48.0"}
+{"level":"info","message":"Token pair generated","timestamp":"2025-10-28 17:31:16:3116","userId":"cmhaimyvz000b5a34npk30azb"}
+{"error":"Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-33fed70a86fsm11965305a91.1 - gsmtp","event":"failed","level":"info","message":"Email Event","recipient":"divyansh@writewave.com","subject":"Welcome to WriteWave!","timestamp":"2025-10-28 17:31:18:3118"}
+{"error":"Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-33fed70a86fsm11965305a91.1 - gsmtp","level":"error","message":"Email sending failed","subject":"Welcome to WriteWave!","timestamp":"2025-10-28 17:31:18:3118","to":"divyansh@writewave.com"}
+{"error":"Email sending failed","level":"error","message":"Email template sending failed","subject":"Welcome to WriteWave!","timestamp":"2025-10-28 17:31:18:3118","to":"divyansh@writewave.com"}
+{"error":"Email sending failed","firstName":"Divyansh","level":"error","message":"Welcome email sending failed","timestamp":"2025-10-28 17:31:18:3118","to":"divyansh@writewave.com"}
+{"error":"Email sending failed","level":"warn","message":"Failed to send welcome email","timestamp":"2025-10-28 17:31:18:3118","userId":"cmhaimyvz000b5a34npk30azb"}
+{"email":"divyansh@writewave.com","event":"user_registered","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:31:18:3118","userId":"cmhaimyvz000b5a34npk30azb","username":"divyansh01"}
+{"duration":"3372ms","ip":"::1","level":"info","message":"HTTP Request","method":"POST","status":201,"timestamp":"2025-10-28 17:31:18:3118","url":"/register","userAgent":"PostmanRuntime/7.48.0"}
+{"level":"info","message":"Token pair generated","timestamp":"2025-10-28 17:32:07:327","userId":"cmhaikrpl00015a34g3yajvy3"}
+{"deviceInfo":{"browser":"PostmanRuntime/7.48.0","deviceType":"desktop","os":"PostmanRuntime/7.48.0","userAgent":"PostmanRuntime/7.48.0"},"email":"test@example.com","event":"user_logged_in","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:32:07:327","userId":"cmhaikrpl00015a34g3yajvy3"}
+{"duration":"841ms","ip":"::1","level":"info","message":"HTTP Request","method":"POST","status":200,"timestamp":"2025-10-28 17:32:07:327","url":"/login","userAgent":"PostmanRuntime/7.48.0"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:32:26:3226","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaikrpl00015a34g3yajvy3"}
+{"duration":"15ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:32:26:3226","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaikrpl00015a34g3yajvy3"}
+{"level":"info","message":"Token pair generated","timestamp":"2025-10-28 17:32:54:3254","userId":"cmhaimyvz000b5a34npk30azb"}
+{"deviceInfo":{"browser":"PostmanRuntime/7.48.0","deviceType":"desktop","os":"PostmanRuntime/7.48.0","userAgent":"PostmanRuntime/7.48.0"},"email":"divyansh@writewave.com","event":"user_logged_in","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:32:54:3254","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"1022ms","ip":"::1","level":"info","message":"HTTP Request","method":"POST","status":200,"timestamp":"2025-10-28 17:32:54:3254","url":"/login","userAgent":"PostmanRuntime/7.48.0"}
+{"email":"divyansh@writewave.com","event":"login_failed","level":"info","message":"Authentication Event","reason":"invalid_password","timestamp":"2025-10-28 17:33:03:333","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"841ms","ip":"::1","level":"warn","message":"HTTP Request","method":"POST","status":401,"timestamp":"2025-10-28 17:33:03:333","url":"/login","userAgent":"PostmanRuntime/7.48.0"}
+{"level":"info","message":"Token pair generated","timestamp":"2025-10-28 17:33:10:3310","userId":"cmhaimyvz000b5a34npk30azb"}
+{"deviceInfo":{"browser":"PostmanRuntime/7.48.0","deviceType":"desktop","os":"PostmanRuntime/7.48.0","userAgent":"PostmanRuntime/7.48.0"},"email":"divyansh@writewave.com","event":"user_logged_in","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:33:10:3310","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"881ms","ip":"::1","level":"info","message":"HTTP Request","method":"POST","status":200,"timestamp":"2025-10-28 17:33:10:3310","url":"/login","userAgent":"PostmanRuntime/7.48.0"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:33:17:3317","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"12ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:33:17:3317","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:33:43:3343","url":"/profile","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"24ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:33:43:3343","url":"/profile","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:39:18:3918","url":"/profile","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"action":"profile_updated","level":"info","message":"User Action","timestamp":"2025-10-28 17:39:18:3918","updatedFields":["firstName","lastName","bio","country","timezone","language","learningGoals","difficultyLevel","studyTime","interests"],"userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"65ms","ip":"::1","level":"info","message":"HTTP Request","method":"PUT","status":200,"timestamp":"2025-10-28 17:39:18:3918","url":"/profile","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:39:32:3932","url":"/profile","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"725ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:39:33:3933","url":"/profile","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:40:08:408","url":"/settings","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"18ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:40:08:408","url":"/settings","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:41:58:4158","url":"/settings","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"action":"settings_updated","level":"info","message":"User Action","timestamp":"2025-10-28 17:41:59:4159","updatedFields":["emailNotifications","pushNotifications","dailyReminders","weeklyReports","achievementAlerts","profileVisibility","showProgress","showAchievements","autoAdvance","showHints","soundEnabled","vibrationEnabled","theme","fontSize","animations"],"userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"318ms","ip":"::1","level":"info","message":"HTTP Request","method":"PUT","status":200,"timestamp":"2025-10-28 17:41:59:4159","url":"/settings","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:42:16:4216","url":"/settings","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"18ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:42:16:4216","url":"/settings","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"level":"info","message":"Token pair generated","timestamp":"2025-10-28 17:42:37:4237","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_refreshed","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:42:37:4237","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"37ms","ip":"::1","level":"info","message":"HTTP Request","method":"POST","status":200,"timestamp":"2025-10-28 17:42:37:4237","url":"/refresh-token","userAgent":"PostmanRuntime/7.48.0"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:43:07:437","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"11ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:43:07:437","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:43:24:4324","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"12ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:43:24:4324","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:43:38:4338","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"9ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:43:38:4338","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:43:43:4343","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"15ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:43:43:4343","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:44:52:4452"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:44:52:4452"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:44:52:4452"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:44:52:4452"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:44:52:4452","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:14:59:1459"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:14:59:1459"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:14:59:1459"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:14:59:1459"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:14:59:1459","version":"1.0.0"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:45:02:452","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"51ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:45:02:452","url":"/me","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"event":"token_verified","ip":"::1","level":"info","message":"Authentication Event","timestamp":"2025-10-28 17:45:06:456","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"duration":"29ms","ip":"::1","level":"info","message":"HTTP Request","method":"GET","status":200,"timestamp":"2025-10-28 17:45:06:456","url":"/sessions","userAgent":"PostmanRuntime/7.48.0","userId":"cmhaimyvz000b5a34npk30azb"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:45:29:4529"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:45:29:4529"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:45:29:4529"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:45:29:4529"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:45:29:4529","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:15:34:1534"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:15:34:1534"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:15:34:1534"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:15:34:1534"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:15:34:1534","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:45:53:4553"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:45:53:4553"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:45:53:4553"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:45:53:4553"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:45:53:4553","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:15:56:1556"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:15:56:1556"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:15:56:1556"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:15:56:1556"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:15:56:1556","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:46:28:4628"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:46:28:4628"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:46:28:4628"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:46:28:4628"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:46:28:4628","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:16:31:1631"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:16:31:1631"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:16:31:1631"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:16:31:1631"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:16:31:1631","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:47:21:4721"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:47:21:4721"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:47:21:4721"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:47:21:4721"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:47:21:4721","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:17:24:1724"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:17:24:1724"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:17:24:1724"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:17:24:1724"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:17:24:1724","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:48:11:4811"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:48:11:4811"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:48:11:4811"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:48:11:4811"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:48:11:4811","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:48:28:4828"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:48:28:4828"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:48:28:4828"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:48:28:4828"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:48:28:4828","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:18:32:1832"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:18:32:1832"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:18:32:1832"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:18:32:1832"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:18:32:1832","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 17:49:37:4937"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 17:49:37:4937"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 17:49:37:4937"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 17:49:37:4937"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 17:49:37:4937","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 12:19:44:1944"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 12:19:44:1944"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 12:19:44:1944"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 12:19:44:1944"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-28 12:19:44:1944","version":"1.0.0"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-28 19:12:40:1240"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-29 12:29:00:290"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 12:29:01:291"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-29 12:29:01:291"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-29 12:29:01:291"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-29 12:29:01:291","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-29 12:29:27:2927"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 12:29:27:2927"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-29 12:29:27:2927"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-29 12:29:27:2927"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-29 12:29:27:2927","version":"1.0.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-29 21:04:20:420"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 21:04:20:420"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-29 21:04:20:420"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-29 21:04:20:420"}
+{"environment":"development","level":"info","message":"User Service started on port 8001","port":8001,"timestamp":"2025-10-29 21:04:21:421","version":"1.0.0"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-29 21:04:29:429"}
+{"level":"info","message":"Kafka connections closed","timestamp":"2025-10-29 21:04:29:429"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-29 21:04:29:429"}
+{"level":"info","message":"Kafka connections closed","timestamp":"2025-10-29 21:04:29:429"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-29 21:04:29:429"}
+{"level":"info","message":"Received SIGTERM. Starting graceful shutdown...","timestamp":"2025-10-29 15:54:19:5419"}
+{"level":"info","message":"Kafka connections closed","timestamp":"2025-10-29 15:54:19:5419"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-29 15:54:19:5419"}
+{"level":"info","message":"Kafka connections closed","timestamp":"2025-10-29 15:54:19:5419"}
+{"level":"info","message":"Received SIGINT. Starting graceful shutdown...","timestamp":"2025-10-29 15:54:19:5419"}
+{"level":"info","message":"Kafka connections closed","timestamp":"2025-10-29 15:54:19:5419"}
+{"level":"error","message":"Prisma Error Error in PostgreSQL connection: Error { kind: Db, cause: Some(DbError { severity: \"FATAL\", parsed_severity: Some(Fatal), code: SqlState(E57P01), message: \"terminating connection due to administrator command\", detail: None, hint: None, position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3211), routine: Some(\"ProcessInterrupts\") }) }","target":"quaint::connector::postgres::native","timestamp":"2025-10-29 15:54:20:5420"}
+{"level":"info","message":"Database disconnected successfully","timestamp":"2025-10-29 15:54:20:5420"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-29 15:56:54:5654"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 15:56:54:5654"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:56:59:5659"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:04:574"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:09:579"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:14:5714"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:20:5720"}
+{"error":"getaddrinfo EAI_AGAIN redis-cluster-proxy","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:25:5725"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:31:5731"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:36:5736"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:42:5742"}
+{"error":"getaddrinfo EAI_AGAIN redis-cluster-proxy","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:48:5748"}
+{"error":"Connection timeout","level":"error","message":"Redis client error","timestamp":"2025-10-29 15:57:54:5754"}
+{"level":"error","message":"Redis connection failed after 10 retries","timestamp":"2025-10-29 15:58:00:580"}

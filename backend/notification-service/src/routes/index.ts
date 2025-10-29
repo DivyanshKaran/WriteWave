@@ -1,7 +1,7 @@
 import express from 'express';
-import { logger } from '@/utils/logger';
-import { authenticateToken, requireAdmin, requireModerator } from '@/middleware/auth';
-import { validate, validateQuery, validateParams } from '@/middleware/validation';
+import { logger } from '../utils/logger';
+import { authenticateToken, requireAdmin, requireModerator } from '../middleware/auth';
+import { validate, validateQuery, validateParams } from '../middleware/validation';
 import { 
   commonSchemas, 
   notificationSchemas, 
@@ -9,22 +9,23 @@ import {
   subscriptionSchemas,
   scheduledSchemas,
   analyticsSchemas
-} from '@/middleware/validation';
+} from '../middleware/validation';
 
 // Import controllers
-import NotificationController from '@/controllers/notification.controller';
-import PreferencesController from '@/controllers/preferences.controller';
-import SubscriptionController from '@/controllers/subscription.controller';
+import NotificationController from '../controllers/notification.controller';
+import PreferencesController from '../controllers/preferences.controller';
+import SubscriptionController from '../controllers/subscription.controller';
+import ScheduledController from '../controllers/scheduled.controller';
+import AnalyticsController from '../controllers/analytics.controller';
 
 const router = express.Router();
 
 // Health check endpoint
 router.get('/health', (req, res) => {
   res.json({
-    success: true,
-    message: 'Notification Service is running',
+    status: 'ok',
+    version: process.env.npm_package_version || '1.0.0',
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0'
   });
 });
 
@@ -329,29 +330,86 @@ router.delete('/subscriptions/bulk',
   SubscriptionController.bulkDeleteSubscriptions
 );
 
-// Scheduled notification routes (placeholder - would need separate controller)
+
+// Scheduled notification routes
 router.post('/scheduled',
   authenticateToken,
   validate(scheduledSchemas.createScheduled),
-  (req, res) => {
-    res.json({
-      success: true,
-      message: 'Scheduled notification endpoint - implementation needed'
-    });
-  }
+  ScheduledController.createScheduled
 );
 
-// Analytics routes (placeholder - would need separate controller)
+router.get('/scheduled/:id',
+  authenticateToken,
+  ScheduledController.getScheduled
+);
+
+router.put('/scheduled/:id',
+  authenticateToken,
+  ScheduledController.updateScheduled
+);
+
+router.delete('/scheduled/:id',
+  authenticateToken,
+  ScheduledController.deleteScheduled
+);
+
+router.get('/scheduled/user/:userId',
+  authenticateToken,
+  ScheduledController.getUserScheduled
+);
+
+router.post('/scheduled/:id/cancel',
+  authenticateToken,
+  ScheduledController.cancelScheduled
+);
+
+router.get('/scheduled/stats',
+  authenticateToken,
+  requireModerator,
+  ScheduledController.getScheduledStats
+);
+
+router.post('/scheduled/process',
+  authenticateToken,
+  requireModerator,
+  ScheduledController.processDueScheduled
+);
+
+// Analytics routes
 router.get('/analytics',
   authenticateToken,
   requireModerator,
   validateQuery(analyticsSchemas.getAnalytics),
-  (req, res) => {
-    res.json({
-      success: true,
-      message: 'Analytics endpoint - implementation needed'
-    });
-  }
+  AnalyticsController.getAnalytics
+);
+
+router.get('/analytics/user/:userId',
+  authenticateToken,
+  AnalyticsController.getUserAnalytics
+);
+
+router.get('/analytics/channel/:channel',
+  authenticateToken,
+  requireModerator,
+  AnalyticsController.getChannelAnalytics
+);
+
+router.get('/analytics/type/:type',
+  authenticateToken,
+  requireModerator,
+  AnalyticsController.getTypeAnalytics
+);
+
+router.get('/analytics/realtime',
+  authenticateToken,
+  requireModerator,
+  AnalyticsController.getRealtimeAnalytics
+);
+
+router.post('/analytics/export',
+  authenticateToken,
+  requireModerator,
+  AnalyticsController.exportAnalytics
 );
 
 // Error handling middleware

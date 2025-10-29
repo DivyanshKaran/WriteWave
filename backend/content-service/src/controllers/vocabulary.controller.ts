@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { vocabularyService } from '@/services/vocabulary.service';
-import { logger } from '@/config/logger';
+import { vocabularyService } from '../services/vocabulary.service';
+import { logger } from '../config/logger';
 
 // Vocabulary controller class
 export class VocabularyController {

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { lessonService } from '@/services/lesson.service';
-import { logger } from '@/config/logger';
+import { lessonService } from '../services/lesson.service';
+import { logger } from '../config/logger';
 
 // Lesson controller class
 export class LessonController {
@@ -322,14 +322,19 @@ export class LessonController {
   // Get lesson progression path
   async getLessonProgressionPath(req: Request, res: Response): Promise<void> {
     try {
-      const { level, category } = req.query;
+      const { lessonId } = req.params;
 
-      const filters = {
-        level: level as any,
-        category: category as any,
-      };
+      if (!lessonId) {
+        res.status(400).json({
+          success: false,
+          message: 'Lesson ID is required',
+          error: 'MISSING_LESSON_ID',
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
 
-      const result = await lessonService.getLessonProgressionPath(filters);
+      const result = await lessonService.getLessonProgressionPath(lessonId);
 
       if (!result.success) {
         res.status(400).json({

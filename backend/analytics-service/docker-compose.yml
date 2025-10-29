@@ -42,7 +42,7 @@ services:
   postgres:
     image: timescale/timescaledb:latest-pg15
     ports:
-      - "5432:5432"
+      - "5437:5432"
     environment:
       - POSTGRES_DB=analytics
       - POSTGRES_USER=postgres

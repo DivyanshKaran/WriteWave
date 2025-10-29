@@ -1,14 +1,15 @@
-import { prisma } from '@/config/database';
-import { cacheService } from '@/config/redis';
-import { logger, userActionLogger } from '@/config/logger';
+import { prisma } from '../config/database';
+import { getCacheService } from '../config/redis';
+import { logger, userActionLogger } from '../config/logger';
 import { 
   UserProfileUpdateData, 
   UserSettingsUpdateData, 
   ServiceResponse,
   PaginationParams,
   PaginatedResponse 
-} from '@/types';
+} from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { publish, Topics } from '../utils/events';
 
 // User service class
 export class UserService {
@@ -17,7 +18,7 @@ export class UserService {
     try {
       // Try to get from cache first
       const cacheKey = `user_profile:${userId}`;
-      const cachedProfile = await cacheService.get(cacheKey);
+      const cachedProfile = await getCacheService().get(cacheKey);
       
       if (cachedProfile) {
         return {
@@ -60,7 +61,7 @@ export class UserService {
       };
 
       // Cache for 5 minutes
-      await cacheService.set(cacheKey, profileData, 300);
+      await getCacheService().set(cacheKey, profileData, 300);
 
       return {
         success: true,
@@ -68,7 +69,7 @@ export class UserService {
         message: 'User profile retrieved successfully'
       };
     } catch (error) {
-      logger.error('Get user profile failed', { error: error.message, userId });
+      logger.error('Get user profile failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Get profile failed',
@@ -150,10 +151,18 @@ export class UserService {
       });
 
       // Clear cache
-      await cacheService.del(`user_profile:${userId}`);
+      await getCacheService().del(`user_profile:${userId}`);
 
       userActionLogger('profile_updated', userId, {
         updatedFields: Object.keys(data),
+      });
+
+      // Emit user.updated event
+      await publish(Topics.USER_EVENTS, userId, {
+        type: 'user.updated',
+        id: userId,
+        changes: data,
+        occurredAt: new Date().toISOString(),
       });
 
       return {
@@ -175,7 +184,7 @@ export class UserService {
         message: 'User profile updated successfully'
       };
     } catch (error) {
-      logger.error('Update user profile failed', { error: error.message, userId, data });
+      logger.error('Update user profile failed', { error: (error as any).message, userId, data });
       return {
         success: false,
         error: 'Update profile failed',
@@ -189,7 +198,7 @@ export class UserService {
     try {
       // Try to get from cache first
       const cacheKey = `user_settings:${userId}`;
-      const cachedSettings = await cacheService.get(cacheKey);
+      const cachedSettings = await getCacheService().get(cacheKey);
       
       if (cachedSettings) {
         return {
@@ -218,7 +227,7 @@ export class UserService {
       }
 
       // Cache for 10 minutes
-      await cacheService.set(cacheKey, settings, 600);
+      await getCacheService().set(cacheKey, settings, 600);
 
       return {
         success: true,
@@ -226,7 +235,7 @@ export class UserService {
         message: 'User settings retrieved successfully'
       };
     } catch (error) {
-      logger.error('Get user settings failed', { error: error.message, userId });
+      logger.error('Get user settings failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Get settings failed',
@@ -265,10 +274,18 @@ export class UserService {
       });
 
       // Clear cache
-      await cacheService.del(`user_settings:${userId}`);
+      await getCacheService().del(`user_settings:${userId}`);
 
       userActionLogger('settings_updated', userId, {
         updatedFields: Object.keys(data),
+      });
+
+      // Emit user.updated event for settings changes
+      await publish(Topics.USER_EVENTS, userId, {
+        type: 'user.updated',
+        id: userId,
+        changes: data,
+        occurredAt: new Date().toISOString(),
       });
 
       return {
@@ -277,7 +294,7 @@ export class UserService {
         message: 'User settings updated successfully'
       };
     } catch (error) {
-      logger.error('Update user settings failed', { error: error.message, userId, data });
+      logger.error('Update user settings failed', { error: (error as any).message, userId, data });
       return {
         success: false,
         error: 'Update settings failed',
@@ -289,8 +306,13 @@ export class UserService {
   // Get user sessions
   async getUserSessions(userId: string): Promise<ServiceResponse<any[]>> {
     try {
+      const now = new Date();
       const sessions = await prisma.session.findMany({
-        where: { userId, isActive: true },
+        where: { 
+          userId, 
+          isActive: true,
+          expiresAt: { gt: now } // Only return non-expired sessions
+        },
         orderBy: { lastActivityAt: 'desc' },
         take: 10,
       });
@@ -300,6 +322,8 @@ export class UserService {
         deviceInfo: session.deviceInfo ? JSON.parse(session.deviceInfo) : null,
         ipAddress: session.ipAddress,
         userAgent: session.userAgent,
+        isActive: session.isActive,
+        expiresAt: session.expiresAt,
         lastActivityAt: session.lastActivityAt,
         createdAt: session.createdAt,
       }));
@@ -310,7 +334,7 @@ export class UserService {
         message: 'User sessions retrieved successfully'
       };
     } catch (error) {
-      logger.error('Get user sessions failed', { error: error.message, userId });
+      logger.error('Get user sessions failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Get sessions failed',
@@ -362,17 +386,25 @@ export class UserService {
       });
 
       // Clear cache
-      await cacheService.del(`user_profile:${userId}`);
-      await cacheService.del(`user_settings:${userId}`);
+      await getCacheService().del(`user_profile:${userId}`);
+      await getCacheService().del(`user_settings:${userId}`);
 
       userActionLogger('account_deactivated', userId);
+
+      // Emit user.updated event for deactivation
+      await publish(Topics.USER_EVENTS, userId, {
+        type: 'user.updated',
+        id: userId,
+        changes: { isActive: false },
+        occurredAt: new Date().toISOString(),
+      });
 
       return {
         success: true,
         message: 'Account deactivated successfully'
       };
     } catch (error) {
-      logger.error('Deactivate user failed', { error: error.message, userId });
+      logger.error('Deactivate user failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Deactivate account failed',
@@ -412,17 +444,25 @@ export class UserService {
       });
 
       // Clear cache
-      await cacheService.del(`user_profile:${userId}`);
-      await cacheService.del(`user_settings:${userId}`);
+      await getCacheService().del(`user_profile:${userId}`);
+      await getCacheService().del(`user_settings:${userId}`);
 
       userActionLogger('account_reactivated', userId);
+
+      // Emit user.updated event for reactivation
+      await publish(Topics.USER_EVENTS, userId, {
+        type: 'user.updated',
+        id: userId,
+        changes: { isActive: true },
+        occurredAt: new Date().toISOString(),
+      });
 
       return {
         success: true,
         message: 'Account reactivated successfully'
       };
     } catch (error) {
-      logger.error('Reactivate user failed', { error: error.message, userId });
+      logger.error('Reactivate user failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Reactivate account failed',
@@ -462,17 +502,25 @@ export class UserService {
       });
 
       // Clear cache
-      await cacheService.del(`user_profile:${userId}`);
-      await cacheService.del(`user_settings:${userId}`);
+      await getCacheService().del(`user_profile:${userId}`);
+      await getCacheService().del(`user_settings:${userId}`);
 
       userActionLogger('account_deleted', userId);
+
+      // Emit user.updated event for deletion
+      await publish(Topics.USER_EVENTS, userId, {
+        type: 'user.updated',
+        id: userId,
+        changes: { isActive: false }, // Assuming deletion means deactivation
+        occurredAt: new Date().toISOString(),
+      });
 
       return {
         success: true,
         message: 'Account deleted successfully'
       };
     } catch (error) {
-      logger.error('Delete user failed', { error: error.message, userId });
+      logger.error('Delete user failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Delete account failed',
@@ -535,7 +583,11 @@ export class UserService {
 
       return {
         success: true,
+        message: 'Users retrieved successfully',
         data: {
+          success: true,
+          message: 'Users retrieved successfully',
+          timestamp: new Date().toISOString(),
           data: users,
           pagination: {
             page,
@@ -545,11 +597,10 @@ export class UserService {
             hasNext: page < totalPages,
             hasPrev: page > 1,
           }
-        },
-        message: 'Users retrieved successfully'
+        }
       };
     } catch (error) {
-      logger.error('Search users failed', { error: error.message, query, pagination });
+      logger.error('Search users failed', { error: (error as any).message, query, pagination });
       return {
         success: false,
         error: 'Search users failed',
@@ -598,7 +649,7 @@ export class UserService {
         message: 'User statistics retrieved successfully'
       };
     } catch (error) {
-      logger.error('Get user stats failed', { error: error.message, userId });
+      logger.error('Get user stats failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Get stats failed',
@@ -636,10 +687,18 @@ export class UserService {
       });
 
       // Clear cache
-      await cacheService.del(`user_profile:${userId}`);
+      await getCacheService().del(`user_profile:${userId}`);
 
       userActionLogger('avatar_updated', userId, {
         avatarUrl,
+      });
+
+      // Emit user.updated event for avatar changes
+      await publish(Topics.USER_EVENTS, userId, {
+        type: 'user.updated',
+        id: userId,
+        changes: { avatar: avatarUrl },
+        occurredAt: new Date().toISOString(),
       });
 
       return {
@@ -648,7 +707,7 @@ export class UserService {
         message: 'Avatar updated successfully'
       };
     } catch (error) {
-      logger.error('Update user avatar failed', { error: error.message, userId, avatarUrl });
+      logger.error('Update user avatar failed', { error: (error as any).message, userId, avatarUrl });
       return {
         success: false,
         error: 'Update avatar failed',
@@ -692,7 +751,7 @@ export class UserService {
         message: 'User retrieved successfully'
       };
     } catch (error) {
-      logger.error('Get user by ID failed', { error: error.message, userId });
+      logger.error('Get user by ID failed', { error: (error as any).message, userId });
       return {
         success: false,
         error: 'Get user failed',
@@ -740,7 +799,11 @@ export class UserService {
 
       return {
         success: true,
+        message: 'Users retrieved successfully',
         data: {
+          success: true,
+          message: 'Users retrieved successfully',
+          timestamp: new Date().toISOString(),
           data: users,
           pagination: {
             page,
@@ -750,11 +813,10 @@ export class UserService {
             hasNext: page < totalPages,
             hasPrev: page > 1,
           }
-        },
-        message: 'Users retrieved successfully'
+        }
       };
     } catch (error) {
-      logger.error('Get all users failed', { error: error.message, pagination });
+      logger.error('Get all users failed', { error: (error as any).message, pagination });
       return {
         success: false,
         error: 'Get users failed',

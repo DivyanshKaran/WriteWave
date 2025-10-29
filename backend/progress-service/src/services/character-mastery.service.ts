@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { logger } from '@/config/logger';
-import { config } from '@/config';
+import { logger } from '../config/logger';
+import { config } from '../config';
 import { 
   CharacterMastery, 
   CharacterMasteryInput, 
@@ -8,8 +8,8 @@ import {
   MasteryLevel,
   PracticeSession,
   PracticeSessionInput
-} from '@/types';
-import { cacheGet, cacheSet, cacheDel } from '@/config/redis';
+} from '../types';
+import { cacheGet, cacheSet, cacheDel } from '../config/redis';
 import moment from 'moment';
 
 export class CharacterMasteryService {
@@ -548,4 +548,4 @@ export class CharacterMasteryService {
 }
 
 // Export singleton instance
-export const characterMasteryService = new CharacterMasteryService(require('@/config/database').default);
+export const characterMasteryService = new CharacterMasteryService(require('../config/database').default);

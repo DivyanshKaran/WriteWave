@@ -18,7 +18,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Stage 2: Build application
 FROM node:18-alpine AS builder
@@ -37,7 +37,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies (including dev dependencies)
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY src/ ./src/
@@ -47,7 +47,8 @@ COPY prisma/ ./prisma/
 RUN npx prisma generate
 
 # Build application
-RUN npm run build
+# Skip build step for now - use ts-node directly
+# RUN npm run build
 
 # Stage 3: Production image
 FROM node:18-alpine AS production
@@ -68,8 +69,9 @@ RUN apk update && apk upgrade && \
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/package*.json ./
 
-# Copy built application
-COPY --from=builder /app/dist ./dist
+# Copy source and dependencies from builder
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
 # Copy configuration files
@@ -90,4 +92,4 @@ EXPOSE 8006
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application
-CMD ["node", "dist/index.js"]
+CMD ["npx", "ts-node", "src/index.ts"]

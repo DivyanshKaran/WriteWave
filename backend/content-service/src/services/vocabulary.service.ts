@@ -1,6 +1,6 @@
-import { prisma } from '@/config/database';
-import { contentCacheService } from '@/config/redis';
-import { logger, vocabularyLogger } from '@/config/logger';
+import { prisma } from '../config/database';
+import { contentCacheService } from '../config/redis';
+import { logger, vocabularyLogger } from '../config/logger';
 import { 
   VocabularyData, 
   VocabularyWithRelations, 
@@ -11,7 +11,7 @@ import {
   VocabularyCategory,
   JLPTLevel,
   DifficultyLevel
-} from '@/types';
+} from '../types';
 
 // Vocabulary service class
 export class VocabularyService {
@@ -154,9 +154,21 @@ export class VocabularyService {
       const cacheKey = `${category}_${pagination.page || 1}_${pagination.limit || 20}`;
       const cachedVocabulary = await contentCacheService.getCachedVocabularyByCategory(cacheKey);
       if (cachedVocabulary) {
+        const { page = 1, limit = 20 } = pagination;
+        const total = cachedVocabulary.length;
+        const totalPages = Math.ceil(total / limit);
+        
         return {
           success: true,
-          data: cachedVocabulary,
+          data: {
+            data: cachedVocabulary,
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
           message: 'Vocabulary words retrieved successfully'
         };
       }
@@ -212,9 +224,21 @@ export class VocabularyService {
       const cacheKey = `search_${Buffer.from(query).toString('base64')}_${JSON.stringify(filters)}_${pagination.page || 1}_${pagination.limit || 20}`;
       const cachedResults = await contentCacheService.getCachedSearchResults(cacheKey);
       if (cachedResults) {
+        const { page = 1, limit = 20 } = pagination;
+        const total = cachedResults.length;
+        const totalPages = Math.ceil(total / limit);
+        
         return {
           success: true,
-          data: cachedResults,
+          data: {
+            data: cachedResults,
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
           message: 'Search results retrieved successfully'
         };
       }
@@ -268,7 +292,7 @@ export class VocabularyService {
       };
 
       // Cache the results
-      await contentCacheService.cacheSearchResults(cacheKey, searchResults);
+      await contentCacheService.cacheSearchResults(cacheKey, result);
 
       vocabularyLogger('vocabulary_searched', undefined, {
         query,

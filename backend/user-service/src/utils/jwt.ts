@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { config } from '@/config';
-import { JWTPayload, RefreshTokenPayload } from '@/types';
-import { logger } from '@/config/logger';
+import { config } from '../config';
+import { JWTPayload, RefreshTokenPayload } from '../types';
+import { logger } from '../config/logger';
 
 // JWT utility class
 export class JWTService {

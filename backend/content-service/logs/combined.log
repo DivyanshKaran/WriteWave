@@ -1,0 +1,146 @@
+{"error":{"clientVersion":"5.22.0","name":"PrismaClientInitializationError"},"level":"error","message":"Database connection failed","timestamp":"2025-10-19 07:33:31:3331"}
+{"error":{"clientVersion":"5.22.0","name":"PrismaClientInitializationError"},"level":"error","message":"Database connection failed","timestamp":"2025-10-19 08:23:35:2335"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 08:40:30:4030"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 08:40:31:4031"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 08:40:31:4031"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 08:40:31:4031"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 08:40:31:4031"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-19 08:40:31:4031"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-19 08:40:31:4031"}
+{"ip":"::ffff:172.20.0.1","level":"info","message":"Incoming request","method":"GET","timestamp":"2025-10-19 08:40:39:4039","url":"/api/v1/health","userAgent":"curl/8.16.0"}
+{"ip":"::ffff:172.20.0.1","level":"info","message":"Incoming request","method":"GET","timestamp":"2025-10-19 08:41:29:4129","url":"/api/v1/health","userAgent":"curl/8.16.0"}
+{"ip":"::ffff:172.20.0.1","level":"info","message":"Incoming request","method":"GET","timestamp":"2025-10-19 09:05:26:526","url":"/api/v1/health","userAgent":"curl/8.16.0"}
+{"ip":"::ffff:172.20.0.1","level":"info","message":"Incoming request","method":"GET","timestamp":"2025-10-19 09:13:47:1347","url":"/api/v1/health","userAgent":"curl/8.16.0"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 14:47:46:4746"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:47:46:4746"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:47:46:4746"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 14:47:46:4746"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 14:47:46:4746"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-19 14:47:46:4746"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-19 14:47:46:4746"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 14:48:20:4820"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:48:21:4821"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:48:21:4821"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 14:48:21:4821"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 14:48:21:4821"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-19 14:48:21:4821"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-19 14:48:21:4821"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 14:48:57:4857"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:48:57:4857"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:48:57:4857"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 14:48:57:4857"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 14:48:57:4857"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-19 14:48:57:4857"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-19 14:48:57:4857"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-19 14:49:34:4934"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:49:34:4934"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-19 14:49:34:4934"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-19 14:49:34:4934"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-19 14:49:34:4934"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-19 14:49:34:4934"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-19 14:49:34:4934"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-27 14:03:55:355"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 14:03:55:355"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 14:03:55:355"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-27 14:03:55:355"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-27 14:03:55:355"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-27 14:03:55:355"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-27 14:03:55:355"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-27 14:04:39:439"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 14:04:39:439"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 14:04:39:439"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-27 14:04:39:439"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-27 14:04:39:439"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-27 14:04:39:439"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-27 14:04:39:439"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-27 15:57:25:5725"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 15:57:25:5725"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 15:57:25:5725"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-27 15:57:25:5725"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-27 15:57:25:5725"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-27 15:57:25:5725"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-27 15:57:25:5725"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-27 15:58:08:588"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 15:58:09:589"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-27 15:58:09:589"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-27 15:58:09:589"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-27 15:58:09:589"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-27 15:58:09:589"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-27 15:58:09:589"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 08:22:02:222"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 08:22:02:222"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 08:22:02:222"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 08:22:02:222"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 08:22:02:222"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 08:22:02:222"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 08:22:02:222"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 08:23:52:2352"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 08:23:52:2352"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 09:21:11:2111"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 09:21:11:2111"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 09:21:11:2111"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 09:21:11:2111"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 09:21:11:2111"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 09:21:11:2111"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 09:21:11:2111"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 09:21:27:2127"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 09:21:27:2127"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 09:21:27:2127"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 09:21:27:2127"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 09:21:27:2127"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 09:21:27:2127"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 09:21:27:2127"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:17:54:1754"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:17:54:1754"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:17:54:1754"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:17:54:1754"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:17:54:1754"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 10:17:54:1754"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 10:17:54:1754"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:18:49:1849"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:18:49:1849"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:18:49:1849"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:18:49:1849"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:18:49:1849"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 10:18:49:1849"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 10:18:49:1849"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:22:56:2256"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:22:57:2257"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:22:57:2257"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:22:57:2257"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:22:57:2257"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 10:22:57:2257"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 10:22:57:2257"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:26:03:263"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:26:04:264"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:26:04:264"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:26:04:264"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:26:04:264"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 10:26:04:264"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 10:26:04:264"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-28 10:27:51:2751"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:27:52:2752"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-28 10:27:52:2752"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-28 10:27:52:2752"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-28 10:27:52:2752"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-28 10:27:52:2752"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-28 10:27:52:2752"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-29 06:59:13:5913"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 06:59:13:5913"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 06:59:13:5913"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-29 06:59:13:5913"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-29 06:59:13:5913"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-29 06:59:13:5913"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-29 06:59:13:5913"}
+{"level":"info","message":"Prisma Info Starting a postgresql pool with 25 connections.","target":"quaint::pooled","timestamp":"2025-10-29 06:59:54:5954"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 06:59:54:5954"}
+{"level":"info","message":"Database connected successfully","timestamp":"2025-10-29 06:59:54:5954"}
+{"level":"info","message":"Redis client connected","timestamp":"2025-10-29 06:59:54:5954"}
+{"level":"info","message":"Redis client ready","timestamp":"2025-10-29 06:59:54:5954"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-29 06:59:54:5954"}
+{"environment":"development","level":"info","message":"Content Service running on port 8002","port":8002,"timestamp":"2025-10-29 06:59:54:5954"}

@@ -1,9 +1,9 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
-import { prisma } from '@/models';
-import { JWTPayload, WebSocketMessage, NotificationData } from '@/types';
-import { redis } from '@/utils/redis';
+import { prisma } from '../models';
+import { JWTPayload, WebSocketMessage, NotificationData } from '../types';
+import { redis } from '../utils/redis';
 
 export class WebSocketService {
   private io: SocketIOServer;
@@ -13,7 +13,7 @@ export class WebSocketService {
   constructor(server: HTTPServer) {
     this.io = new SocketIOServer(server, {
       cors: {
-        origin: process.env.WS_CORS_ORIGIN || "http://localhost:3000",
+        origin: (process.env.WS_CORS_ORIGIN || process.env.CORS_ORIGIN || "http://localhost:3000").split(','),
         methods: ["GET", "POST"]
       },
       transports: ['websocket', 'polling']
@@ -50,6 +50,10 @@ export class WebSocketService {
 
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket) => {
+      // WS Health namespace
+      socket.on('health', () => {
+        socket.emit('pong', { status: 'ok', timestamp: new Date().toISOString(), version: process.env.npm_package_version || '1.0.0' });
+      });
       const user = socket.data.user;
       console.log(`User ${user.username} connected with socket ${socket.id}`);
 

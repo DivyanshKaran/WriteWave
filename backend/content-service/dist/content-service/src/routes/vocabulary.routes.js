@@ -1,0 +1,22 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.vocabularyRoutes = void 0;
+const express_1 = require("express");
+const vocabulary_controller_1 = require("../controllers/vocabulary.controller");
+const validation_1 = require("../middleware/validation");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+exports.vocabularyRoutes = router;
+router.get('/', vocabulary_controller_1.vocabularyController.getVocabularyWords);
+router.get('/search', vocabulary_controller_1.vocabularyController.searchVocabularyWords);
+router.get('/statistics', vocabulary_controller_1.vocabularyController.getVocabularyStatistics);
+router.get('/random', vocabulary_controller_1.vocabularyController.getRandomVocabularyWords);
+router.get('/frequency', vocabulary_controller_1.vocabularyController.getVocabularyWordsByFrequency);
+router.get('/part-of-speech/:partOfSpeech', vocabulary_controller_1.vocabularyController.getVocabularyWordsByPartOfSpeech);
+router.get('/category/:category', vocabulary_controller_1.vocabularyController.getVocabularyWordsByCategory);
+router.get('/jlpt/:level', vocabulary_controller_1.vocabularyController.getVocabularyWordsByJLPTLevel);
+router.get('/:vocabularyId', vocabulary_controller_1.vocabularyController.getVocabularyWordById);
+router.post('/', auth_1.authenticateJWT, (0, validation_1.validate)(validation_1.validationSchemas.vocabulary), vocabulary_controller_1.vocabularyController.createVocabularyWord);
+router.put('/:vocabularyId', auth_1.authenticateJWT, (0, validation_1.validate)(validation_1.validationSchemas.vocabulary), vocabulary_controller_1.vocabularyController.updateVocabularyWord);
+router.delete('/:vocabularyId', auth_1.authenticateJWT, vocabulary_controller_1.vocabularyController.deleteVocabularyWord);
+//# sourceMappingURL=vocabulary.routes.js.map

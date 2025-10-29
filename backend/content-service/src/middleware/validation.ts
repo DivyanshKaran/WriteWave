@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
-import { logger } from '@/config/logger';
+import { logger } from '../config/logger';
 
 // Validation error class
 export class ValidationError extends Error {
@@ -707,3 +707,6 @@ export const sanitizeSearchQuery = (query: string): string => {
 
 // Export validation schemas
 export default validationSchemas;
+
+// Export validateRequest as an alias for validate
+export const validateRequest = validate;

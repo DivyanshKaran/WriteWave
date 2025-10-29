@@ -47,6 +47,13 @@ export const connectRedis = async (): Promise<RedisClientType> => {
     await redisClient.connect();
     return redisClient;
   } catch (error) {
+    if (process.env.OPTIONAL_REDIS === 'true') {
+      logger.warn('Redis optional: proceeding without Redis', { error: (error as any)?.message });
+      if (!redisClient) {
+        redisClient = createClient(redisConfig);
+      }
+      return redisClient;
+    }
     logger.error('Redis connection failed', { error });
     throw error;
   }
@@ -54,8 +61,8 @@ export const connectRedis = async (): Promise<RedisClientType> => {
 
 // Get Redis client
 export const getRedisClient = (): RedisClientType => {
-  if (!redisClient || !redisClient.isOpen) {
-    throw new Error('Redis client not connected');
+  if (!redisClient) {
+    redisClient = createClient(redisConfig);
   }
   return redisClient;
 };
@@ -290,7 +297,7 @@ export class CacheService {
   async sIsMember(key: string, member: string): Promise<boolean> {
     try {
       const result = await this.client.sIsMember(this.getKey(key), member);
-      return result === 1;
+      return Boolean(result);
     } catch (error) {
       logger.error('Cache sIsMember failed', { key, member, error });
       return false;

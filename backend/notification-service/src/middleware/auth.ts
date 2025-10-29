@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '@/utils/logger';
-import { UnauthorizedError, ForbiddenError } from '@/utils/errors';
-import { JWTPayload } from '@/types';
+import { logger } from '../utils/logger';
+import { UnauthorizedError, ForbiddenError } from '../utils/errors';
+import { JWTPayload } from '../types';
 
 // Extend Request interface to include user
 declare global {
@@ -146,6 +146,7 @@ export const generateToken = (payload: JWTPayload): string => {
 
   const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
   
+  // @ts-ignore - expiresIn is valid but types may not match exactly
   return jwt.sign(payload, jwtSecret, { expiresIn });
 };
 
