@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { WritingCanvas } from "@/components/WritingCanvas";
 import { Button } from "@/components/ui/button";
@@ -9,117 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, BookOpen, Layers, Pen, Lightbulb, Edit3, Save, X, Volume2 } from "lucide-react";
 
-// Sample data - will be replaced with backend data
-const kanjiData: Record<string, any> = {
-  "一": { 
-    meaning: "One", 
-    kunyomi: "ひと-つ", 
-    onyomi: "イチ", 
-    level: "N5",
-    strokeOrder: [
-      { 
-        number: 1, 
-        description: "Horizontal stroke from left to right",
-        path: "M 20 50 L 80 50",
-        direction: "left-to-right"
-      }
-    ],
-    vocabulary: [
-      { word: "一つ", reading: "ひとつ", meaning: "one (thing)" },
-      { word: "一人", reading: "ひとり", meaning: "one person" },
-      { word: "一日", reading: "いちにち", meaning: "one day" },
-    ]
-  },
-  "日": { 
-    meaning: "Sun, Day", 
-    kunyomi: "ひ, か", 
-    onyomi: "ニチ", 
-    level: "N5",
-    strokeOrder: [
-      { number: 1, description: "Vertical stroke", path: "M 30 20 L 30 80", direction: "top-to-bottom" },
-      { number: 2, description: "Horizontal stroke", path: "M 20 30 L 80 30", direction: "left-to-right" },
-      { number: 3, description: "Horizontal stroke", path: "M 20 70 L 80 70", direction: "left-to-right" },
-      { number: 4, description: "Vertical stroke", path: "M 70 20 L 70 80", direction: "top-to-bottom" }
-    ],
-    vocabulary: [
-      { word: "日本", reading: "にほん", meaning: "Japan" },
-      { word: "今日", reading: "きょう", meaning: "today" },
-      { word: "毎日", reading: "まいにち", meaning: "every day" },
-    ]
-  },
-  "本": { 
-    meaning: "Book, Origin", 
-    kunyomi: "もと", 
-    onyomi: "ホン", 
-    level: "N5",
-    strokeOrder: ["Horizontal stroke", "Vertical stroke", "Short horizontal stroke", "Horizontal stroke", "Vertical stroke"],
-    vocabulary: [
-      { word: "本", reading: "ほん", meaning: "book" },
-      { word: "日本", reading: "にほん", meaning: "Japan" },
-      { word: "本当", reading: "ほんとう", meaning: "truth, really" },
-    ]
-  },
-  "人": { 
-    meaning: "Person", 
-    kunyomi: "ひと", 
-    onyomi: "ジン", 
-    level: "N5",
-    strokeOrder: ["Diagonal stroke to the left", "Diagonal stroke to the right"],
-    vocabulary: [
-      { word: "人", reading: "ひと", meaning: "person" },
-      { word: "日本人", reading: "にほんじん", meaning: "Japanese person" },
-      { word: "大人", reading: "おとな", meaning: "adult" },
-    ]
-  },
-  "月": { 
-    meaning: "Moon, Month", 
-    kunyomi: "つき", 
-    onyomi: "ゲツ", 
-    level: "N5",
-    strokeOrder: ["Vertical stroke", "Horizontal stroke", "Horizontal stroke", "Horizontal stroke"],
-    vocabulary: [
-      { word: "月", reading: "つき", meaning: "moon" },
-      { word: "一月", reading: "いちがつ", meaning: "January" },
-      { word: "毎月", reading: "まいつき", meaning: "every month" },
-    ]
-  },
-  "火": { 
-    meaning: "Fire", 
-    kunyomi: "ひ", 
-    onyomi: "カ", 
-    level: "N5",
-    strokeOrder: ["Dot", "Short stroke", "Diagonal stroke", "Diagonal stroke"],
-    vocabulary: [
-      { word: "火", reading: "ひ", meaning: "fire" },
-      { word: "火曜日", reading: "かようび", meaning: "Tuesday" },
-      { word: "花火", reading: "はなび", meaning: "fireworks" },
-    ]
-  },
-  "水": { 
-    meaning: "Water", 
-    kunyomi: "みず", 
-    onyomi: "スイ", 
-    level: "N5",
-    strokeOrder: ["Vertical stroke", "Short horizontal stroke", "Diagonal stroke to the left", "Diagonal stroke to the right"],
-    vocabulary: [
-      { word: "水", reading: "みず", meaning: "water" },
-      { word: "水曜日", reading: "すいようび", meaning: "Wednesday" },
-      { word: "水色", reading: "みずいろ", meaning: "light blue" },
-    ]
-  },
-  "木": { 
-    meaning: "Tree, Wood", 
-    kunyomi: "き", 
-    onyomi: "モク", 
-    level: "N5",
-    strokeOrder: ["Horizontal stroke", "Vertical stroke", "Diagonal stroke to the left", "Diagonal stroke to the right"],
-    vocabulary: [
-      { word: "木", reading: "き", meaning: "tree" },
-      { word: "木曜日", reading: "もくようび", meaning: "Thursday" },
-      { word: "大木", reading: "たいぼく", meaning: "large tree" },
-    ]
-  },
-};
+import { contentService } from "@/lib/api-client";
 
 export default function KanjiPractice() {
   const { char } = useParams<{ char: string }>();
@@ -129,16 +19,36 @@ export default function KanjiPractice() {
   const [savedStory, setSavedStory] = useState("");
   const [showStrokeNumbers, setShowStrokeNumbers] = useState(true);
   const [isLearned, setIsLearned] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [kanji, setKanji] = useState<any>({ meaning: '', kunyomi: '', onyomi: '', strokeOrder: [], vocabulary: [] });
 
   const decodedChar = char ? decodeURIComponent(char) : '';
-  const kanji = kanjiData[decodedChar] || { 
-    meaning: "Unknown", 
-    kunyomi: "N/A", 
-    onyomi: "N/A", 
-    level: "N/A",
-    strokeOrder: [],
-    vocabulary: []
-  };
+
+  useEffect(() => {
+    const load = async () => {
+      if (!decodedChar) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await contentService.getCharacter(decodedChar);
+        const details = res.data || {};
+        // Optionally fetch stroke order/pronunciation/examples if available
+        setKanji({
+          meaning: details.meaning || details.translation || '',
+          kunyomi: details.kunyomi || '',
+          onyomi: details.onyomi || '',
+          strokeOrder: details.strokeOrder || [],
+          vocabulary: details.vocabulary || [],
+        });
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load kanji');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [decodedChar]);
 
   const handleSaveStory = () => {
     setSavedStory(userStory);
@@ -170,6 +80,28 @@ export default function KanjiPractice() {
       speechSynthesis.speak(utterance);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header isAuthenticated />
+        <main className="flex-1 pt-20 sm:pt-24 pb-16 px-3 sm:px-4">
+          <div className="container mx-auto max-w-7xl">Loading...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header isAuthenticated />
+        <main className="flex-1 pt-20 sm:pt-24 pb-16 px-3 sm:px-4">
+          <div className="container mx-auto max-w-7xl text-destructive">{error}</div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

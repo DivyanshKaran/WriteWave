@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Target, Flame, BookOpen, Trophy, Award, Calendar, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ProfileHeader, 
@@ -12,8 +13,10 @@ import {
 } from "@/components/profile";
 import { SkipLink } from "@/components/accessibility";
 
-// Sample profile data
-const profileData = {
+import { userService } from "@/lib/api-client";
+
+// Fallback profile data
+const fallbackProfile = {
   name: "Sakura Tanaka",
   username: "@sakura_learns",
   email: "sakura.tanaka@example.com",
@@ -82,6 +85,50 @@ const profileData = {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const [profileData, setProfileData] = useState<any>(fallbackProfile);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [profileRes, statsRes] = await Promise.all([
+          userService.getProfile(),
+          userService.getUserStats(),
+        ]);
+        const p = profileRes.data || {};
+        const s = statsRes.data || {};
+        setProfileData({
+          name: p.name || fallbackProfile.name,
+          username: p.username ? `@${p.username}` : fallbackProfile.username,
+          email: p.email || fallbackProfile.email,
+          location: p.location || fallbackProfile.location,
+          joinedDate: p.joinedDate || fallbackProfile.joinedDate,
+          bio: p.bio || fallbackProfile.bio,
+          stats: {
+            totalCharacters: s.totalCharacters ?? fallbackProfile.stats.totalCharacters,
+            totalVocabulary: s.totalVocabulary ?? fallbackProfile.stats.totalVocabulary,
+            studyStreak: s.studyStreak ?? fallbackProfile.stats.studyStreak,
+            totalHours: s.totalHours ?? fallbackProfile.stats.totalHours,
+            lessonsCompleted: s.lessonsCompleted ?? fallbackProfile.stats.lessonsCompleted,
+            articlesWritten: s.articlesWritten ?? fallbackProfile.stats.articlesWritten,
+            totalViews: s.totalViews ?? fallbackProfile.stats.totalViews,
+            totalLikes: s.totalLikes ?? fallbackProfile.stats.totalLikes,
+          },
+          badges: fallbackProfile.badges,
+          recentActivity: fallbackProfile.recentActivity,
+          articles: fallbackProfile.articles,
+        });
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const handleEditProfile = () => {
     // TODO: Implement edit profile functionality
@@ -133,6 +180,8 @@ export default function Profile() {
           <div className="mt-8">
             <ProfileActivity activities={profileData.recentActivity} />
           </div>
+          {loading && <div className="mt-6">Loading...</div>}
+          {error && <div className="mt-6 text-destructive">{error}</div>}
         </div>
       </main>
     </div>

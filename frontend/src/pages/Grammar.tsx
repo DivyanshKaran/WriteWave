@@ -11,7 +11,8 @@ import {
   ChevronRight,
   ArrowLeft
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useGrammar } from "@/hooks/useContent";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -292,27 +293,21 @@ export default function Grammar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [bookmarked, setBookmarked] = useState<Record<number, boolean>>(
-    grammarPoints.reduce((acc, point) => ({ ...acc, [point.id]: point.bookmarked }), {})
-  );
+  const [bookmarked, setBookmarked] = useState<Record<number, boolean>>({});
 
   const toggleBookmark = (id: number) => {
     setBookmarked(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const filteredGrammar = grammarPoints.filter(point => {
-    const matchesSearch = 
-      point.pattern.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      point.meaning.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      point.explanation.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesLevel = selectedLevel === "all" || point.level === selectedLevel;
-    const matchesCategory = selectedCategory === "all" || point.category === selectedCategory;
-    
-    return matchesSearch && matchesLevel && matchesCategory;
-  });
+  const params = useMemo(() => ({
+    q: searchQuery || undefined,
+    level: selectedLevel !== 'all' ? selectedLevel : undefined,
+    category: selectedCategory !== 'all' ? selectedCategory : undefined,
+  }), [searchQuery, selectedLevel, selectedCategory]);
+  const { data, isLoading, error } = useGrammar(params as any);
+  const filteredGrammar: any[] = (data || []) as any[];
 
-  const categories = ["all", ...Array.from(new Set(grammarPoints.map(p => p.category)))];
+  const categories = useMemo(() => ["all"], []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -388,6 +383,8 @@ export default function Grammar() {
           </div>
 
           {/* Grammar Points Grid */}
+          {isLoading && <Card className="p-6 mb-6">Loading...</Card>}
+          {error && <div className="text-destructive mb-6">{(error as any)?.message || 'Failed to load grammar'}</div>}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredGrammar.map((point) => (
               <Card key={point.id} className="hover:border-accent transition-colors">

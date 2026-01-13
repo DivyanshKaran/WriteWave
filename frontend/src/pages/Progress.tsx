@@ -15,6 +15,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProgress } from "@/hooks/useProgress";
 import {
   ChartContainer,
   ChartTooltip,
@@ -32,47 +33,24 @@ import {
   Line,
 } from "recharts";
 
-// Sample data - will be replaced with backend data
-const progressData = {
-  overallStats: {
-    totalCharacters: 184,
-    totalVocabulary: 342,
-    studyStreak: 12,
-    totalStudyTime: 2580, // minutes
-    lastStudyDate: "2025-10-18"
-  },
-  categoryProgress: {
-    hiragana: { learned: 46, total: 46, percentage: 100 },
-    katakana: { learned: 46, total: 46, percentage: 100 },
-    kanji: { learned: 92, total: 2136, percentage: 4.3 },
-  },
-  jlptProgress: {
-    N5: { kanji: 80, vocabulary: 800, kanjiProgress: 80, vocabProgress: 85 },
-    N4: { kanji: 170, vocabulary: 1500, kanjiProgress: 12, vocabProgress: 8 },
-    N3: { kanji: 370, vocabulary: 3750, kanjiProgress: 0, vocabProgress: 0 },
-    N2: { kanji: 415, vocabulary: 6000, kanjiProgress: 0, vocabProgress: 0 },
-    N1: { kanji: 1165, vocabulary: 10000, kanjiProgress: 0, vocabProgress: 0 },
-  },
-  recentAchievements: [
-    { title: "First Streak", description: "Studied for 7 days in a row", date: "2025-10-11", icon: Flame },
-    { title: "Kanji Master N5", description: "Learned all N5 kanji", date: "2025-10-15", icon: Award },
-    { title: "Century Club", description: "Learned 100+ characters", date: "2025-10-17", icon: Target },
-  ],
-  weeklyActivity: [
-    { day: "Mon", minutes: 45 },
-    { day: "Tue", minutes: 60 },
-    { day: "Wed", minutes: 30 },
-    { day: "Thu", minutes: 75 },
-    { day: "Fri", minutes: 50 },
-    { day: "Sat", minutes: 90 },
-    { day: "Sun", minutes: 40 },
-  ]
-};
-
 export default function Progress() {
   const navigate = useNavigate();
-  const { overallStats, jlptProgress, recentAchievements, weeklyActivity } = progressData;
-  const maxMinutes = Math.max(...weeklyActivity.map(d => d.minutes));
+  const { progress, isLoading, error } = useProgress();
+
+  const overallStats = progress?.overallStats || {
+    totalCharacters: 0,
+    totalVocabulary: 0,
+    studyStreak: 0,
+    totalStudyTime: 0,
+    lastStudyDate: ''
+  };
+
+  const weeklyActivity = progress?.weeklyActivity || [];
+
+  const jlptProgress = progress?.jlptProgress || {} as any;
+  const recentAchievements = progress?.recentAchievements || [] as any[];
+
+  const maxMinutes = weeklyActivity.length > 0 ? Math.max(...weeklyActivity.map(d => d.minutes)) : 0;
 
 
   const weeklyChartConfig = {
@@ -228,7 +206,7 @@ export default function Progress() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {recentAchievements.map((achievement, index) => {
-                    const Icon = achievement.icon;
+                    const Icon = (achievement as any).icon || Award;
                     return (
                       <div 
                         key={index}

@@ -1,5 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { useState, useCallback, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { notificationService } from "@/lib/api-client";
+import { NotificationSchema } from "@/types/schemas";
+import { useAuthStore } from "@/stores/auth-store";
 
 export interface NotificationState {
   notifications: Notification[];
@@ -20,7 +23,7 @@ export interface NotificationActions {
 
 interface Notification {
   id: string;
-  type: 'achievement' | 'message' | 'reply' | 'like' | 'follow' | 'system';
+  type: "achievement" | "message" | "reply" | "like" | "follow" | "system";
   title: string;
   message: string;
   data?: Record<string, any>;
@@ -29,8 +32,40 @@ interface Notification {
   actionUrl?: string;
 }
 
+// Query hook for fetching notifications with TanStack Query
+export function useNotificationsQuery(userId: string, params?: any) {
+  return useQuery({
+    queryKey: ["notifications", userId, params || {}],
+    queryFn: async () => {
+      const res = await notificationService.getNotifications(userId, params);
+      const arr = Array.isArray(res.data) ? res.data : [];
+      return arr
+        .map((n: any) => {
+          const parsed = NotificationSchema.safeParse(n);
+          return parsed.success ? parsed.data : null;
+        })
+        .filter(Boolean);
+    },
+    enabled: !!userId,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const res = await notificationService.markAsRead(id);
+      return res.data;
+    },
+    onSuccess: (_data, _vars, _ctx) => {
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+}
+
 /**
- * Hook for managing notifications
+ * Hook for managing notifications with local state
  */
 export function useNotifications(): NotificationState & NotificationActions {
   const [state, setState] = useState<NotificationState>({
@@ -42,14 +77,20 @@ export function useNotifications(): NotificationState & NotificationActions {
 
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
     try {
-      const response = await apiClient.get('/notifications');
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+      const response = await notificationService.getNotifications(userId);
       const notifications = response.data;
-      
-      const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
-      
+
+      const unreadCount = notifications.filter(
+        (n: Notification) => !n.isRead
+      ).length;
+
       setState({
         notifications,
         unreadCount,
@@ -57,10 +98,10 @@ export function useNotifications(): NotificationState & NotificationActions {
         error: null,
       });
     } catch (error: any) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: error.message || 'Failed to fetch notifications',
+        error: error.message || "Failed to fetch notifications",
       }));
     }
   }, []);
@@ -68,73 +109,81 @@ export function useNotifications(): NotificationState & NotificationActions {
   // Mark notification as read
   const markAsRead = useCallback(async (id: string) => {
     try {
-      await apiClient.patch(`/notifications/${id}/read`);
-      
-      setState(prev => ({
+      await notificationService.markAsRead(id);
+
+      setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.map(notification =>
-          notification.id === id 
+        notifications: prev.notifications.map((notification) =>
+          notification.id === id
             ? { ...notification, isRead: true }
             : notification
         ),
         unreadCount: Math.max(0, prev.unreadCount - 1),
       }));
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to mark notification as read');
+      throw new Error(error.message || "Failed to mark notification as read");
     }
   }, []);
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
-      await apiClient.patch('/notifications/read-all');
-      
-      setState(prev => ({
+      await notificationService.markAllAsRead();
+
+      setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.map(notification => ({
+        notifications: prev.notifications.map((notification) => ({
           ...notification,
           isRead: true,
         })),
         unreadCount: 0,
       }));
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to mark all notifications as read');
+      throw new Error(
+        error.message || "Failed to mark all notifications as read"
+      );
     }
   }, []);
 
   // Delete notification
   const deleteNotification = useCallback(async (id: string) => {
     try {
-      await apiClient.delete(`/notifications/${id}`);
-      
-      setState(prev => {
-        const notification = prev.notifications.find(n => n.id === id);
+      await notificationService.deleteNotification(id);
+
+      setState((prev) => {
+        const notification = prev.notifications.find((n) => n.id === id);
         const wasUnread = notification && !notification.isRead;
-        
+
         return {
           ...prev,
-          notifications: prev.notifications.filter(n => n.id !== id),
-          unreadCount: wasUnread ? Math.max(0, prev.unreadCount - 1) : prev.unreadCount,
+          notifications: prev.notifications.filter((n) => n.id !== id),
+          unreadCount: wasUnread
+            ? Math.max(0, prev.unreadCount - 1)
+            : prev.unreadCount,
         };
       });
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete notification');
+      throw new Error(error.message || "Failed to delete notification");
     }
   }, []);
 
   // Clear all notifications
   const clearAllNotifications = useCallback(async () => {
     try {
-      await apiClient.delete('/notifications/clear-all');
-      
+      const userId = useAuthStore.getState().user?.id;
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+      await notificationService.clearAllNotifications(userId);
+
       setState({
         notifications: [],
         unreadCount: 0,
         isLoading: false,
         error: null,
       });
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to clear all notifications');
+    } catch (error: unknown) {
+      throw new Error(error.message || "Failed to clear all notifications");
     }
   }, []);
 

@@ -4,6 +4,7 @@ import { useUIStore } from './ui-store';
 import { useProgressStore } from './progress-store';
 import { useArticlesStore } from './articles-store';
 import { useCommunityStore } from './community-store';
+import { initializeMockAuth } from '@/lib/mock-data';
 
 /**
  * Store provider component that handles store initialization and cleanup
@@ -17,6 +18,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize stores on mount
   useEffect(() => {
+    // Initialize mock auth for demo mode
+    initializeMockAuth(useAuthStore.getState());
+    
     // Set initial loading states
     setAuthLoading(false);
     setProgressLoading(false);

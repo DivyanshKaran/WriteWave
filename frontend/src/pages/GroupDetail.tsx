@@ -17,6 +17,16 @@ import {
   Pin
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { communityService } from "@/lib/api-client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForums as useForumsHook } from "@/hooks/useCommunity";
 
 const groupMembers = [
   { id: 1, name: "SakuraLearner", initial: "S", role: "Admin", joinedDays: 120 },
@@ -69,13 +79,7 @@ const groupForums = [
   }
 ];
 
-const leaderboard = [
-  { rank: 1, name: "KanjiMaster2024", points: 15420, streak: 89, avatar: "K" },
-  { rank: 2, name: "TokyoNinja", points: 14850, streak: 76, avatar: "T" },
-  { rank: 3, name: "SakuraStudent", points: 13990, streak: 65, avatar: "S" },
-  { rank: 4, name: "RamenLover", points: 12340, streak: 58, avatar: "R" },
-  { rank: 5, name: "MangaReader99", points: 11520, streak: 52, avatar: "M" }
-];
+type LeaderItem = { rank?: number; name?: string; username?: string; points?: number; streak?: number; avatar?: string };
 
 const groupNames: Record<string, { name: string; level: string; description: string }> = {
   "n5-study-squad": {
@@ -97,11 +101,49 @@ const groupNames: Record<string, { name: string; level: string; description: str
 
 export default function GroupDetail() {
   const { groupId } = useParams();
-  const groupInfo = groupNames[groupId || ""] || {
-    name: "Study Group",
-    level: "All Levels",
-    description: "Learn together"
-  };
+  const [groupInfo, setGroupInfo] = useState<{ name: string; level?: string; description?: string }>({ name: "Study Group" });
+  const [forums, setForums] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderItem[]>([]);
+  const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!groupId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await communityService.getStudyGroup(groupId);
+        const g = res.data || {};
+        setGroupInfo({ name: g.name || g.title || 'Study Group', level: g.level, description: g.description });
+        setMembers(g.members || []);
+        try {
+          const fRes = await communityService.getForums();
+          const list = (fRes.data || []).filter((f: any) => (f.groupId || f.group) === groupId);
+          setForums(list);
+        } catch {}
+        try {
+          const lb = await communityService.getGroupLeaderboard(groupId, period as any);
+          const list: LeaderItem[] = (lb.data || []).map((u: any, idx: number) => ({
+            rank: u.rank || idx + 1,
+            name: u.name,
+            username: u.username,
+            points: u.points,
+            streak: u.streak,
+            avatar: (u.name || u.username || 'U')[0],
+          }));
+          setLeaderboard(list);
+        } catch {}
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load group');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [groupId, period]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -117,15 +159,15 @@ export default function GroupDetail() {
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="mb-2">{groupInfo.name}</h1>
-                <p className="text-muted-foreground mb-4">{groupInfo.description}</p>
+                {groupInfo.description && <p className="text-muted-foreground mb-4">{groupInfo.description}</p>}
                 <div className="flex items-center gap-3">
-                  <Badge variant="secondary">{groupInfo.level}</Badge>
+                  {groupInfo.level && <Badge variant="secondary">{groupInfo.level}</Badge>}
                   <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500">
                     Active
                   </Badge>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Users className="w-4 h-4" />
-                    <span>45 members</span>
+                    <span>{members?.length ?? 0} members</span>
                   </div>
                 </div>
               </div>
@@ -159,8 +201,10 @@ export default function GroupDetail() {
               </div>
               
               <div className="space-y-3">
-                {groupForums.map((forum) => (
-                  <Link key={forum.id} to={`/groups/${groupId}/forums/${forum.id}`}>
+                {loading && <div>Loading...</div>}
+                {error && <div className="text-destructive">{error}</div>}
+                {!loading && !error && forums.map((forum: any) => (
+                  <Link key={forum.id || forum.slug} to={`/groups/${groupId}/forums/${forum.id || forum.slug}`}>
                     <Card className="hover:border-accent transition-colors cursor-pointer">
                       <CardHeader>
                         <div className="flex items-start justify-between">
@@ -170,20 +214,20 @@ export default function GroupDetail() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <CardTitle className="text-lg">{forum.title}</CardTitle>
+                                <CardTitle className="text-lg">{forum.title || forum.name}</CardTitle>
                                 {forum.isPinned && (
                                   <Pin className="w-4 h-4 text-primary flex-shrink-0" />
                                 )}
                               </div>
-                              <CardDescription className="mb-3">{forum.description}</CardDescription>
+                              {forum.description && <CardDescription className="mb-3">{forum.description}</CardDescription>}
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                   <MessageSquare className="w-3 h-3" />
-                                  <span>{forum.posts} posts</span>
+                                  {forum.posts != null && <span>{forum.posts} posts</span>}
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <TrendingUp className="w-3 h-3" />
-                                  <span>Active {forum.lastActivity}</span>
+                                  {forum.lastActivity && <span>Active {forum.lastActivity}</span>}
                                 </div>
                               </div>
                             </div>
@@ -204,22 +248,26 @@ export default function GroupDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {groupMembers.map((member) => (
-                      <div key={member.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    {members.map((member: any, idx: number) => (
+                      <div key={member.id || idx} className="flex items-center justify-between p-3 border border-border rounded-lg">
                         <div className="flex items-center gap-3">
                           <Avatar>
                             <AvatarFallback className="bg-primary text-primary-foreground">
-                              {member.initial}
+                              {member.initial || member.name?.[0] || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-bold">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">Joined {member.joinedDays} days ago</p>
+                            <p className="font-bold">{member.name || `Member ${idx+1}`}</p>
+                            {member.joinedDays && (
+                              <p className="text-sm text-muted-foreground">Joined {member.joinedDays} days ago</p>
+                            )}
                           </div>
                         </div>
-                        <Badge variant={member.role === "Admin" ? "default" : "secondary"}>
-                          {member.role}
-                        </Badge>
+                        {member.role && (
+                          <Badge variant={member.role === "Admin" ? "default" : "secondary"}>
+                            {member.role}
+                          </Badge>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -230,43 +278,63 @@ export default function GroupDetail() {
             <TabsContent value="leaderboard" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Group Leaderboard</CardTitle>
-                  <CardDescription>Top performers in this study group</CardDescription>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Group Leaderboard</CardTitle>
+                      <CardDescription>Top performers in this study group</CardDescription>
+                    </div>
+                    <div className="w-[180px]">
+                      <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Period" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">Daily</SelectItem>
+                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {leaderboard.map((user) => (
+                    {leaderboard.map((user, i) => (
                       <div 
-                        key={user.rank}
+                        key={i}
                         className={`p-4 border rounded-lg flex items-center justify-between ${
-                          user.rank <= 3 ? 'border-accent bg-accent/5' : 'border-border'
+                          (user.rank || i+1) <= 3 ? 'border-accent bg-accent/5' : 'border-border'
                         }`}
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
-                            user.rank === 1 ? 'bg-yellow-500 text-white' :
-                            user.rank === 2 ? 'bg-gray-400 text-white' :
-                            user.rank === 3 ? 'bg-amber-700 text-white' :
+                            (user.rank || i+1) === 1 ? 'bg-yellow-500 text-white' :
+                            (user.rank || i+1) === 2 ? 'bg-gray-400 text-white' :
+                            (user.rank || i+1) === 3 ? 'bg-amber-700 text-white' :
                             'bg-secondary text-foreground'
                           }`}>
-                            {user.rank <= 3 ? (
-                              user.rank === 1 ? <Crown className="w-6 h-6" /> :
-                              user.rank === 2 ? <Medal className="w-6 h-6" /> :
+                            {(user.rank || i+1) <= 3 ? (
+                              (user.rank || i+1) === 1 ? <Crown className="w-6 h-6" /> :
+                              (user.rank || i+1) === 2 ? <Medal className="w-6 h-6" /> :
                               <Award className="w-6 h-6" />
-                            ) : user.rank}
+                            ) : (user.rank || i+1)}
                           </div>
                           <Avatar>
                             <AvatarFallback className="bg-primary text-primary-foreground">
-                              {user.avatar}
+                              {user.avatar || 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-bold">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.streak} day streak</p>
+                            <p className="font-bold">{user.name || user.username || 'User'}</p>
+                            {user.streak != null && (
+                              <p className="text-sm text-muted-foreground">{user.streak} day streak</p>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-lg text-primary">{user.points.toLocaleString()}</p>
+                          {user.points != null && (
+                            <p className="font-bold text-lg text-primary">{Number(user.points).toLocaleString()}</p>
+                          )}
                           <p className="text-xs text-muted-foreground">points</p>
                         </div>
                       </div>

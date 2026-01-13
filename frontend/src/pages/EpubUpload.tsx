@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Upload, FileText, BookOpen, Download, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface ExtractedKanji {
   character: string;
@@ -34,6 +35,7 @@ interface ExtractionResult {
 
 export default function EpubUpload() {
   const navigate = useNavigate();
+  const token = useAuthStore((s) => s.token);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -82,7 +84,7 @@ export default function EpubUpload() {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         }
       });
 

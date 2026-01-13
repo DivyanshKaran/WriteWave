@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,6 +20,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { setTokens, setUser } = useAuthStore();
@@ -44,12 +45,12 @@ export default function Login() {
       // Store user in auth store
       setUser(user);
       
+      const from = (location.state as any)?.from?.pathname || "/app";
       toast({
         title: "Login successful",
-        description: "Redirecting to dashboard...",
+        description: "Redirecting...",
       });
-      
-      setTimeout(() => navigate("/app"), 1000);
+      setTimeout(() => navigate(from, { replace: true }), 600);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Please check your credentials and try again.";
       toast({

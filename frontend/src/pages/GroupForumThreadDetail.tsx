@@ -15,91 +15,12 @@ import {
   MoreVertical
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { communityService } from "@/lib/api-client";
 
-const threadData = {
-  id: 1,
-  author: "SakuraLearner",
-  initial: "S",
-  role: "Admin",
-  title: "Best way to memorize N5 vocabulary?",
-  content: "I've been struggling with retaining vocabulary. What methods do you all use? I've tried flashcards but they don't seem to stick. I'm currently learning about 10 new words per day but by the next week I've forgotten half of them. Any advice would be really appreciated!",
-  timeAgo: "2 hours ago",
-  upvotes: 15,
-  isPinned: true
-};
-
-const replies = [
-  {
-    id: 1,
-    author: "TokyoDreamer",
-    initial: "T",
-    role: "Moderator",
-    content: "I recommend using spaced repetition! Apps like Anki are great for this. The key is to review words just before you're about to forget them.",
-    timeAgo: "2 hours ago",
-    upvotes: 12,
-    replies: [
-      {
-        id: 11,
-        author: "SakuraLearner",
-        initial: "S",
-        role: "Admin",
-        content: "Thanks! I'll give Anki a try. Do you have any deck recommendations?",
-        timeAgo: "2 hours ago",
-        upvotes: 3
-      },
-      {
-        id: 12,
-        author: "TokyoDreamer",
-        initial: "T",
-        role: "Moderator",
-        content: "The Core 2k/6k deck is excellent for beginners. Start with Core 2k!",
-        timeAgo: "1 hour ago",
-        upvotes: 8
-      }
-    ]
-  },
-  {
-    id: 2,
-    author: "KanjiMaster",
-    initial: "K",
-    role: "Member",
-    content: "What really helped me was using vocabulary in sentences. Don't just memorize isolated words - see them in context! Try writing your own example sentences.",
-    timeAgo: "1 hour ago",
-    upvotes: 18,
-    replies: [
-      {
-        id: 21,
-        author: "StudyBuddy",
-        initial: "S",
-        role: "Member",
-        content: "This is such good advice! Context makes everything stick better.",
-        timeAgo: "1 hour ago",
-        upvotes: 5
-      }
-    ]
-  },
-  {
-    id: 3,
-    author: "JapanFan",
-    initial: "J",
-    role: "Member",
-    content: "I found that watching anime with Japanese subtitles helped me a lot. You see the words being used naturally and it's more fun than just studying!",
-    timeAgo: "45 minutes ago",
-    upvotes: 9,
-    replies: []
-  },
-  {
-    id: 4,
-    author: "VocabNinja",
-    initial: "V",
-    role: "Member",
-    content: "Try the 'goldfish technique' - say the word out loud multiple times when you first learn it. Activating multiple senses (visual, auditory, speaking) helps with retention.",
-    timeAgo: "30 minutes ago",
-    upvotes: 14,
-    replies: []
-  }
-];
+// Loaded from API
+const threadData: any = {} as any;
+let replies: any[] = [];
 
 const forumTitles: Record<string, string> = {
   "general-discussion": "General Discussion",
@@ -116,11 +37,34 @@ const groupNames: Record<string, string> = {
 };
 
 export default function GroupForumThreadDetail() {
-  const { groupId, forumId } = useParams();
+  const { groupId, forumId, threadId } = useParams();
   const forumTitle = forumTitles[forumId || ""] || "Forum";
   const groupName = groupNames[groupId || ""] || "Study Group";
   const [replyText, setReplyText] = useState("");
   const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [post, setPost] = useState<any | null>(null);
+  const [comments, setComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!threadId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const p = await communityService.getPost(threadId);
+        setPost(p.data);
+        const c = await communityService.getPostComments(threadId);
+        setComments(c.data || []);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load thread');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [threadId]);
 
   const handleReply = () => {
     console.log("Replying to:", replyToId || "main thread");
@@ -145,20 +89,22 @@ export default function GroupForumThreadDetail() {
           </div>
 
           {/* Main Thread Post */}
+          {loading && <Card className="p-6 mb-6">Loading...</Card>}
+          {error && <div className="text-destructive mb-6">{error}</div>}
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4 flex-1">
                   <Avatar className="mt-1">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {threadData.initial}
+                      {(post?.author || 'U').toString().charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-bold">{threadData.author}</span>
-                      <Badge variant="secondary" className="text-xs">{threadData.role}</Badge>
-                      {threadData.isPinned && (
+                      <span className="font-bold">{post?.author || 'User'}</span>
+                      {post?.role && <Badge variant="secondary" className="text-xs">{post.role}</Badge>}
+                      {post?.isPinned && (
                         <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary">
                           <Pin className="w-3 h-3 mr-1" />
                           Pinned
@@ -167,7 +113,7 @@ export default function GroupForumThreadDetail() {
                     </div>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="w-3 h-3" />
-                      <span>{threadData.timeAgo}</span>
+                      <span>{post?.createdAt || ''}</span>
                     </div>
                   </div>
                 </div>
@@ -175,15 +121,15 @@ export default function GroupForumThreadDetail() {
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>
-              <CardTitle className="text-2xl mb-4">{threadData.title}</CardTitle>
-              <CardDescription className="text-base leading-relaxed">{threadData.content}</CardDescription>
+              <CardTitle className="text-2xl mb-4">{post?.title || 'Thread'}</CardTitle>
+              <CardDescription className="text-base leading-relaxed">{post?.content || post?.text}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" className="gap-1">
                     <ThumbsUp className="w-4 h-4" />
-                    <span>{threadData.upvotes}</span>
+                    <span>{post?.upvotes ?? 0}</span>
                   </Button>
                   <Button variant="ghost" size="sm">
                     <ThumbsDown className="w-4 h-4" />
@@ -191,7 +137,7 @@ export default function GroupForumThreadDetail() {
                 </div>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <MessageSquare className="w-4 h-4" />
-                  <span>{replies.length} replies</span>
+                  <span>{comments.length} replies</span>
                 </Button>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <Share2 className="w-4 h-4" />
@@ -203,38 +149,38 @@ export default function GroupForumThreadDetail() {
 
           {/* Replies Section */}
           <div className="space-y-4 mb-8">
-            <h2 className="text-xl font-bold">{replies.length} Replies</h2>
+            <h2 className="text-xl font-bold">{comments.length} Replies</h2>
             
-            {replies.map((reply) => (
+            {comments.map((reply) => (
               <div key={reply.id} className="space-y-3">
                 <Card>
                   <CardHeader>
                     <div className="flex items-start gap-4">
                       <Avatar className="mt-1">
                         <AvatarFallback className="bg-primary text-primary-foreground">
-                          {reply.initial}
+                          {(reply.author || 'U').toString().charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-4 mb-2">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold">{reply.author}</span>
-                            <Badge variant="secondary" className="text-xs">{reply.role}</Badge>
+                            <span className="font-bold">{reply.author || 'User'}</span>
+                            {reply.role && <Badge variant="secondary" className="text-xs">{reply.role}</Badge>}
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Clock className="w-3 h-3" />
-                              <span>{reply.timeAgo}</span>
+                              <span>{reply.createdAt || ''}</span>
                             </div>
                           </div>
                           <Button variant="ghost" size="sm">
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </div>
-                        <p className="text-sm mb-3">{reply.content}</p>
+                        <p className="text-sm mb-3">{reply.content || reply.text}</p>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm" className="gap-1 h-8">
                               <ThumbsUp className="w-3 h-3" />
-                              <span className="text-xs">{reply.upvotes}</span>
+                              <span className="text-xs">{reply.upvotes ?? 0}</span>
                             </Button>
                             <Button variant="ghost" size="sm" className="h-8">
                               <ThumbsDown className="w-3 h-3" />
@@ -263,23 +209,23 @@ export default function GroupForumThreadDetail() {
                           <div className="flex items-start gap-3">
                             <Avatar className="w-8 h-8">
                               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                                {nestedReply.initial}
+                                {(nestedReply.author || 'U').toString().charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="font-bold text-sm">{nestedReply.author}</span>
-                                <Badge variant="secondary" className="text-xs">{nestedReply.role}</Badge>
+                                <span className="font-bold text-sm">{nestedReply.author || 'User'}</span>
+                                {nestedReply.role && <Badge variant="secondary" className="text-xs">{nestedReply.role}</Badge>}
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Clock className="w-3 h-3" />
-                                  <span>{nestedReply.timeAgo}</span>
+                                  <span>{nestedReply.createdAt || ''}</span>
                                 </div>
                               </div>
-                              <p className="text-sm mb-2">{nestedReply.content}</p>
+                              <p className="text-sm mb-2">{nestedReply.content || nestedReply.text}</p>
                               <div className="flex items-center gap-2">
                                 <Button variant="ghost" size="sm" className="gap-1 h-7 text-xs">
                                   <ThumbsUp className="w-3 h-3" />
-                                  <span>{nestedReply.upvotes}</span>
+                                  <span>{nestedReply.upvotes ?? 0}</span>
                                 </Button>
                                 <Button variant="ghost" size="sm" className="h-7 text-xs">
                                   <ThumbsDown className="w-3 h-3" />

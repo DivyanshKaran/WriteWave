@@ -21,10 +21,111 @@ import {
   Target,
   ArrowLeft
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { userService, notificationService } from "@/lib/api-client";
+import { useAuthStore } from "@/stores/auth-store";
 
 export default function Settings() {
   const navigate = useNavigate();
+  const userId = useAuthStore.getState().user?.id;
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+
+  const [dailyReminder, setDailyReminder] = useState(true);
+  const [achievements, setAchievements] = useState(true);
+  const [community, setCommunity] = useState(true);
+  const [newsletter, setNewsletter] = useState(false);
+
+  const [dailyGoal, setDailyGoal] = useState("30");
+  const [difficulty, setDifficulty] = useState("intermediate");
+  const [audioPlayback, setAudioPlayback] = useState(true);
+  const [strokeOrder, setStrokeOrder] = useState(true);
+
+  const [theme, setTheme] = useState("system");
+  const [fontSize, setFontSize] = useState("medium");
+
+  const [interfaceLang, setInterfaceLang] = useState("en");
+  const [romanization, setRomanization] = useState("hepburn");
+
+  const [profilePublic, setProfilePublic] = useState(true);
+  const [showProgress, setShowProgress] = useState(true);
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setError(null);
+      setSaved(null);
+      try {
+        const [profileRes, settingsRes] = await Promise.all([
+          userService.getProfile(),
+          userService.getSettings(),
+        ]);
+        const p = profileRes.data || {};
+        setName(p.name || "");
+        setEmail(p.email || "");
+        setUsername(p.username || "");
+
+        const s = settingsRes.data || {};
+        setDailyGoal(String(s.learning?.dailyGoal ?? "30"));
+        setDifficulty(s.learning?.difficulty ?? "intermediate");
+        setAudioPlayback(s.learning?.audioPlayback ?? true);
+        setStrokeOrder(s.learning?.strokeOrder ?? true);
+        setTheme(s.preferences?.theme ?? "system");
+        setFontSize(s.preferences?.fontSize ?? "medium");
+        setInterfaceLang(s.preferences?.language ?? "en");
+        setRomanization(s.preferences?.romanization ?? "hepburn");
+        setProfilePublic(s.privacy?.profilePublic ?? true);
+        setShowProgress(s.privacy?.showProgress ?? true);
+
+        if (userId) {
+          try {
+            const pref = await notificationService.getPreferences(userId);
+            const n = pref.data || {};
+            setDailyReminder(!!n.dailyReminder);
+            setAchievements(!!n.achievements);
+            setCommunity(!!n.community);
+            setNewsletter(!!n.newsletter);
+          } catch {}
+        }
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load settings');
+      }
+    };
+    load();
+  }, [userId]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSaved(null);
+    try {
+      await userService.updateProfile({ name, email, username } as any);
+      await userService.updateSettings({
+        learning: { dailyGoal: Number(dailyGoal), difficulty, audioPlayback, strokeOrder },
+        preferences: { theme, fontSize, language: interfaceLang, romanization },
+        privacy: { profilePublic, showProgress },
+      } as any);
+      if (userId) {
+        await notificationService.updatePreferences(userId, {
+          dailyReminder,
+          achievements,
+          community,
+          newsletter,
+        } as any);
+      }
+      setSaved('Saved successfully');
+    } catch (e: any) {
+      setError(e?.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -61,18 +162,18 @@ export default function Settings() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="Your full name" defaultValue="Sakura Tanaka" />
+                  <Input id="name" placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="your.email@example.com" defaultValue="sakura.tanaka@example.com" />
+                  <Input id="email" type="email" placeholder="your.email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
-                  <Input id="username" placeholder="@username" defaultValue="@sakura_learns" />
+                  <Input id="username" placeholder="username" value={username} onChange={(e) => setUsername(e.target.value)} />
                 </div>
                 <Separator />
-                <Button>Save Changes</Button>
+                <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
               </CardContent>
             </Card>
 
@@ -93,7 +194,7 @@ export default function Settings() {
                       Get notified to maintain your study streak
                     </p>
                   </div>
-                  <Switch id="daily-reminder" defaultChecked />
+                  <Switch id="daily-reminder" checked={dailyReminder} onCheckedChange={setDailyReminder} />
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -103,7 +204,7 @@ export default function Settings() {
                       Get notified when you earn badges
                     </p>
                   </div>
-                  <Switch id="achievements" defaultChecked />
+                  <Switch id="achievements" checked={achievements} onCheckedChange={setAchievements} />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -113,7 +214,7 @@ export default function Settings() {
                       Replies to your posts and messages
                     </p>
                   </div>
-                  <Switch id="community" defaultChecked />
+                  <Switch id="community" checked={community} onCheckedChange={setCommunity} />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -123,7 +224,7 @@ export default function Settings() {
                       Weekly learning tips and resources
                     </p>
                   </div>
-                  <Switch id="newsletter" />
+                  <Switch id="newsletter" checked={newsletter} onCheckedChange={setNewsletter} />
                 </div>
               </CardContent>
             </Card>
@@ -140,7 +241,7 @@ export default function Settings() {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="daily-goal">Daily Study Goal</Label>
-                  <Select defaultValue="30">
+                  <Select value={dailyGoal} onValueChange={setDailyGoal}>
                     <SelectTrigger id="daily-goal">
                       <SelectValue placeholder="Select goal" />
                     </SelectTrigger>
@@ -156,7 +257,7 @@ export default function Settings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Default Difficulty</Label>
-                  <Select defaultValue="intermediate">
+                  <Select value={difficulty} onValueChange={setDifficulty}>
                     <SelectTrigger id="difficulty">
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
@@ -175,7 +276,7 @@ export default function Settings() {
                       Automatically play pronunciation audio
                     </p>
                   </div>
-                  <Switch id="audio-playback" defaultChecked />
+                  <Switch id="audio-playback" checked={audioPlayback} onCheckedChange={setAudioPlayback} />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -185,7 +286,7 @@ export default function Settings() {
                       Display stroke order when practicing
                     </p>
                   </div>
-                  <Switch id="stroke-order" defaultChecked />
+                  <Switch id="stroke-order" checked={strokeOrder} onCheckedChange={setStrokeOrder} />
                 </div>
               </CardContent>
             </Card>
@@ -202,7 +303,7 @@ export default function Settings() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="theme">Theme</Label>
-                  <Select defaultValue="system">
+                  <Select value={theme} onValueChange={setTheme}>
                     <SelectTrigger id="theme">
                       <SelectValue placeholder="Select theme" />
                     </SelectTrigger>
@@ -216,7 +317,7 @@ export default function Settings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="font-size">Font Size</Label>
-                  <Select defaultValue="medium">
+                  <Select value={fontSize} onValueChange={setFontSize}>
                     <SelectTrigger id="font-size">
                       <SelectValue placeholder="Select size" />
                     </SelectTrigger>
@@ -242,7 +343,7 @@ export default function Settings() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="interface-lang">Interface Language</Label>
-                  <Select defaultValue="en">
+                  <Select value={interfaceLang} onValueChange={setInterfaceLang}>
                     <SelectTrigger id="interface-lang">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
@@ -257,7 +358,7 @@ export default function Settings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="romanization">Romanization Style</Label>
-                  <Select defaultValue="hepburn">
+                  <Select value={romanization} onValueChange={setRomanization}>
                     <SelectTrigger id="romanization">
                       <SelectValue placeholder="Select style" />
                     </SelectTrigger>
@@ -288,7 +389,7 @@ export default function Settings() {
                       Allow others to see your profile
                     </p>
                   </div>
-                  <Switch id="profile-public" defaultChecked />
+                  <Switch id="profile-public" checked={profilePublic} onCheckedChange={setProfilePublic} />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -298,7 +399,7 @@ export default function Settings() {
                       Display your learning statistics publicly
                     </p>
                   </div>
-                  <Switch id="show-progress" defaultChecked />
+                  <Switch id="show-progress" checked={showProgress} onCheckedChange={setShowProgress} />
                 </div>
 
                 <Separator />
@@ -310,6 +411,13 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
+
+            {(error || saved) && (
+              <div>
+                {error && <p className="text-destructive">{error}</p>}
+                {saved && <p className="text-green-600">{saved}</p>}
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -2,23 +2,33 @@ import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { contentService } from "@/lib/api-client";
 
-const katakanaRows = [
-  { romaji: ['a', 'i', 'u', 'e', 'o'], chars: ['ア', 'イ', 'ウ', 'エ', 'オ'] },
-  { romaji: ['ka', 'ki', 'ku', 'ke', 'ko'], chars: ['カ', 'キ', 'ク', 'ケ', 'コ'] },
-  { romaji: ['sa', 'shi', 'su', 'se', 'so'], chars: ['サ', 'シ', 'ス', 'セ', 'ソ'] },
-  { romaji: ['ta', 'chi', 'tsu', 'te', 'to'], chars: ['タ', 'チ', 'ツ', 'テ', 'ト'] },
-  { romaji: ['na', 'ni', 'nu', 'ne', 'no'], chars: ['ナ', 'ニ', 'ヌ', 'ネ', 'ノ'] },
-  { romaji: ['ha', 'hi', 'fu', 'he', 'ho'], chars: ['ハ', 'ヒ', 'フ', 'ヘ', 'ホ'] },
-  { romaji: ['ma', 'mi', 'mu', 'me', 'mo'], chars: ['マ', 'ミ', 'ム', 'メ', 'モ'] },
-  { romaji: ['ya', '', 'yu', '', 'yo'], chars: ['ヤ', '', 'ユ', '', 'ヨ'] },
-  { romaji: ['ra', 'ri', 'ru', 're', 'ro'], chars: ['ラ', 'リ', 'ル', 'レ', 'ロ'] },
-  { romaji: ['wa', '', '', '', 'wo'], chars: ['ワ', '', '', '', 'ヲ'] },
-  { romaji: ['n'], chars: ['ン'] },
-];
+type CharacterItem = { char: string; romaji?: string };
 
 export default function Katakana() {
   const navigate = useNavigate();
+  const [items, setItems] = useState<CharacterItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await contentService.getKatakana();
+        const list: CharacterItem[] = (res.data || []).map((c: any) => ({ char: c.char || c.character || c, romaji: c.romaji }));
+        setItems(list);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load katakana');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,28 +54,24 @@ export default function Katakana() {
           </div>
 
           {/* Mobile-optimized character grid */}
-          <div className="space-y-2 sm:space-y-3 md:space-y-4 mb-8 sm:mb-12">
-            {katakanaRows.map((row, rowIndex) => (
-              <div key={rowIndex} className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 lg:gap-4">
-                {row.chars.map((char, charIndex) => (
-                  char ? (
-                    <Link
-                      key={charIndex}
-                      to={`/characters/katakana/${encodeURIComponent(char)}?romaji=${row.romaji[charIndex]}`}
-                      className="aspect-square border border-border flex flex-col items-center justify-center hover:border-accent transition-colors cursor-pointer p-1 sm:p-2 rounded-md"
-                    >
-                      <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold mb-0.5 sm:mb-1 md:mb-2">{char}</span>
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        {row.romaji[charIndex]}
-                      </span>
-                    </Link>
-                  ) : (
-                    <div key={charIndex} className="invisible" />
-                  )
-                ))}
-              </div>
-            ))}
-          </div>
+          {loading && <div>Loading...</div>}
+          {error && <div className="text-destructive">{error}</div>}
+          {!loading && !error && (
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 sm:gap-3 md:gap-4 mb-8 sm:mb-12">
+              {items.map((item, idx) => (
+                <Link
+                  key={`${item.char}-${idx}`}
+                  to={`/characters/katakana/${encodeURIComponent(item.char)}${item.romaji ? `?romaji=${item.romaji}` : ''}`}
+                  className="aspect-square border border-border flex flex-col items-center justify-center hover:border-accent transition-colors cursor-pointer p-2 rounded-md"
+                >
+                  <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{item.char}</span>
+                  {item.romaji && (
+                    <span className="text-xs sm:text-sm text-muted-foreground">{item.romaji}</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Mobile-optimized info section */}
           <div className="mt-8 sm:mt-12 p-4 sm:p-6 border border-border rounded-lg">

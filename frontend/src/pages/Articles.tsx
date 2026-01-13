@@ -2,7 +2,8 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useArticles as useArticlesHook } from "@/hooks/useArticles";
 import { 
   ArticleFilters, 
   ArticleGrid, 
@@ -10,131 +11,26 @@ import {
   PopularTags 
 } from "@/components/articles";
 
-// Sample articles data
-const articles = [
-  {
-    id: 1,
-    title: "Mastering Japanese Particles: A Complete Guide",
-    excerpt: "Understanding the subtle differences between は and が, and when to use each particle correctly in different contexts.",
-    author: {
-      name: "Yuki Tanaka",
-      username: "yuki_sensei",
-      avatar: "YT"
-    },
-    tags: ["grammar", "particles", "beginner", "jlpt"],
-    publishedAt: "2024-01-15",
-    readTime: "8 min read",
-    views: 1240,
-    likes: 89,
-    comments: 23,
-    trending: true,
-    featured: true
-  },
-  {
-    id: 2,
-    title: "The Art of Japanese Calligraphy: Stroke Order Matters",
-    excerpt: "Why stroke order is crucial in Japanese writing and how it affects the beauty and readability of your characters.",
-    author: {
-      name: "Hiroshi Nakamura",
-      username: "calligraphy_master",
-      avatar: "HN"
-    },
-    tags: ["calligraphy", "writing", "kanji", "culture"],
-    publishedAt: "2024-01-12",
-    readTime: "12 min read",
-    views: 980,
-    likes: 67,
-    comments: 15,
-    trending: true,
-    featured: false
-  },
-  {
-    id: 3,
-    title: "JLPT N5 Vocabulary: Essential Words for Beginners",
-    excerpt: "A comprehensive list of the most important vocabulary words you need to know for the JLPT N5 exam.",
-    author: {
-      name: "Sakura Kimura",
-      username: "jlpt_expert",
-      avatar: "SK"
-    },
-    tags: ["vocabulary", "jlpt", "n5", "beginner"],
-    publishedAt: "2024-01-10",
-    readTime: "15 min read",
-    views: 2100,
-    likes: 156,
-    comments: 45,
-    trending: false,
-    featured: true
-  },
-  {
-    id: 4,
-    title: "Understanding Japanese Honorifics: -san, -kun, -chan",
-    excerpt: "Learn when and how to use different Japanese honorifics in various social situations.",
-    author: {
-      name: "Takeshi Yamamoto",
-      username: "japanese_culture",
-      avatar: "TY"
-    },
-    tags: ["honorifics", "culture", "social", "intermediate"],
-    publishedAt: "2024-01-08",
-    readTime: "6 min read",
-    views: 750,
-    likes: 42,
-    comments: 12,
-    trending: false,
-    featured: false
-  },
-  {
-    id: 5,
-    title: "Common Japanese Mistakes English Speakers Make",
-    excerpt: "Avoid these frequent pitfalls when learning Japanese and sound more natural in your conversations.",
-    author: {
-      name: "Maya Suzuki",
-      username: "mistake_buster",
-      avatar: "MS"
-    },
-    tags: ["mistakes", "pronunciation", "common", "tips"],
-    publishedAt: "2024-01-05",
-    readTime: "10 min read",
-    views: 1650,
-    likes: 98,
-    comments: 28,
-    trending: true,
-    featured: false
-  },
-  {
-    id: 6,
-    title: "Japanese Business Etiquette: Do's and Don'ts",
-    excerpt: "Essential etiquette rules for professional settings in Japan, from bowing to business card exchange.",
-    author: {
-      name: "Kenji Sato",
-      username: "business_japan",
-      avatar: "KS"
-    },
-    tags: ["business", "etiquette", "professional", "culture"],
-    publishedAt: "2024-01-03",
-    readTime: "14 min read",
-    views: 890,
-    likes: 54,
-    comments: 18,
-    trending: false,
-    featured: false
-  }
-];
-
-const allTags = [
-  "grammar", "particles", "beginner", "jlpt", "calligraphy", "writing", 
-  "kanji", "culture", "vocabulary", "n5", "honorifics", "social", 
-  "intermediate", "mistakes", "pronunciation", "common", "tips", 
-  "business", "etiquette", "professional"
-];
+// Live data via articles hook
 
 export default function Articles() {
   const navigate = useNavigate();
+  const { articles, isLoading, error } = useArticlesHook();
+  const { fetchArticles } = useArticlesHook();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [selectedAuthor, setSelectedAuthor] = useState("");
   const [showTrending, setShowTrending] = useState(true);
+
+  useEffect(() => {
+    fetchArticles();
+  }, [fetchArticles]);
+
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    articles.forEach(a => a.tags?.forEach(t => tagSet.add(t)));
+    return Array.from(tagSet);
+  }, [articles]);
 
   // Filter articles based on search and filters
   const filteredArticles = articles.filter(article => {

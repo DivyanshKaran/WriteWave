@@ -15,69 +15,9 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
+import { usePosts as usePostsHook } from "@/hooks/useCommunity";
 
-const forumThreads = [
-  {
-    id: 1,
-    author: "SakuraLearner",
-    initial: "S",
-    role: "Admin",
-    title: "Best way to memorize N5 vocabulary?",
-    content: "I've been struggling with retaining vocabulary. What methods do you all use? I've tried flashcards but they don't seem to stick...",
-    timeAgo: "2 hours ago",
-    upvotes: 15,
-    replies: 8,
-    isPinned: true
-  },
-  {
-    id: 2,
-    author: "TokyoDreamer",
-    initial: "T",
-    role: "Moderator",
-    title: "Weekly study session - Saturday 7PM",
-    content: "Join us this Saturday for our weekly video study session! We'll be covering particles は and が.",
-    timeAgo: "5 hours ago",
-    upvotes: 23,
-    replies: 12,
-    isPinned: true
-  },
-  {
-    id: 3,
-    author: "KanjiMaster",
-    initial: "K",
-    role: "Member",
-    title: "Confused about て-form conjugation",
-    content: "Can someone explain when to use って vs って in casual speech? I keep mixing them up.",
-    timeAgo: "1 day ago",
-    upvotes: 8,
-    replies: 5,
-    isPinned: false
-  },
-  {
-    id: 4,
-    author: "StudyBuddy",
-    initial: "S",
-    role: "Member",
-    title: "Passed my first mock exam!",
-    content: "Just wanted to share that I scored 78% on my first N5 mock exam. Thank you all for the support!",
-    timeAgo: "1 day ago",
-    upvotes: 34,
-    replies: 15,
-    isPinned: false
-  },
-  {
-    id: 5,
-    author: "JapanFan",
-    initial: "J",
-    role: "Member",
-    title: "Recommended textbooks for N5?",
-    content: "I'm looking for good textbook recommendations. Currently using Genki I, but wondering if there are other good options.",
-    timeAgo: "2 days ago",
-    upvotes: 12,
-    replies: 9,
-    isPinned: false
-  }
-];
+// threads are loaded via API
 
 const forumTitles: Record<string, string> = {
   "general-discussion": "General Discussion",
@@ -98,6 +38,8 @@ export default function GroupForumDetail() {
   const forumTitle = forumTitles[forumId || ""] || "Forum";
   const groupName = groupNames[groupId || ""] || "Study Group";
   const [replyText, setReplyText] = useState("");
+  const { data, isLoading, error } = usePostsHook(forumId ? { forumId } : undefined);
+  const threads = (data as any[]) || [];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -123,22 +65,24 @@ export default function GroupForumDetail() {
           </div>
 
           <div className="space-y-4">
-            {forumThreads.map((thread) => (
+            {isLoading && <div>Loading...</div>}
+            {error && <div className="text-destructive">{(error as any)?.message || 'Failed to load threads'}</div>}
+            {!isLoading && !error && threads.map((thread: any) => (
               <Link key={thread.id} to={`/groups/${groupId}/forums/${forumId}/threads/${thread.id}`}>
                 <Card className="hover:border-accent transition-colors cursor-pointer">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <Avatar className="mt-1">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {thread.initial}
+                        {(thread.author && thread.author[0]) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="font-bold">{thread.author}</span>
-                            <Badge variant="secondary" className="text-xs">{thread.role}</Badge>
+                            <span className="font-bold">{thread.author || 'User'}</span>
+                            {thread.role && <Badge variant="secondary" className="text-xs">{thread.role}</Badge>}
                             {thread.isPinned && (
                               <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary">
                                 <Pin className="w-3 h-3 mr-1" />
@@ -148,12 +92,12 @@ export default function GroupForumDetail() {
                           </div>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="w-3 h-3" />
-                            <span>{thread.timeAgo}</span>
+                            <span>{thread.timeAgo || thread.createdAt}</span>
                           </div>
                         </div>
                       </div>
-                      <CardTitle className="text-xl mb-3">{thread.title}</CardTitle>
-                      <CardDescription className="text-base">{thread.content}</CardDescription>
+                      <CardTitle className="text-xl mb-3">{thread.title || 'Thread'}</CardTitle>
+                      <CardDescription className="text-base">{thread.content || thread.text}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -162,7 +106,7 @@ export default function GroupForumDetail() {
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="sm" className="gap-1">
                         <ThumbsUp className="w-4 h-4" />
-                        <span>{thread.upvotes}</span>
+                        <span>{thread.upvotes ?? 0}</span>
                       </Button>
                       <Button variant="ghost" size="sm">
                         <ThumbsDown className="w-4 h-4" />
@@ -170,7 +114,7 @@ export default function GroupForumDetail() {
                     </div>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <MessageSquare className="w-4 h-4" />
-                      <span>{thread.replies} replies</span>
+                      <span>{(thread.replies && thread.replies.length) || thread.repliesCount || 0} replies</span>
                     </Button>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Share2 className="w-4 h-4" />

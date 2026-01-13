@@ -3,83 +3,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, TrendingUp, Users, Flame } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useForums as useForumsHook } from "@/hooks/useCommunity";
 
-const popularForums = [
-  {
-    id: "n5-study-squad-grammar",
-    groupId: "n5-study-squad",
-    groupName: "N5 Study Squad",
-    forumId: "grammar-questions",
-    forumName: "Grammar Questions",
-    description: "Ask and answer grammar-related questions",
-    posts: 312,
-    members: 45,
-    trending: true,
-    lastActivity: "5 minutes ago"
-  },
-  {
-    id: "kanji-warriors-study",
-    groupId: "kanji-warriors",
-    groupName: "Kanji Warriors",
-    forumId: "study-tips",
-    forumName: "Study Tips & Resources",
-    description: "Share helpful resources and study methods for kanji",
-    posts: 267,
-    members: 32,
-    trending: true,
-    lastActivity: "15 minutes ago"
-  },
-  {
-    id: "conversation-general",
-    groupId: "conversation-club",
-    groupName: "Conversation Club",
-    forumId: "general-discussion",
-    forumName: "General Discussion",
-    description: "Casual conversations about learning Japanese",
-    posts: 234,
-    members: 28,
-    trending: true,
-    lastActivity: "30 minutes ago"
-  },
-  {
-    id: "n5-vocab",
-    groupId: "n5-study-squad",
-    groupName: "N5 Study Squad",
-    forumId: "vocabulary",
-    forumName: "Vocabulary Building",
-    description: "Share new words and mnemonics",
-    posts: 198,
-    members: 45,
-    trending: false,
-    lastActivity: "1 hour ago"
-  },
-  {
-    id: "kanji-homework",
-    groupId: "kanji-warriors",
-    groupName: "Kanji Warriors",
-    forumId: "homework-help",
-    forumName: "Homework Help",
-    description: "Get help with kanji exercises and practice",
-    posts: 189,
-    members: 32,
-    trending: false,
-    lastActivity: "2 hours ago"
-  },
-  {
-    id: "conversation-tips",
-    groupId: "conversation-club",
-    groupName: "Conversation Club",
-    forumId: "study-tips",
-    forumName: "Study Tips & Resources",
-    description: "Tips for improving conversation skills",
-    posts: 156,
-    members: 28,
-    trending: false,
-    lastActivity: "3 hours ago"
-  }
-];
+type ForumCard = {
+  id: string;
+  groupId: string;
+  groupName: string;
+  forumId: string;
+  forumName: string;
+  description?: string;
+  posts?: number;
+  members?: number;
+  trending?: boolean;
+  lastActivity?: string;
+};
 
 export default function Forums() {
+  const { data, isLoading, error } = useForumsHook();
+  const forums: ForumCard[] = (data || []).map((f: any) => ({
+    id: `${f.groupId || f.group || 'group'}-${f.id || f.slug || 'forum'}`,
+    groupId: f.groupId || f.group || '',
+    groupName: f.groupName || f.groupTitle || f.group || 'Group',
+    forumId: f.id || f.slug || '',
+    forumName: f.title || f.name || 'Forum',
+    description: f.description,
+    posts: f.postsCount || f.posts,
+    members: f.membersCount || f.members,
+    trending: !!f.trending,
+    lastActivity: f.lastActivity,
+  }));
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header isAuthenticated />
@@ -100,8 +53,11 @@ export default function Forums() {
             </Badge>
           </div>
 
+          {isLoading && <div>Loading...</div>}
+          {error && <div className="text-destructive">{(error as any)?.message || 'Failed to load forums'}</div>}
+          {!isLoading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {popularForums.map((forum) => (
+            {forums.map((forum) => (
               <Link key={forum.id} to={`/groups/${forum.groupId}/forums/${forum.forumId}`}>
                 <Card className="h-full hover:border-accent transition-colors cursor-pointer">
                   <CardHeader>
@@ -120,7 +76,7 @@ export default function Forums() {
                           )}
                         </div>
                         <CardTitle className="text-lg mb-1">{forum.forumName}</CardTitle>
-                        <CardDescription className="text-sm">{forum.description}</CardDescription>
+                        {forum.description && <CardDescription className="text-sm">{forum.description}</CardDescription>}
                       </div>
                     </div>
                   </CardHeader>
@@ -128,15 +84,15 @@ export default function Forums() {
                     <div className="flex items-center gap-6 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <MessageSquare className="w-4 h-4" />
-                        <span>{forum.posts} posts</span>
+                        {forum.posts != null && <span>{forum.posts} posts</span>}
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        <span>{forum.members} members</span>
+                        {forum.members != null && <span>{forum.members} members</span>}
                       </div>
                       <div className="flex items-center gap-1">
                         <TrendingUp className="w-4 h-4" />
-                        <span>{forum.lastActivity}</span>
+                        {forum.lastActivity && <span>{forum.lastActivity}</span>}
                       </div>
                     </div>
                   </CardContent>
@@ -144,6 +100,7 @@ export default function Forums() {
               </Link>
             ))}
           </div>
+          )}
         </div>
       </main>
     </div>

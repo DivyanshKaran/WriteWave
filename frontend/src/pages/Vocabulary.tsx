@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,8 @@ import {
   Filter,
   ArrowLeft
 } from "lucide-react";
+import { ErrorBanner } from "@/components/common/ErrorBanner";
+import { EmptyState } from "@/components/common/EmptyState";
 import {
   Select,
   SelectContent,
@@ -21,166 +23,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useVocabulary } from "@/hooks/useContent";
 
-// Sample vocabulary data - will be replaced with backend data
-const vocabularyData = [
-  { 
-    id: 1, 
-    word: "日本", 
-    reading: "にほん", 
-    meaning: "Japan", 
-    level: "N5",
-    category: "Country",
-    example: "日本は美しい国です。",
-    exampleReading: "にほんはうつくしいくにです。",
-    exampleMeaning: "Japan is a beautiful country."
-  },
-  { 
-    id: 2, 
-    word: "食べる", 
-    reading: "たべる", 
-    meaning: "to eat", 
-    level: "N5",
-    category: "Verb",
-    example: "朝ご飯を食べます。",
-    exampleReading: "あさごはんをたべます。",
-    exampleMeaning: "I eat breakfast."
-  },
-  { 
-    id: 3, 
-    word: "学校", 
-    reading: "がっこう", 
-    meaning: "school", 
-    level: "N5",
-    category: "Place",
-    example: "学校に行きます。",
-    exampleReading: "がっこうにいきます。",
-    exampleMeaning: "I go to school."
-  },
-  { 
-    id: 4, 
-    word: "友達", 
-    reading: "ともだち", 
-    meaning: "friend", 
-    level: "N5",
-    category: "Person",
-    example: "友達と遊びます。",
-    exampleReading: "ともだちとあそびます。",
-    exampleMeaning: "I play with friends."
-  },
-  { 
-    id: 5, 
-    word: "今日", 
-    reading: "きょう", 
-    meaning: "today", 
-    level: "N5",
-    category: "Time",
-    example: "今日は金曜日です。",
-    exampleReading: "きょうはきんようびです。",
-    exampleMeaning: "Today is Friday."
-  },
-  { 
-    id: 6, 
-    word: "電車", 
-    reading: "でんしゃ", 
-    meaning: "train", 
-    level: "N5",
-    category: "Transportation",
-    example: "電車で行きます。",
-    exampleReading: "でんしゃでいきます。",
-    exampleMeaning: "I go by train."
-  },
-  { 
-    id: 7, 
-    word: "勉強", 
-    reading: "べんきょう", 
-    meaning: "study", 
-    level: "N4",
-    category: "Education",
-    example: "日本語を勉強します。",
-    exampleReading: "にほんごをべんきょうします。",
-    exampleMeaning: "I study Japanese."
-  },
-  { 
-    id: 8, 
-    word: "図書館", 
-    reading: "としょかん", 
-    meaning: "library", 
-    level: "N4",
-    category: "Place",
-    example: "図書館で本を読みます。",
-    exampleReading: "としょかんでほんをよみます。",
-    exampleMeaning: "I read books at the library."
-  },
-  { 
-    id: 9, 
-    word: "美味しい", 
-    reading: "おいしい", 
-    meaning: "delicious", 
-    level: "N5",
-    category: "Adjective",
-    example: "このラーメンは美味しいです。",
-    exampleReading: "このらーめんはおいしいです。",
-    exampleMeaning: "This ramen is delicious."
-  },
-  { 
-    id: 10, 
-    word: "買い物", 
-    reading: "かいもの", 
-    meaning: "shopping", 
-    level: "N5",
-    category: "Activity",
-    example: "買い物に行きます。",
-    exampleReading: "かいものにいきます。",
-    exampleMeaning: "I go shopping."
-  },
-  { 
-    id: 11, 
-    word: "約束", 
-    reading: "やくそく", 
-    meaning: "promise, appointment", 
-    level: "N4",
-    category: "Abstract",
-    example: "友達と約束があります。",
-    exampleReading: "ともだちとやくそくがあります。",
-    exampleMeaning: "I have an appointment with a friend."
-  },
-  { 
-    id: 12, 
-    word: "散歩", 
-    reading: "さんぽ", 
-    meaning: "walk, stroll", 
-    level: "N4",
-    category: "Activity",
-    example: "公園で散歩します。",
-    exampleReading: "こうえんでさんぽします。",
-    exampleMeaning: "I take a walk in the park."
-  },
-];
+type VocabItem = {
+  id: string | number;
+  word: string;
+  reading?: string;
+  meaning?: string;
+  level?: string;
+  category?: string;
+  example?: string;
+  exampleReading?: string;
+  exampleMeaning?: string;
+};
 
 const levels = ["All", "N5", "N4", "N3", "N2", "N1"];
-const categories = ["All", "Verb", "Adjective", "Noun", "Place", "Time", "Person", "Activity", "Abstract"];
 
 export default function Vocabulary() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
+  const [bookmarked, setBookmarked] = useState<Set<string | number>>(new Set());
+  const params: any = useMemo(() => {
+    const p: any = {};
+    if (searchQuery.trim()) p.q = searchQuery.trim();
+    if (selectedLevel !== "All") p.level = selectedLevel;
+    if (selectedCategory !== "All") p.category = selectedCategory;
+    return p;
+  }, [searchQuery, selectedLevel, selectedCategory]);
 
-  const filteredVocabulary = vocabularyData.filter(item => {
-    const matchesSearch = 
-      item.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.reading.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.meaning.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesLevel = selectedLevel === "All" || item.level === selectedLevel;
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+  const { data, isLoading, error } = useVocabulary(params);
+  const items: VocabItem[] = (data || []).map((v: any) => ({
+    id: v.id ?? v.word,
+    word: v.word || v.term || v.kanji || "",
+    reading: v.reading || v.kana,
+    meaning: v.meaning || v.translation,
+    level: v.level || v.jlpt,
+    category: v.category,
+    example: v.example,
+    exampleReading: v.exampleReading,
+    exampleMeaning: v.exampleMeaning,
+  }));
 
-    return matchesSearch && matchesLevel && matchesCategory;
-  });
+  const categories = useMemo(() => {
+    const setC = new Set<string>();
+    items.forEach(i => i.category && setC.add(i.category));
+    return ["All", ...Array.from(setC)];
+  }, [items]);
 
-  const toggleBookmark = (id: number) => {
+  const toggleBookmark = (id: string | number) => {
     setBookmarked(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -261,7 +153,7 @@ export default function Vocabulary() {
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 pt-4 border-t border-border gap-2">
                 <p className="text-sm text-muted-foreground">
-                  Found {filteredVocabulary.length} words
+                  Found {items.length} words
                 </p>
                 <Button variant="outline" size="sm" onClick={() => {
                   setSearchQuery("");
@@ -275,18 +167,26 @@ export default function Vocabulary() {
           </Card>
 
           {/* Vocabulary Grid */}
+          {isLoading && <Card className="p-6">Loading...</Card>}
+          {error && (
+            <ErrorBanner
+              message={(error as any)?.message || 'Failed to load vocabulary'}
+              onRetry={() => window.location.reload()}
+            />
+          )}
+          {!isLoading && !error && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {filteredVocabulary.map((item) => (
+            {items.map((item) => (
               <Card key={item.id} className="group hover:border-accent transition-all">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <CardTitle className="text-3xl">{item.word}</CardTitle>
-                        <Badge variant="secondary">{item.level}</Badge>
-                        <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                        {item.level && <Badge variant="secondary">{item.level}</Badge>}
+                        {item.category && <Badge variant="outline" className="text-xs">{item.category}</Badge>}
                       </div>
-                      <CardDescription className="text-lg">{item.reading}</CardDescription>
+                      {item.reading && <CardDescription className="text-lg">{item.reading}</CardDescription>}
                     </div>
                     <div className="flex gap-2">
                       <Button 
@@ -307,15 +207,15 @@ export default function Vocabulary() {
                   <div className="flex items-start gap-2">
                     <BookOpen className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
                     <div>
-                      <p className="font-medium mb-1">{item.meaning}</p>
+                      {item.meaning && <p className="font-medium mb-1">{item.meaning}</p>}
                     </div>
                   </div>
 
                   <div className="p-4 bg-secondary/50 rounded-lg space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">Example Sentence</p>
-                    <p className="text-lg font-medium">{item.example}</p>
-                    <p className="text-sm text-muted-foreground">{item.exampleReading}</p>
-                    <p className="text-sm">{item.exampleMeaning}</p>
+                    {item.example && <p className="text-lg font-medium">{item.example}</p>}
+                    {item.exampleReading && <p className="text-sm text-muted-foreground">{item.exampleReading}</p>}
+                    {item.exampleMeaning && <p className="text-sm">{item.exampleMeaning}</p>}
                   </div>
 
                   <Button className="w-full" variant="outline">
@@ -326,15 +226,14 @@ export default function Vocabulary() {
               </Card>
             ))}
           </div>
+          )}
 
-          {filteredVocabulary.length === 0 && (
-            <Card className="p-12">
-              <div className="text-center">
-                <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">No vocabulary found</h3>
-                <p className="text-muted-foreground">Try adjusting your search or filters</p>
-              </div>
-            </Card>
+          {!isLoading && !error && items.length === 0 && (
+            <EmptyState
+              icon={<Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />}
+              title="No vocabulary found"
+              description="Try adjusting your search or filters"
+            />
           )}
         </div>
       </main>

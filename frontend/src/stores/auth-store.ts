@@ -65,13 +65,11 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
-      token: localStorage.getItem('auth_token'),
-      refreshToken: localStorage.getItem('refresh_token'),
+      token: null,
+      refreshToken: null,
 
       // Actions
       setTokens: (token: string, refreshToken: string) => {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
         set({ token, refreshToken });
       },
 
@@ -93,8 +91,6 @@ export const useAuthStore = create<AuthStore>()(
       }),
 
       logout: () => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
         set({ 
           user: null, 
           isAuthenticated: false, 

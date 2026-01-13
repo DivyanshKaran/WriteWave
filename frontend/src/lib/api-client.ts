@@ -3,9 +3,10 @@ import { useAuthStore } from '@/stores/auth-store';
 
 // API Configuration
 const API_CONFIG = {
-  baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://api.writewave.app' 
-    : 'http://localhost:8000',
+  baseURL:
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL) ||
+    (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
+    (process.env.NODE_ENV === 'production' ? 'https://api.writewave.app' : 'http://localhost:8000'),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -15,52 +16,117 @@ const API_CONFIG = {
 // Create axios instance
 const apiClient: AxiosInstance = axios.create(API_CONFIG);
 
+// Simple UUID v4 generator for request correlation when needed
+function generateRequestId(): string {
+  // Not crypto-strong; sufficient for correlation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+// Normalize backend errors into a consistent shape
+function normalizeApiError(response: any) {
+  const status = response?.status ?? 0;
+  const data = response?.data ?? {};
+  const message = data?.message || data?.error || 'Request failed';
+  const code = data?.code || status;
+  const traceId = response?.headers?.['x-request-id'] || response?.headers?.['x-correlation-id'];
+  return { status, code, message, details: data, traceId };
+}
+
+// Single-flight refresh control
+let refreshPromise: Promise<void> | null = null;
+async function refreshTokensIfNeeded(): Promise<void> {
+  if (refreshPromise) return refreshPromise;
+
+  const { refreshToken, setTokens, logout } = useAuthStore.getState();
+  refreshPromise = (async () => {
+    try {
+      // Prefer refreshed tokens returned via headers from Kong (if any) handled per-response below.
+      if (!refreshToken) throw new Error('No refresh token');
+
+      // Try canonical refresh endpoint first
+      const url = `${API_CONFIG.baseURL}/api/v1/auth/refresh`;
+      const resp = await axios.post(url, { refreshToken }, { timeout: 10000 });
+      const newAccess = resp.data?.accessToken || resp.data?.token;
+      const newRefresh = resp.data?.refreshToken || refreshToken;
+      if (!newAccess) throw new Error('No access token in refresh response');
+      setTokens(newAccess, newRefresh);
+    } catch (e1: any) {
+      // Fallback legacy path name if backend differs
+      try {
+        const url2 = `${API_CONFIG.baseURL}/api/v1/auth/refresh-token`;
+        const resp2 = await axios.post(url2, { refreshToken: useAuthStore.getState().refreshToken }, { timeout: 10000 });
+        const newAccess = resp2.data?.accessToken || resp2.data?.token;
+        const newRefresh = resp2.data?.refreshToken || useAuthStore.getState().refreshToken;
+        if (!newAccess) throw new Error('No access token in refresh response');
+        useAuthStore.getState().setTokens(newAccess, newRefresh);
+      } catch (e2) {
+        logout();
+        throw e2;
+      }
+    } finally {
+      // allow another refresh later
+      const p = refreshPromise; // capture
+      refreshPromise = null;
+      await p?.catch(() => undefined);
+    }
+  })();
+  return refreshPromise;
+}
+
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
+    if (!config.headers) config.headers = {} as any;
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      (config.headers as any).Authorization = `Bearer ${token}`;
+    }
+    if (!(config.headers as any)['X-Request-Id']) {
+      (config.headers as any)['X-Request-Id'] = generateRequestId();
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling and auto-refresh
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    // If Kong issued new tokens in headers, persist them
+    const newAccess = response.headers?.['x-new-token'];
+    const newRefresh = response.headers?.['x-refresh-token'];
+    if (newAccess) {
+      useAuthStore.getState().setTokens(newAccess, newRefresh || useAuthStore.getState().refreshToken);
+    }
+    return response;
+  },
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error?.config || {};
+    const status = error?.response?.status;
 
-    // Handle 401 errors (token expired)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
+    // Only attempt refresh once per request
+    if (status === 401 && !originalRequest.__isRetried) {
+      originalRequest.__isRetried = true;
       try {
-        const refreshToken = useAuthStore.getState().refreshToken;
-        if (refreshToken) {
-          const response = await axios.post(`${API_CONFIG.baseURL}/api/v1/auth/refresh-token`, {
-            refreshToken,
-          });
-          
-          const { token: newToken, refreshToken: newRefreshToken } = response.data;
-          useAuthStore.getState().setTokens(newToken, newRefreshToken);
-          
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh failed, logout user
+        await refreshTokensIfNeeded();
+        // Update auth header and replay
+        const token = useAuthStore.getState().token;
+        if (!originalRequest.headers) originalRequest.headers = {} as any;
+        if (token) (originalRequest.headers as any).Authorization = `Bearer ${token}`;
+        return apiClient(originalRequest);
+      } catch (e) {
         useAuthStore.getState().logout();
-        window.location.href = '/login';
+        // Let callers handle redirect; avoid hard navigation here to keep SPA flow predictable
       }
     }
 
-    return Promise.reject(error);
+    // Normalize error before rejecting
+    const normalized = normalizeApiError(error?.response);
+    return Promise.reject(normalized);
   }
 );
 
@@ -645,8 +711,8 @@ export class ArticlesService {
 export class NotificationService {
   private client = apiClient;
 
-  async getNotifications(params?: NotificationParams) {
-    return this.client.get('/api/notifications/user/:userId', { params });
+  async getNotifications(userId: string, params?: NotificationParams) {
+    return this.client.get(`/api/notifications/user/${userId}`, { params });
   }
 
   async getNotification(id: string) {
@@ -667,6 +733,10 @@ export class NotificationService {
 
   async markAllAsRead() {
     return this.client.put('/api/notifications/mark-all-read');
+  }
+
+  async clearAllNotifications(userId: string) {
+    return this.client.delete(`/api/notifications/user/${userId}/clear`);
   }
 
   async getPreferences(userId: string) {

@@ -4,23 +4,20 @@ import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useKanjiList } from "@/hooks/useContent";
+import { ErrorBanner } from "@/components/common/ErrorBanner";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Card } from "@/components/ui/card";
 
 const levels = ["N5", "N4", "N3", "N2", "N1"];
 
-const sampleKanji = [
-  { char: "一", meaning: "One", kunyomi: "ひと-つ", onyomi: "イチ", level: "N5" },
-  { char: "日", meaning: "Sun, Day", kunyomi: "ひ, か", onyomi: "ニチ", level: "N5" },
-  { char: "本", meaning: "Book, Origin", kunyomi: "もと", onyomi: "ホン", level: "N5" },
-  { char: "人", meaning: "Person", kunyomi: "ひと", onyomi: "ジン", level: "N5" },
-  { char: "月", meaning: "Moon, Month", kunyomi: "つき", onyomi: "ゲツ", level: "N5" },
-  { char: "火", meaning: "Fire", kunyomi: "ひ", onyomi: "カ", level: "N5" },
-  { char: "水", meaning: "Water", kunyomi: "みず", onyomi: "スイ", level: "N5" },
-  { char: "木", meaning: "Tree, Wood", kunyomi: "き", onyomi: "モク", level: "N5" },
-];
+type KanjiItem = { char: string; meaning?: string; level?: string };
 
 export default function Kanji() {
   const navigate = useNavigate();
   const [selectedLevel, setSelectedLevel] = useState("N5");
+  const { data, isLoading, error } = useKanjiList(selectedLevel);
+  const kanji: KanjiItem[] = (data || []).map((k: any) => ({ char: k.char || k.character || k, meaning: k.meaning, level: k.level }));
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -60,22 +57,34 @@ export default function Kanji() {
           </div>
 
           {/* Mobile-optimized kanji grid */}
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 sm:gap-3 md:gap-4">
-            {sampleKanji
-              .filter(k => k.level === selectedLevel)
-              .map((kanji) => (
+          {isLoading && <Card className="p-6">Loading...</Card>}
+          {error && (
+            <ErrorBanner
+              message={(error as any)?.message || 'Failed to load kanji'}
+              onRetry={() => window.location.reload()}
+            />
+          )}
+          {!isLoading && !error && (
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 sm:gap-3 md:gap-4">
+              {kanji.map((k) => (
                 <Link
-                  key={kanji.char}
-                  to={`/characters/kanji/${encodeURIComponent(kanji.char)}`}
+                  key={k.char}
+                  to={`/characters/kanji/${encodeURIComponent(k.char)}`}
                   className="group aspect-square border-2 border-border flex flex-col items-center justify-center hover:border-accent hover:bg-accent/5 transition-all p-2 sm:p-3 md:p-4 rounded-md"
                 >
                   <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 group-hover:text-accent transition-colors">
-                    {kanji.char}
+                    {k.char}
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground text-center leading-tight">{kanji.meaning}</p>
+                  {k.meaning && (
+                    <p className="text-xs sm:text-sm text-muted-foreground text-center leading-tight">{k.meaning}</p>
+                  )}
                 </Link>
               ))}
-          </div>
+            </div>
+          )}
+          {!isLoading && !error && kanji.length === 0 && (
+            <EmptyState title="No kanji found" description="Try another JLPT level or check back later." />
+          )}
         </div>
       </main>
     </div>
