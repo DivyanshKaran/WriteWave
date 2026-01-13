@@ -1,32 +1,32 @@
-import { PrismaClient } from '@prisma/client';
-import { logger } from './logger';
+import { PrismaClient } from "@prisma/client";
+import { logger } from "./logger";
 
 // Prisma Client instance
 export const prisma = new PrismaClient({
   log: [
     {
-      emit: 'event',
-      level: 'query',
+      emit: "event",
+      level: "query",
     },
     {
-      emit: 'event',
-      level: 'error',
+      emit: "event",
+      level: "error",
     },
     {
-      emit: 'event',
-      level: 'info',
+      emit: "event",
+      level: "info",
     },
     {
-      emit: 'event',
-      level: 'warn',
+      emit: "event",
+      level: "warn",
     },
   ],
 });
 
 // Log Prisma events
-prisma.$on('query', (e) => {
-  if (process.env.NODE_ENV === 'development') {
-    logger.debug('Prisma Query', {
+prisma.$on("query", (e) => {
+  if (process.env.NODE_ENV === "development") {
+    logger.debug("Prisma Query", {
       query: e.query,
       params: e.params,
       duration: `${e.duration}ms`,
@@ -34,22 +34,22 @@ prisma.$on('query', (e) => {
   }
 });
 
-prisma.$on('error', (e) => {
-  logger.error('Prisma Error', {
+prisma.$on("error", (e) => {
+  logger.error("Prisma Error", {
     message: e.message,
     target: e.target,
   });
 });
 
-prisma.$on('info', (e) => {
-  logger.info('Prisma Info', {
+prisma.$on("info", (e) => {
+  logger.info("Prisma Info", {
     message: e.message,
     target: e.target,
   });
 });
 
-prisma.$on('warn', (e) => {
-  logger.warn('Prisma Warning', {
+prisma.$on("warn", (e) => {
+  logger.warn("Prisma Warning", {
     message: e.message,
     target: e.target,
   });
@@ -59,9 +59,9 @@ prisma.$on('warn', (e) => {
 export const connectDatabase = async (): Promise<void> => {
   try {
     await prisma.$connect();
-    logger.info('Database connected successfully');
+    logger.info("Database connected successfully");
   } catch (error) {
-    logger.error('Database connection failed', { error });
+    logger.error("Database connection failed", { error });
     throw error;
   }
 };
@@ -70,32 +70,32 @@ export const connectDatabase = async (): Promise<void> => {
 export const disconnectDatabase = async (): Promise<void> => {
   try {
     await prisma.$disconnect();
-    logger.info('Database disconnected successfully');
+    logger.info("Database disconnected successfully");
   } catch (error) {
-    logger.error('Database disconnection failed', { error });
+    logger.error("Database disconnection failed", { error });
     throw error;
   }
 };
 
 // Database health check
 export const checkDatabaseHealth = async (): Promise<{
-  status: 'connected' | 'disconnected';
+  status: "connected" | "disconnected";
   responseTime?: number;
 }> => {
   const startTime = Date.now();
-  
+
   try {
     await prisma.$queryRaw`SELECT 1`;
     const responseTime = Date.now() - startTime;
-    
+
     return {
-      status: 'connected',
+      status: "connected",
       responseTime,
     };
   } catch (error) {
-    logger.error('Database health check failed', { error });
+    logger.error("Database health check failed", { error });
     return {
-      status: 'disconnected',
+      status: "disconnected",
     };
   }
 };
@@ -113,7 +113,7 @@ export const paginate = async <T>(
   page: number = 1,
   limit: number = 10,
   where: any = {},
-  orderBy: any = { createdAt: 'desc' }
+  orderBy: any = { createdAt: "desc" }
 ): Promise<{
   data: T[];
   total: number;
@@ -124,7 +124,7 @@ export const paginate = async <T>(
   hasPrev: boolean;
 }> => {
   const skip = (page - 1) * limit;
-  
+
   const [data, total] = await Promise.all([
     model.findMany({
       where,
@@ -134,9 +134,9 @@ export const paginate = async <T>(
     }),
     model.count({ where }),
   ]);
-  
+
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     data,
     total,
@@ -155,7 +155,7 @@ export const search = async <T>(
   searchFields: string[],
   page: number = 1,
   limit: number = 10,
-  orderBy: any = { createdAt: 'desc' }
+  orderBy: any = { createdAt: "desc" }
 ): Promise<{
   data: T[];
   total: number;
@@ -166,19 +166,19 @@ export const search = async <T>(
   hasPrev: boolean;
 }> => {
   const skip = (page - 1) * limit;
-  
+
   // Build search conditions
-  const searchConditions = searchFields.map(field => ({
+  const searchConditions = searchFields.map((field) => ({
     [field]: {
       contains: searchTerm,
-      mode: 'insensitive' as const,
+      mode: "insensitive" as const,
     },
   }));
-  
+
   const where = {
     OR: searchConditions,
   };
-  
+
   const [data, total] = await Promise.all([
     model.findMany({
       where,
@@ -188,9 +188,9 @@ export const search = async <T>(
     }),
     model.count({ where }),
   ]);
-  
+
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     data,
     total,
@@ -214,29 +214,29 @@ export const searchCharacters = async (
   limit: number = 10
 ) => {
   const skip = (page - 1) * limit;
-  
+
   const where: any = {
     isActive: true,
     OR: [
-      { character: { contains: searchTerm, mode: 'insensitive' } },
-      { meaning: { contains: searchTerm, mode: 'insensitive' } },
-      { pronunciation: { contains: searchTerm, mode: 'insensitive' } },
-      { romanization: { contains: searchTerm, mode: 'insensitive' } },
+      { character: { contains: searchTerm, mode: "insensitive" } },
+      { meaning: { contains: searchTerm, mode: "insensitive" } },
+      { pronunciation: { contains: searchTerm, mode: "insensitive" } },
+      { romanization: { contains: searchTerm, mode: "insensitive" } },
     ],
   };
-  
+
   if (filters.type) {
     where.type = filters.type;
   }
-  
+
   if (filters.jlptLevel) {
     where.jlptLevel = filters.jlptLevel;
   }
-  
+
   if (filters.difficultyLevel) {
     where.difficultyLevel = filters.difficultyLevel;
   }
-  
+
   const [data, total] = await Promise.all([
     prisma.character.findMany({
       where,
@@ -248,15 +248,15 @@ export const searchCharacters = async (
           },
         },
       },
-      orderBy: { learningOrder: 'asc' },
+      orderBy: { learningOrder: "asc" },
       skip,
       take: limit,
     }),
     prisma.character.count({ where }),
   ]);
-  
+
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     data,
     total,
@@ -280,29 +280,29 @@ export const searchVocabulary = async (
   limit: number = 10
 ) => {
   const skip = (page - 1) * limit;
-  
+
   const where: any = {
     isActive: true,
     OR: [
-      { japanese: { contains: searchTerm, mode: 'insensitive' } },
-      { english: { contains: searchTerm, mode: 'insensitive' } },
-      { romanization: { contains: searchTerm, mode: 'insensitive' } },
-      { pronunciation: { contains: searchTerm, mode: 'insensitive' } },
+      { japanese: { contains: searchTerm, mode: "insensitive" } },
+      { english: { contains: searchTerm, mode: "insensitive" } },
+      { romanization: { contains: searchTerm, mode: "insensitive" } },
+      { pronunciation: { contains: searchTerm, mode: "insensitive" } },
     ],
   };
-  
+
   if (filters.category) {
     where.category = filters.category;
   }
-  
+
   if (filters.jlptLevel) {
     where.jlptLevel = filters.jlptLevel;
   }
-  
+
   if (filters.difficultyLevel) {
     where.difficultyLevel = filters.difficultyLevel;
   }
-  
+
   const [data, total] = await Promise.all([
     prisma.vocabularyWord.findMany({
       where,
@@ -310,15 +310,15 @@ export const searchVocabulary = async (
         characters: true,
         mediaAssets: true,
       },
-      orderBy: { frequency: 'asc' },
+      orderBy: { frequency: "asc" },
       skip,
       take: limit,
     }),
     prisma.vocabularyWord.count({ where }),
   ]);
-  
+
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     data,
     total,
@@ -333,42 +333,38 @@ export const searchVocabulary = async (
 // Content statistics
 export const getContentStatistics = async () => {
   try {
-    const [
-      characterStats,
-      vocabularyStats,
-      lessonStats,
-      mediaStats,
-    ] = await Promise.all([
-      // Character statistics
-      prisma.character.groupBy({
-        by: ['type', 'jlptLevel', 'difficultyLevel'],
-        where: { isActive: true },
-        _count: { id: true },
-      }),
-      
-      // Vocabulary statistics
-      prisma.vocabularyWord.groupBy({
-        by: ['category', 'jlptLevel', 'difficultyLevel'],
-        where: { isActive: true },
-        _count: { id: true },
-      }),
-      
-      // Lesson statistics
-      prisma.lesson.groupBy({
-        by: ['type', 'jlptLevel', 'difficultyLevel'],
-        where: { isActive: true },
-        _count: { id: true },
-      }),
-      
-      // Media statistics
-      prisma.mediaAsset.groupBy({
-        by: ['type'],
-        where: { isActive: true },
-        _count: { id: true },
-        _sum: { size: true },
-      }),
-    ]);
-    
+    const [characterStats, vocabularyStats, lessonStats, mediaStats] =
+      await Promise.all([
+        // Character statistics
+        prisma.character.groupBy({
+          by: ["type", "jlptLevel", "difficultyLevel"],
+          where: { isActive: true },
+          _count: { id: true },
+        }),
+
+        // Vocabulary statistics
+        prisma.vocabularyWord.groupBy({
+          by: ["category", "jlptLevel", "difficultyLevel"],
+          where: { isActive: true },
+          _count: { id: true },
+        }),
+
+        // Lesson statistics
+        prisma.lesson.groupBy({
+          by: ["type", "jlptLevel", "difficultyLevel"],
+          where: { isActive: true },
+          _count: { id: true },
+        }),
+
+        // Media statistics
+        prisma.mediaAsset.groupBy({
+          by: ["type"],
+          where: { isActive: true },
+          _count: { id: true },
+          _sum: { size: true },
+        }),
+      ]);
+
     return {
       characters: characterStats,
       vocabulary: vocabularyStats,
@@ -376,7 +372,7 @@ export const getContentStatistics = async () => {
       media: mediaStats,
     };
   } catch (error) {
-    logger.error('Failed to get content statistics', { error });
+    logger.error("Failed to get content statistics", { error });
     throw error;
   }
 };
@@ -386,10 +382,10 @@ export const cleanupExpiredData = async (): Promise<void> => {
   try {
     // Clean up old media assets (if needed)
     // This could be implemented based on business requirements
-    
-    logger.info('Content cleanup completed successfully');
+
+    logger.info("Content cleanup completed successfully");
   } catch (error) {
-    logger.error('Failed to cleanup expired data', { error });
+    logger.error("Failed to cleanup expired data", { error });
     throw error;
   }
 };
@@ -397,12 +393,12 @@ export const cleanupExpiredData = async (): Promise<void> => {
 // Database optimization
 export const optimizeDatabase = async (): Promise<void> => {
   try {
-    // Run database optimization queries
+    // Run database optimization queries (safe - no user input)
     await prisma.$executeRaw`VACUUM ANALYZE`;
-    
-    logger.info('Database optimization completed successfully');
+
+    logger.info("Database optimization completed successfully");
   } catch (error) {
-    logger.error('Database optimization failed', { error });
+    logger.error("Database optimization failed", { error });
     throw error;
   }
 };

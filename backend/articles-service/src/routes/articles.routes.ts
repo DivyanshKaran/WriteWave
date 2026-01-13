@@ -37,6 +37,9 @@ router.post('/', authenticate, createArticle);
 router.put('/:id', authenticate, updateArticle);
 router.delete('/:id', authenticate, deleteArticle);
 router.post('/:id/like', authenticate, toggleLike);
+// Symmetry: DELETE like
+import { deleteLike } from '../controllers/articles.controller';
+router.delete('/:id/like', authenticate, deleteLike);
 router.post('/:id/bookmark', authenticate, toggleBookmark);
 router.post('/:id/comments', authenticate, addComment);
 

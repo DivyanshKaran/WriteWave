@@ -222,6 +222,28 @@ export const toggleLike = async (req: Request, res: Response, next: NextFunction
   }
 };
 
+// DELETE like (idempotent): ensure article is unliked
+export const deleteLike = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ success: false, error: { message: 'Article ID is required' } } as ErrorResponse);
+      return;
+    }
+    const user = req.user!;
+
+    const result = await articlesService.toggleLike(id, user.id);
+
+    // If toggle returned liked=true, it means it just liked (which is not desired for DELETE),
+    // so toggle again to unlike; otherwise it's already unliked.
+    const finalResult = result.liked ? await articlesService.toggleLike(id, user.id) : result;
+
+    res.json({ success: true, data: finalResult } as SuccessResponse);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Bookmark/Unbookmark article
 export const toggleBookmark = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

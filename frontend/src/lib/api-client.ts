@@ -1,5 +1,9 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useAuthStore } from '@/stores/auth-store';
+import { MockAPI } from './mock-api';
+
+// Enable mock mode for demo (no backend required)
+const MOCK_MODE = true;
 
 // API Configuration
 const API_CONFIG = {
@@ -136,55 +140,68 @@ export class UserService {
 
   // Auth endpoints
   async register(data: RegisterData) {
+    if (MOCK_MODE) return MockAPI.user.getProfile();
     return this.client.post('/api/v1/auth/register', data);
   }
 
   async login(data: LoginData) {
+    if (MOCK_MODE) return MockAPI.user.getMe();
     return this.client.post('/api/v1/auth/login', data);
   }
 
   async logout() {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/auth/logout');
   }
 
   async forgotPassword(email: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/auth/forgot-password', { email });
   }
 
   async resetPassword(data: ResetPasswordData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/auth/reset-password', data);
   }
 
   async verifyEmail(token: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/auth/verify-email', { token });
   }
 
   async resendVerification(email: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/auth/resend-verification', { email });
   }
 
   async getMe() {
+    if (MOCK_MODE) return MockAPI.user.getMe();
     return this.client.get('/api/v1/auth/me');
   }
 
   // User profile endpoints
   async getProfile() {
+    if (MOCK_MODE) return MockAPI.user.getProfile();
     return this.client.get('/api/v1/users/profile');
   }
 
   async updateProfile(data: UpdateProfileData) {
+    if (MOCK_MODE) return MockAPI.user.updateProfile(data);
     return this.client.put('/api/v1/users/profile', data);
   }
 
   async getSettings() {
+    if (MOCK_MODE) return MockAPI.user.getSettings();
     return this.client.get('/api/v1/users/settings');
   }
 
   async updateSettings(data: UpdateSettingsData) {
+    if (MOCK_MODE) return MockAPI.user.updateSettings(data);
     return this.client.put('/api/v1/users/settings', data);
   }
 
   async updateAvatar(file: File) {
+    if (MOCK_MODE) return MockAPI.user.getProfile();
     const formData = new FormData();
     formData.append('avatar', file);
     return this.client.put('/api/v1/users/avatar', formData, {
@@ -193,18 +210,22 @@ export class UserService {
   }
 
   async getUserStats() {
+    if (MOCK_MODE) return MockAPI.user.getProfile();
     return this.client.get('/api/v1/users/stats');
   }
 
   async searchUsers(query: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/users/search?q=${encodeURIComponent(query)}`);
   }
 
   async deactivateAccount() {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/users/deactivate');
   }
 
   async deleteAccount() {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete('/api/v1/users/account');
   }
 }
@@ -214,116 +235,144 @@ export class ContentService {
 
   // Characters endpoints
   async getHiragana() {
+    if (MOCK_MODE) return MockAPI.content.getHiragana();
     return this.client.get('/api/v1/characters/hiragana');
   }
 
   async getKatakana() {
+    if (MOCK_MODE) return MockAPI.content.getKatakana();
     return this.client.get('/api/v1/characters/katakana');
   }
 
   async getKanji(level: string) {
+    if (MOCK_MODE) return MockAPI.content.getKanji();
     return this.client.get(`/api/v1/characters/kanji/${level}`);
   }
 
   async getCharacter(id: string) {
+    if (MOCK_MODE) return MockAPI.content.getCharacter(id);
     return this.client.get(`/api/v1/characters/${id}`);
   }
 
   async getCharacterStrokeOrder(id: string) {
+    if (MOCK_MODE) return { data: ['M0,0 L10,10'] };
     return this.client.get(`/api/v1/characters/${id}/stroke-order`);
   }
 
   async getCharacterPronunciation(id: string) {
+    if (MOCK_MODE) return { data: { audio: null } };
     return this.client.get(`/api/v1/characters/${id}/pronunciation`);
   }
 
   async getCharacterExamples(id: string) {
+    if (MOCK_MODE) return { data: [{ japanese: '日本', english: 'Japan' }] };
     return this.client.get(`/api/v1/characters/${id}/examples`);
   }
 
   async getCharacterRadicals(id: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/characters/${id}/radicals`);
   }
 
   async getCharacterCompounds(id: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/characters/${id}/compounds`);
   }
 
   async searchCharacters(query: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/characters/search?q=${encodeURIComponent(query)}`);
   }
 
   async getCharacterStatistics() {
+    if (MOCK_MODE) return { data: { total: 2136, learned: 120 } };
     return this.client.get('/api/v1/characters/statistics');
   }
 
   async getRandomCharacter() {
+    if (MOCK_MODE) return MockAPI.content.getKanji();
     return this.client.get('/api/v1/characters/random');
   }
 
   // Vocabulary endpoints
   async getVocabulary(params?: VocabularyParams) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/vocabulary', { params });
   }
 
   async getVocabularyItem(id: string) {
+    if (MOCK_MODE) return { data: { word: '食べる', reading: 'たべる', meanings: ['to eat'] } };
     return this.client.get(`/api/v1/vocabulary/${id}`);
   }
 
   async searchVocabulary(query: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/vocabulary/search?q=${encodeURIComponent(query)}`);
   }
 
   async getVocabularyByPartOfSpeech(partOfSpeech: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/vocabulary/part-of-speech/${partOfSpeech}`);
   }
 
   async getVocabularyByCategory(category: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/vocabulary/category/${category}`);
   }
 
   async getVocabularyByJLPT(level: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/vocabulary/jlpt/${level}`);
   }
 
   async getVocabularyFrequency() {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/vocabulary/frequency');
   }
 
   async getVocabularyStatistics() {
+    if (MOCK_MODE) return { data: { total: 5000, learned: 450 } };
     return this.client.get('/api/v1/vocabulary/statistics');
   }
 
   async getRandomVocabulary() {
+    if (MOCK_MODE) return { data: { word: '食べる', reading: 'たべる', meanings: ['to eat'] } };
     return this.client.get('/api/v1/vocabulary/random');
   }
 
   // Lessons endpoints
   async getLessons(params?: LessonParams) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/lessons', { params });
   }
 
   async getLesson(id: string) {
+    if (MOCK_MODE) return { data: { id, title: 'Sample Lesson', content: [] } };
     return this.client.get(`/api/v1/lessons/${id}`);
   }
 
   async getLessonSteps(id: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/lessons/${id}/steps`);
   }
 
   async getLessonPrerequisites(id: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/lessons/${id}/prerequisites`);
   }
 
   async getLessonsByLevel(level: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/lessons/level/${level}`);
   }
 
   async getLessonsByCategory(category: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/lessons/category/${category}`);
   }
 
   async getLessonStatistics() {
+    if (MOCK_MODE) return { data: { total: 100, completed: 48 } };
     return this.client.get('/api/v1/lessons/statistics');
   }
 
@@ -380,58 +429,72 @@ export class ProgressService {
   private client = apiClient;
 
   async getUserProgress(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserProgress();
     return this.client.get(`/api/v1/progress/${userId}`);
   }
 
   async updateCharacterPractice(data: CharacterPracticeData) {
+    if (MOCK_MODE) return MockAPI.progress.updateCharacterPractice();
     return this.client.post('/api/v1/progress/character-practice', data);
   }
 
   async updateXP(data: XPUpdateData) {
+    if (MOCK_MODE) return MockAPI.progress.updateXP();
     return this.client.put('/api/v1/progress/xp', data);
   }
 
   async getUserStreaks(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserStreaks();
     return this.client.get(`/api/v1/progress/streaks/${userId}`);
   }
 
   async getUserAchievements(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserAchievements();
     return this.client.get(`/api/v1/progress/achievements/${userId}`);
   }
 
   async updateMastery(data: MasteryUpdateData) {
+    if (MOCK_MODE) return MockAPI.progress.updateMastery();
     return this.client.post('/api/v1/progress/update-mastery', data);
   }
 
   async getUserAnalytics(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserAnalytics();
     return this.client.get(`/api/v1/progress/analytics/${userId}`);
   }
 
   async getLeaderboard(period: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/progress/leaderboard/${period}`);
   }
 
   async getUserRank(userId: string, period: string) {
+    if (MOCK_MODE) return { data: { rank: 42, total: 1000 } };
     return this.client.get(`/api/v1/progress/rank/${userId}/${period}`);
   }
 
   async getUserInsights(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserProgress();
     return this.client.get(`/api/v1/progress/insights/${userId}`);
   }
 
   async getUserMetrics(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserProgress();
     return this.client.get(`/api/v1/progress/metrics/${userId}`);
   }
 
   async freezeStreak(data: FreezeStreakData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/progress/freeze-streak', data);
   }
 
   async getUserReview(userId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/progress/review/${userId}`);
   }
 
   async getUserWeakAreas(userId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/progress/weak-areas/${userId}`);
   }
 }
@@ -441,197 +504,245 @@ export class CommunityService {
 
   // Forum endpoints
   async getForums() {
+    if (MOCK_MODE) return MockAPI.community.getForums();
     return this.client.get('/api/v1/community/forums');
   }
 
   async getForum(slug: string) {
+    if (MOCK_MODE) return MockAPI.community.getForums();
     return this.client.get(`/api/v1/community/forums/${slug}`);
   }
 
   async getPosts(params?: PostParams) {
+    if (MOCK_MODE) return MockAPI.community.getPosts();
     return this.client.get('/api/v1/community/posts', { params });
   }
 
   async getPost(postId: string) {
+    if (MOCK_MODE) return { data: { id: postId, title: 'Sample Post', content: 'Sample content' } };
     return this.client.get(`/api/v1/community/posts/${postId}`);
   }
 
   async createPost(data: CreatePostData) {
+    if (MOCK_MODE) return { data: { id: Date.now().toString(), ...data } };
     return this.client.post('/api/v1/community/posts', data);
   }
 
   async updatePost(postId: string, data: UpdatePostData) {
+    if (MOCK_MODE) return { data: { id: postId, ...data } };
     return this.client.put(`/api/v1/community/posts/${postId}`, data);
   }
 
   async deletePost(postId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/posts/${postId}`);
   }
 
   async pinPost(postId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.patch(`/api/v1/community/posts/${postId}/pin`);
   }
 
   async getPostComments(postId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/posts/${postId}/comments`);
   }
 
   async createComment(postId: string, data: CreateCommentData) {
+    if (MOCK_MODE) return { data: { id: Date.now().toString(), ...data } };
     return this.client.post(`/api/v1/community/posts/${postId}/comments`, data);
   }
 
   async updateComment(commentId: string, data: UpdateCommentData) {
+    if (MOCK_MODE) return { data: { id: commentId, ...data } };
     return this.client.put(`/api/v1/community/comments/${commentId}`, data);
   }
 
   async deleteComment(commentId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/comments/${commentId}`);
   }
 
   async votePost(postId: string, data: VoteData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/v1/community/posts/${postId}/vote`, data);
   }
 
   async voteComment(commentId: string, data: VoteData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/v1/community/comments/${commentId}/vote`, data);
   }
 
   async searchPosts(query: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/posts/search?q=${encodeURIComponent(query)}`);
   }
 
   // Study Groups endpoints
   async getStudyGroups(params?: StudyGroupParams) {
+    if (MOCK_MODE) return MockAPI.community.getStudyGroups();
     return this.client.get('/api/v1/community/study-groups', { params });
   }
 
   async getMyStudyGroups() {
+    if (MOCK_MODE) return MockAPI.community.getStudyGroups();
     return this.client.get('/api/v1/community/study-groups/my');
   }
 
   async getStudyGroup(groupId: string) {
+    if (MOCK_MODE) return MockAPI.community.getStudyGroup(groupId);
     return this.client.get(`/api/v1/community/study-groups/${groupId}`);
   }
 
   async createStudyGroup(data: CreateStudyGroupData) {
+    if (MOCK_MODE) return { data: { id: Date.now().toString(), ...data } };
     return this.client.post('/api/v1/community/study-groups', data);
   }
 
   async updateStudyGroup(groupId: string, data: UpdateStudyGroupData) {
+    if (MOCK_MODE) return { data: { id: groupId, ...data } };
     return this.client.put(`/api/v1/community/study-groups/${groupId}`, data);
   }
 
   async deleteStudyGroup(groupId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/study-groups/${groupId}`);
   }
 
   async joinStudyGroup(groupId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/v1/community/study-groups/${groupId}/join`);
   }
 
   async leaveStudyGroup(groupId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/v1/community/study-groups/${groupId}/leave`);
   }
 
   async updateMemberRole(groupId: string, memberId: string, role: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.put(`/api/v1/community/study-groups/${groupId}/members/${memberId}/role`, { role });
   }
 
   async removeMember(groupId: string, memberId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/study-groups/${groupId}/members/${memberId}`);
   }
 
   async getGroupChallenges(groupId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/study-groups/${groupId}/challenges`);
   }
 
   async createChallenge(groupId: string, data: CreateChallengeData) {
+    if (MOCK_MODE) return { data: { id: Date.now().toString(), ...data } };
     return this.client.post(`/api/v1/community/study-groups/${groupId}/challenges`, data);
   }
 
   async updateChallenge(challengeId: string, data: UpdateChallengeData) {
+    if (MOCK_MODE) return { data: { id: challengeId, ...data } };
     return this.client.put(`/api/v1/community/challenges/${challengeId}`, data);
   }
 
   async deleteChallenge(challengeId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/challenges/${challengeId}`);
   }
 
   // Social endpoints
   async getFriendRequests() {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/community/friends/requests');
   }
 
   async sendFriendRequest(data: SendFriendRequestData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/community/friends/requests', data);
   }
 
   async respondToFriendRequest(requestId: string, data: RespondToFriendRequestData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.put(`/api/v1/community/friends/requests/${requestId}`, data);
   }
 
   async deleteFriendRequest(requestId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/friends/requests/${requestId}`);
   }
 
   async getFriends() {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/community/friends');
   }
 
   async removeFriend(friendId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/friends/${friendId}`);
   }
 
   async followUser(userId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/v1/community/users/${userId}/follow`);
   }
 
   async unfollowUser(userId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/v1/community/users/${userId}/follow`);
   }
 
   async getUserFollowers(userId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/users/${userId}/followers`);
   }
 
   async getUserFollowing(userId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/users/${userId}/following`);
   }
 
   async getUserActivity(userId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/users/${userId}/activity`);
   }
 
   async getUserAchievements(userId: string) {
+    if (MOCK_MODE) return MockAPI.progress.getUserAchievements();
     return this.client.get(`/api/v1/community/users/${userId}/achievements`);
   }
 
   async getUserStats(userId: string) {
+    if (MOCK_MODE) return MockAPI.user.getProfile();
     return this.client.get(`/api/v1/community/users/${userId}/stats`);
   }
 
   async getFriendsActivity() {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/community/activity/friends');
   }
 
   // Leaderboard endpoints
   async getLeaderboard(params?: LeaderboardParams) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/v1/community/leaderboard', { params });
   }
 
   async getLeaderboardStats() {
+    if (MOCK_MODE) return { data: { totalUsers: 1000, totalXP: 500000 } };
     return this.client.get('/api/v1/community/leaderboard/stats');
   }
 
   async getUserRank(userId: string, type: string) {
+    if (MOCK_MODE) return { data: { rank: 42, total: 1000 } };
     return this.client.get(`/api/v1/community/leaderboard/users/${userId}/rank/${type}`);
   }
 
   async getUsersAround(userId: string, type: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/leaderboard/users/${userId}/around/${type}`);
   }
 
   async getCategoryLeaderboard(categoryId: string, type: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/v1/community/leaderboard/categories/${categoryId}/${type}`);
   }
 
@@ -640,6 +751,7 @@ export class CommunityService {
   }
 
   async checkAchievements(data: CheckAchievementsData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/v1/community/achievements/check', data);
   }
 }
@@ -648,62 +760,77 @@ export class ArticlesService {
   private client = apiClient;
 
   async getArticles(params?: ArticleParams) {
+    if (MOCK_MODE) return MockAPI.articles.getArticles();
     return this.client.get('/api/articles', { params });
   }
 
   async getArticle(id: string) {
+    if (MOCK_MODE) return MockAPI.articles.getArticle(id);
     return this.client.get(`/api/articles/${id}`);
   }
 
   async createArticle(data: CreateArticleData) {
+    if (MOCK_MODE) return MockAPI.articles.createArticle(data);
     return this.client.post('/api/articles', data);
   }
 
   async updateArticle(id: string, data: UpdateArticleData) {
+    if (MOCK_MODE) return { data: { id, ...data } };
     return this.client.put(`/api/articles/${id}`, data);
   }
 
   async deleteArticle(id: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/articles/${id}`);
   }
 
   async likeArticle(id: string) {
+    if (MOCK_MODE) return MockAPI.articles.likeArticle();
     return this.client.post(`/api/articles/${id}/like`);
   }
 
   async bookmarkArticle(id: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/articles/${id}/bookmark`);
   }
 
   async getTrendingArticles() {
+    if (MOCK_MODE) return MockAPI.articles.getTrendingArticles();
     return this.client.get('/api/articles/trending');
   }
 
   async getFeaturedArticles() {
+    if (MOCK_MODE) return MockAPI.articles.getFeaturedArticles();
     return this.client.get('/api/articles/featured');
   }
 
   async getUserArticles(userId: string) {
+    if (MOCK_MODE) return MockAPI.articles.getArticles();
     return this.client.get(`/api/articles/user/${userId}`);
   }
 
   async getArticleStats() {
+    if (MOCK_MODE) return { data: { total: 4, views: 4086, likes: 288 } };
     return this.client.get('/api/articles/stats');
   }
 
   async getUserArticleStats(userId: string) {
+    if (MOCK_MODE) return { data: { total: 3, views: 1250, likes: 89 } };
     return this.client.get(`/api/articles/user/${userId}/stats`);
   }
 
   async getArticleComments(id: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/articles/${id}/comments`);
   }
 
   async createComment(id: string, data: CreateCommentData) {
+    if (MOCK_MODE) return { data: { id: Date.now().toString(), ...data } };
     return this.client.post(`/api/articles/${id}/comments`, data);
   }
 
   async getPopularTags() {
+    if (MOCK_MODE) return { data: ['hiragana', 'grammar', 'JLPT', 'kanji', 'beginner', 'N5'] };
     return this.client.get('/api/articles/tags/popular');
   }
 }
@@ -712,58 +839,72 @@ export class NotificationService {
   private client = apiClient;
 
   async getNotifications(userId: string, params?: NotificationParams) {
+    if (MOCK_MODE) return MockAPI.notifications.getNotifications();
     return this.client.get(`/api/notifications/user/${userId}`, { params });
   }
 
   async getNotification(id: string) {
+    if (MOCK_MODE) return { data: { id, title: 'Notification', message: 'Sample notification' } };
     return this.client.get(`/api/notifications/${id}`);
   }
 
   async updateNotification(id: string, data: UpdateNotificationData) {
+    if (MOCK_MODE) return { data: { id, ...data } };
     return this.client.put(`/api/notifications/${id}`, data);
   }
 
   async deleteNotification(id: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/notifications/${id}`);
   }
 
   async markAsRead(id: string) {
+    if (MOCK_MODE) return MockAPI.notifications.markAsRead();
     return this.client.put(`/api/notifications/${id}`, { read: true });
   }
 
   async markAllAsRead() {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.put('/api/notifications/mark-all-read');
   }
 
   async clearAllNotifications(userId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.delete(`/api/notifications/user/${userId}/clear`);
   }
 
   async getPreferences(userId: string) {
+    if (MOCK_MODE) return MockAPI.notifications.getPreferences();
     return this.client.get(`/api/preferences/${userId}`);
   }
 
   async updatePreferences(userId: string, data: UpdatePreferencesData) {
+    if (MOCK_MODE) return MockAPI.notifications.updatePreferences(data);
     return this.client.put(`/api/preferences/${userId}`, data);
   }
 
   async resetPreferences(userId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/preferences/${userId}/reset`);
   }
 
   async subscribeToPush(userId: string, data: PushSubscriptionData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/subscriptions/${userId}`, data);
   }
 
   async getSubscriptions(userId: string) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get(`/api/subscriptions/${userId}`);
   }
 
   async unsubscribeFromPush(userId: string) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post(`/api/subscriptions/${userId}/unsubscribe`);
   }
 
   async getVapidKey() {
+    if (MOCK_MODE) return { data: { key: 'mock-vapid-key' } };
     return this.client.get('/api/subscriptions/vapid-key');
   }
 }
@@ -772,18 +913,22 @@ export class AnalyticsService {
   private client = apiClient;
 
   async trackEvent(data: EventData) {
+    if (MOCK_MODE) return { data: { success: true } };
     return this.client.post('/api/events', data);
   }
 
   async getAnalytics(params?: AnalyticsParams) {
+    if (MOCK_MODE) return { data: {} };
     return this.client.get('/api/analytics', { params });
   }
 
   async getDashboard() {
+    if (MOCK_MODE) return { data: {} };
     return this.client.get('/api/dashboards');
   }
 
   async getReports(params?: ReportParams) {
+    if (MOCK_MODE) return { data: [] };
     return this.client.get('/api/reports', { params });
   }
 

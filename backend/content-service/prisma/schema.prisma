@@ -288,3 +288,23 @@ model LearningProgress {
   @@unique([userId, characterId, vocabularyWordId, lessonId])
   @@map("learning_progress")
 }
+
+// Grammar points table
+model GrammarPoint {
+  id              String        @id @default(cuid())
+  pattern         String
+  meaning         String
+  jlptLevel       JLPTLevel?
+  category        String?
+  explanation     String?
+  examples        Json?         // Array of example objects { japanese, romaji, english }
+  usageNotes      String?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("grammar_points")
+  @@index([jlptLevel])
+  @@index([category])
+  @@index([isActive])
+}

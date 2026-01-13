@@ -794,6 +794,53 @@
 					"response": []
 				},
 				{
+					"name": "DELETE /articles/:id/like - Unlike Article (Symmetry)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Unlike action successful', function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.have.property('liked');",
+									"        pm.expect(jsonData.data.liked).to.eql(false);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/articles/{{articleId}}/like",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles", "{{articleId}}", "like"]
+						},
+						"description": "Unlike an article explicitly. This is symmetric to POST /articles/:id/like (toggle). If the article is already unliked, this is idempotent and returns liked=false. Requires authentication."
+					},
+					"response": []
+				},
+				{
 					"name": "POST /articles/:id/bookmark - Bookmark Article",
 					"event": [
 						{

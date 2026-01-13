@@ -3,6 +3,8 @@ import { characterRoutes } from './character.routes';
 import { vocabularyRoutes } from './vocabulary.routes';
 import { lessonRoutes } from './lesson.routes';
 import { mediaRoutes } from './media.routes';
+import { radicalRoutes } from './radical.routes';
+import { grammarRoutes } from './grammar.routes';
 import { checkRedisHealth } from '../config/redis';
 import { checkDatabaseHealth } from '../config/database';
 import { logger } from '../config/logger';
@@ -58,6 +60,8 @@ router.get('/health', async (_req, res) => {
 // API routes
 router.use('/characters', characterRoutes);
 router.use('/vocabulary', vocabularyRoutes);
+router.use('/radicals', radicalRoutes);
+router.use('/grammar', grammarRoutes);
 router.use('/lessons', lessonRoutes);
 router.use('/media', mediaRoutes);
 // router.use('/epub', epubRoutes); // Removed from API - epub extractor is local only

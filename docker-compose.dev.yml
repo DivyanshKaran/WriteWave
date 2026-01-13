@@ -233,7 +233,8 @@ services:
     volumes:
       - postgres_user_dev_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5433:5432"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -248,7 +249,8 @@ services:
     volumes:
       - postgres_content_dev_data:/var/lib/postgresql/data
     ports:
-      - "5434:5432"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5434:5432"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -263,7 +265,8 @@ services:
     volumes:
       - postgres_articles_dev_data:/var/lib/postgresql/data
     ports:
-      - "5444:5432"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5444:5432"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -278,7 +281,8 @@ services:
     volumes:
       - postgres_progress_dev_data:/var/lib/postgresql/data
     ports:
-      - "5435:5432"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5435:5432"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -293,7 +297,8 @@ services:
     volumes:
       - postgres_community_dev_data:/var/lib/postgresql/data
     ports:
-      - "5436:5432"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5436:5432"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -308,7 +313,8 @@ services:
     volumes:
       - postgres_analytics_dev_data:/var/lib/postgresql/data
     ports:
-      - "5437:5432"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5437:5432"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -323,8 +329,9 @@ services:
     volumes:
       - clickhouse_dev_data:/var/lib/clickhouse
     ports:
-      - "8123:8123"
-      - "9000:9000"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:9000:9000"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -332,9 +339,10 @@ services:
   redis-cluster-proxy:
     image: redis:7-alpine
     container_name: redis-cluster-proxy-dev
-    command: redis-server --port 6379
+    command: redis-server --port 6379 --requirepass ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:6379:6379"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -389,8 +397,9 @@ services:
     volumes:
       - rabbitmq_dev_data:/var/lib/rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     networks:
       - writewave-dev-network
     restart: unless-stopped
@@ -509,8 +518,9 @@ services:
     volumes:
       - minio_dev_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      # SECURITY: Bind to localhost only to prevent external access
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     command: server /data --console-address ":9001"
     networks:
       - writewave-dev-network
