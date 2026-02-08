@@ -75,14 +75,6 @@ app.use(
     referrerPolicy: {
       policy: "strict-origin-when-cross-origin",
     },
-    permissionsPolicy: {
-      features: {
-        geolocation: ["'none'"],
-        microphone: ["'none'"],
-        camera: ["'none'"],
-        payment: ["'none'"],
-      },
-    },
   })
 );
 app.use(securityHeaders);

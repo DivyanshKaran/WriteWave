@@ -63,7 +63,7 @@ export default function Community() {
         <div className="container mx-auto max-w-7xl">
           <Button
             variant="ghost"
-            onClick={() => navigate("/app")}
+            onClick={() => navigate("/dashboard")}
             className="mb-6 sm:mb-8"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

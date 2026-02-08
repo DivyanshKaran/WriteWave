@@ -140,7 +140,7 @@ export class UserService {
 
   // Auth endpoints
   async register(data: RegisterData) {
-    if (MOCK_MODE) return MockAPI.user.getProfile();
+    if (MOCK_MODE) return MockAPI.user.register(data);
     return this.client.post('/api/v1/auth/register', data);
   }
 

@@ -42,7 +42,7 @@ export class RedisRateLimiter {
 
         // Check if limit exceeded
         if (count >= this.config.maxRequests) {
-          const ttl = await cacheService.getTTL(cacheKey);
+          const ttl = await cacheService.ttl(cacheKey);
           const retryAfter = ttl > 0 ? ttl : this.config.windowMs / 1000;
 
           logger.warn("Rate limit exceeded", {
@@ -95,7 +95,7 @@ export class RedisRateLimiter {
           const originalSend = res.send;
           res.send = function (data) {
             if (res.statusCode < 400) {
-              cacheService.decrement(cacheKey).catch((err) => {
+              cacheService.decr(cacheKey).catch((err) => {
                 logger.error("Failed to decrement rate limit", {
                   error: err.message,
                 });

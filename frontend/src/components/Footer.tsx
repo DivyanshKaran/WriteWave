@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const Footer = () => {
   return (
     <footer className="border-t border-border mt-auto">
@@ -12,23 +14,23 @@ export const Footer = () => {
           <div>
             <h4 className="font-bold mb-4 text-sm">Learn</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/characters" className="hover:text-accent transition-colors">Characters</a></li>
-              <li><a href="/vocabulary" className="hover:text-accent transition-colors">Vocabulary</a></li>
-              <li><a href="/lessons" className="hover:text-accent transition-colors">Lessons</a></li>
+              <li><Link to="/characters" className="hover:text-accent transition-colors">Characters</Link></li>
+              <li><Link to="/vocabulary" className="hover:text-accent transition-colors">Vocabulary</Link></li>
+              <li><Link to="/lessons" className="hover:text-accent transition-colors">Lessons</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold mb-4 text-sm">Community</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/community" className="hover:text-accent transition-colors">Forums</a></li>
-              <li><a href="/progress" className="hover:text-accent transition-colors">Progress</a></li>
+              <li><Link to="/community" className="hover:text-accent transition-colors">Forums</Link></li>
+              <li><Link to="/progress" className="hover:text-accent transition-colors">Progress</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold mb-4 text-sm">About</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-accent transition-colors">Privacy</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">Terms</a></li>
+              <li><Link to="#" className="hover:text-accent transition-colors">Privacy</Link></li>
+              <li><Link to="#" className="hover:text-accent transition-colors">Terms</Link></li>
             </ul>
           </div>
         </div>

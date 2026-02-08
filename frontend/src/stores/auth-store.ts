@@ -162,9 +162,9 @@ export const useAuthStore = create<AuthStore>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        token: state.token,
+        refreshToken: state.refreshToken,
       }),
-      // Skip token persistence - it's already in localStorage
-      skipHydration: true,
     }
   )
 );

@@ -57,7 +57,7 @@ export default function Signup() {
         description: "Your account has been created successfully!",
       });
       
-      setTimeout(() => navigate("/app"), 1000);
+      setTimeout(() => navigate("/dashboard"), 1000);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Unable to create account. Please try again.";
       toast({

@@ -1,13 +1,22 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface HeaderProps {
   isAuthenticated?: boolean;
 }
 
-export const Header = ({ isAuthenticated = false }: HeaderProps) => {
+export const Header = ({ isAuthenticated: isAuthenticatedProp }: HeaderProps) => {
   const location = useLocation();
   const isLanding = location.pathname === "/";
+  const isAuthenticatedStore = useAuthStore((state) => state.isAuthenticated);
+  
+  // Use prop if provided, otherwise use store
+  const isAuthenticated = isAuthenticatedProp !== undefined ? isAuthenticatedProp : isAuthenticatedStore;
+  
+  // Check if we're on an auth page (login, signup, forgot-password, etc.)
+  const authPages = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password'];
+  const isAuthPage = authPages.includes(location.pathname);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -26,11 +35,18 @@ export const Header = ({ isAuthenticated = false }: HeaderProps) => {
                 <Link to="/signup">Get Started</Link>
               </Button>
             </>
+          ) : isAuthPage ? (
+            <>
+              {/* Show minimal navigation on auth pages */}
+              <Link to="/" className="text-xs sm:text-sm font-medium hover:text-accent transition-colors">
+                Home
+              </Link>
+            </>
           ) : (
             <>
               {isAuthenticated ? (
                 <>
-                  <Link to="/app" className="text-xs sm:text-sm font-medium hover:text-accent transition-colors">
+                  <Link to="/dashboard" className="text-xs sm:text-sm font-medium hover:text-accent transition-colors">
                     Dashboard
                   </Link>
                   <Link to="/me" className="text-xs sm:text-sm font-medium hover:text-accent transition-colors">

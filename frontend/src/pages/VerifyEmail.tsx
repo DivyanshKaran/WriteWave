@@ -32,7 +32,7 @@ export default function VerifyEmail() {
         description: "Your account is now active!",
       });
       
-      setTimeout(() => navigate("/app"), 1000);
+      setTimeout(() => navigate("/dashboard"), 1000);
     } catch (error) {
       toast({
         title: "Verification failed",

@@ -75,14 +75,14 @@ const App = () => (
               <Analytics />
               <PageViewTracker />
               <Routes>
-                <Route path="/" element={<AppHub />} />
+                <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route
-                  path="/app"
+                  path="/dashboard"
                   element={
                     <RequireAuth>
                       <AppHub />

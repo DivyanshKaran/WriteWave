@@ -45,7 +45,7 @@ export default function Login() {
       // Store user in auth store
       setUser(user);
       
-      const from = (location.state as any)?.from?.pathname || "/app";
+      const from = (location.state as any)?.from?.pathname || "/dashboard";
       toast({
         title: "Login successful",
         description: "Redirecting...",

@@ -219,7 +219,22 @@ export const MockAPI = {
     getSettings: async () => { await delay(); return mockResponse(mockUserSettings); },
     updateProfile: async (data: any) => { await delay(); return mockResponse({ ...mockUserProfile, ...data }); },
     updateSettings: async (data: any) => { await delay(); return mockResponse({ ...mockUserSettings, ...data }); },
-    getMe: async () => { await delay(); return mockResponse(mockUser); },
+    getMe: async () => { 
+      await delay(); 
+      return mockResponse({ 
+        token: 'mock-jwt-token-' + Date.now(), 
+        refreshToken: 'mock-refresh-token-' + Date.now(),
+        user: mockUser 
+      }); 
+    },
+    register: async (data: any) => {
+      await delay();
+      return mockResponse({
+        token: 'mock-jwt-token-' + Date.now(),
+        refreshToken: 'mock-refresh-token-' + Date.now(),
+        user: { ...mockUser, email: data.email, username: data.username || data.firstName }
+      });
+    },
   },
 
   // Progress endpoints
